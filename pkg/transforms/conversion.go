@@ -28,28 +28,28 @@ type Conversion struct {
 }
 
 // TransformToXML ...
-func (f Conversion) TransformToXML(params ...interface{}) interface{} {
+func (f Conversion) TransformToXML(params ...interface{}) (continuePipeline bool, stringType interface{}) {
 	if len(params) < 1 {
-		return nil
+		return false, nil
 	}
 	println("TRANSFORMING TO XML")
-	if result, ok := params[0].(models.Event); ok {
+	if result, ok := params[0].(*models.Event); ok {
 		b, err := xml.Marshal(result)
 		if err != nil {
 			// LoggingClient.Error(fmt.Sprintf("Error parsing XML. Error: %s", err.Error()))
-			return nil
+			return false, nil
 		}
 		// should we return a byte[] or string?
 		// return b
-		return string(b)
+		return true, string(b)
 	}
-	return nil
+	return false, nil
 }
 
 // TransformToJSON ...
-func (f Conversion) TransformToJSON(params ...interface{}) interface{} {
+func (f Conversion) TransformToJSON(params ...interface{}) (continuePipeline bool, stringType interface{}) {
 	if len(params) < 1 {
-		return nil
+		return false, nil
 	}
 	println("TRANSFORMING TO JSON")
 
@@ -57,11 +57,11 @@ func (f Conversion) TransformToJSON(params ...interface{}) interface{} {
 		b, err := json.Marshal(result)
 		if err != nil {
 			// LoggingClient.Error(fmt.Sprintf("Error parsing XML. Error: %s", err.Error()))
-			return nil
+			return false, nil
 		}
 		// should we return a byte[] or string?
 		// return b
-		return string(b)
+		return true, string(b)
 	}
-	return nil
+	return false, nil
 }

@@ -39,11 +39,11 @@ func main() {
 	edgexsdk.MakeItRun()
 }
 
-func printXMLToConsole(params ...interface{}) interface{} {
+func printXMLToConsole(params ...interface{}) (bool, interface{}) {
 	if len(params) < 1 {
 		// We didn't receive a result
-		return nil
+		return false, nil
 	}
 	println(params[0].(string))
-	return nil
+	return false, nil
 }

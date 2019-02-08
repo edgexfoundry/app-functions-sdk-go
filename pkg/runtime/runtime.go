@@ -25,18 +25,22 @@ import (
 
 // GolangRuntime represents the golang runtime environment
 type GolangRuntime struct {
-	Transforms []func(...interface{}) interface{}
+	Transforms []func(...interface{}) (bool, interface{})
 }
 
 // ProcessEvent handles processing the event
 func (gr GolangRuntime) ProcessEvent(edgexcontext context.Context, event models.Event) error {
 	fmt.Println("EVENT PROCESSED BY GO")
 	var result interface{}
+	var continuePipeline = true
 	for _, trxFunc := range gr.Transforms {
 		if result != nil {
-			result = trxFunc(result)
+			continuePipeline, result = trxFunc(result)
 		} else {
-			result = trxFunc(event)
+			continuePipeline, result = trxFunc(event)
+		}
+		if continuePipeline != true {
+			break
 		}
 	}
 	return nil

@@ -30,33 +30,32 @@ import (
 
 // AppFunctionsSDK ...
 type AppFunctionsSDK struct {
-	transforms []func(params ...interface{}) interface{}
+	transforms []func(params ...interface{}) (bool, interface{})
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
-func (afsdk *AppFunctionsSDK) SetPipeline(transforms ...func(params ...interface{}) interface{}) {
+func (afsdk *AppFunctionsSDK) SetPipeline(transforms ...func(params ...interface{}) (bool, interface{})) {
 	afsdk.transforms = transforms
 }
 
 // FilterByDeviceID ...
-func (afsdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...interface{}) interface{} {
+func (afsdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...interface{}) (bool, interface{}) {
 	transforms := transforms.Filter{
-		DeviceIDs: deviceIDs,
+		FilterValues: deviceIDs,
 	}
 	return transforms.FilterByDeviceID
 }
 
 // FilterByValueDescriptor ...
-func (afsdk *AppFunctionsSDK) FilterByValueDescriptor() func(...interface{}) interface{} {
-	// transforms := transforms.Filter{
-	// 	DeviceIDs: deviceIDs,
-	// }
-	// return transforms.FilterByDeviceID
-	return nil
+func (afsdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(...interface{}) (bool, interface{}) {
+	transforms := transforms.Filter{
+		FilterValues: valueIDs,
+	}
+	return transforms.FilterByValueDescriptor
 }
 
 // TransformToXML ...
-func (afsdk *AppFunctionsSDK) TransformToXML() func(...interface{}) interface{} {
+func (afsdk *AppFunctionsSDK) TransformToXML() func(...interface{}) (bool, interface{}) {
 	transforms := transforms.Conversion{}
 	return transforms.TransformToXML
 }
