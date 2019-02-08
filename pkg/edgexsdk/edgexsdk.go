@@ -47,8 +47,12 @@ func (afsdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...inter
 }
 
 // FilterByValueDescriptor ...
-func (afsdk *AppFunctionsSDK) FilterByValueDescriptor() {
-
+func (afsdk *AppFunctionsSDK) FilterByValueDescriptor() func(...interface{}) interface{} {
+	// transforms := transforms.Filter{
+	// 	DeviceIDs: deviceIDs,
+	// }
+	// return transforms.FilterByDeviceID
+	return nil
 }
 
 // TransformToXML ...
@@ -61,7 +65,13 @@ func (afsdk *AppFunctionsSDK) TransformToXML() func(...interface{}) interface{} 
 func (afsdk *AppFunctionsSDK) MakeItRun() {
 
 	// load the configuration
-	configuration := configuration.LoadConfiguration()
+	configuration := configuration.Configuration{
+		Bindings: []configuration.Binding{
+			configuration.Binding{
+				Type: "http",
+			},
+		},
+	} //configuration.LoadConfiguration()
 
 	// a little telemetry where?
 
@@ -81,6 +91,7 @@ func (afsdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configura
 	// Need to make dynamic, search for the binding that is input
 	switch configuration.Bindings[0].Type {
 	case "http":
+		println("Loading Http Trigger")
 		trigger = &httptrigger.HTTPTrigger{Configuration: configuration, Runtime: runtime}
 	case "messageBus":
 		trigger = &messagebustrigger.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
