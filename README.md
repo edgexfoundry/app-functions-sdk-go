@@ -34,13 +34,13 @@ func main() {
 The above example is meant to merely demonstrate the structure of your application. Notice that the output of the last function is not available anywhere inside this application. You must provide a function to in order to work with the data from the previous function. Let's go ahead and add the following function that prints the output to the console.
 
 ```golang
-func printXMLToConsole(params ...interface{}) interface{} {
+func printXMLToConsole(params ...interface{}) (bool,interface{}) {
 	if len(params) < 1 {
 		// We didn't receive a result
-		return nil
+		return false, nil
 	}
 	println(params[0].(string))
-	return nil
+	return true, nil
 }
 ```
 After placing the above function in your code, the next step is to modify the pipeline to call this function:
@@ -69,7 +69,9 @@ There are two basic types of filtering included in the SDK to add to your pipeli
 ## Configuration
  - WIP
 ## Error Handling
- - WIP
+ - Each transform returns a `true` or `false` as part of the return signature. This is called the `continuePipeline` flag and indicates whether the SDK should continue calling successive transforms in the pipeline. `return false, nil` will stop the pipeline gracefully and stop processing the event. This is useful for example when filtering on values and nothing matches the criteria you've filtered on. 
+ If you `return false, error` -- still WIP
+
 
 
 
