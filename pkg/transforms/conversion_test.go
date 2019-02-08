@@ -36,39 +36,50 @@ func TestTransformToXML(t *testing.T) {
 	}
 	expectedResult := `<Event><ID></ID><Pushed>0</Pushed><Device>id1</Device><Created>0</Created><Modified>0</Modified><Origin>0</Origin><Event></Event></Event>`
 	conv := Conversion{}
-	result := conv.TransformToXML(&eventIn)
+	continuePipeline, result := conv.TransformToXML(&eventIn)
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
-
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
+	}
 	if result.(string) != expectedResult {
 		t.Fatal("result does not match expectedResult")
 	}
 }
 func TestTransformToXMLNoParameters(t *testing.T) {
 	conv := Conversion{}
-	result := conv.TransformToXML()
+	continuePipeline, result := conv.TransformToXML()
 	if result != nil {
 		t.Fatal("result should be nil")
+	}
+	if continuePipeline == true {
+		t.Fatal("Pipeline should stop processing")
 	}
 }
 func TestTransformToXMLNotAnEvent(t *testing.T) {
 	conv := Conversion{}
-	result := conv.TransformToXML("")
+	continuePipeline, result := conv.TransformToXML("")
 	if result != nil {
 		t.Fatal("result should be nil")
 	}
+	if continuePipeline == true {
+		t.Fatal("Pipeline should stop processing")
+	}
 }
-func TestTransformToXMLMultipleParametersNotValid(t *testing.T) {
+func TestTransformToXMLMultipleParametersValid(t *testing.T) {
 	// Event from device 1
 	eventIn := models.Event{
 		Device: devID1,
 	}
 	expectedResult := `<Event><ID></ID><Pushed>0</Pushed><Device>id1</Device><Created>0</Created><Modified>0</Modified><Origin>0</Origin><Event></Event></Event>`
 	conv := Conversion{}
-	result := conv.TransformToXML(&eventIn, "", "", "")
+	continuePipeline, result := conv.TransformToXML(&eventIn, "", "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
+	}
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
 	}
 	if result.(string) != expectedResult {
 		t.Fatal("result does not match expectedResult")
@@ -85,9 +96,12 @@ func TestTransformToXMLMultipleParametersTwoEvents(t *testing.T) {
 	}
 	expectedResult := `<Event><ID></ID><Pushed>0</Pushed><Device>id2</Device><Created>0</Created><Modified>0</Modified><Origin>0</Origin><Event></Event></Event>`
 	conv := Conversion{}
-	result := conv.TransformToXML(&eventIn2, &eventIn1, "", "")
+	continuePipeline, result := conv.TransformToXML(&eventIn2, &eventIn1, "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
+	}
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
 	}
 	if result.(string) != expectedResult {
 		t.Fatal("result does not match expectedResult")
@@ -101,9 +115,12 @@ func TestTransformToJSON(t *testing.T) {
 	}
 	expectedResult := `{"device":"id1"}`
 	conv := Conversion{}
-	result := conv.TransformToJSON(&eventIn)
+	continuePipeline, result := conv.TransformToJSON(&eventIn)
 	if result == nil {
 		t.Fatal("result should not be nil")
+	}
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
 	}
 	if result.(string) != expectedResult {
 		t.Fatal("result does not match expectedResult")
@@ -111,28 +128,37 @@ func TestTransformToJSON(t *testing.T) {
 }
 func TestTransformToJSONNoEvent(t *testing.T) {
 	conv := Conversion{}
-	result := conv.TransformToJSON()
+	continuePipeline, result := conv.TransformToJSON()
 	if result != nil {
 		t.Fatal("result should be nil")
+	}
+	if continuePipeline == true {
+		t.Fatal("Pipeline should stop processing")
 	}
 }
 func TestTransformToJSONNotAnEvent(t *testing.T) {
 	conv := Conversion{}
-	result := conv.TransformToJSON("")
+	continuePipeline, result := conv.TransformToJSON("")
 	if result != nil {
 		t.Fatal("result should be nil")
 	}
+	if continuePipeline == true {
+		t.Fatal("Pipeline should stop processing")
+	}
 }
-func TestTransformToJSONMultipleParametersNotValid(t *testing.T) {
+func TestTransformToJSONMultipleParametersValid(t *testing.T) {
 	// Event from device 1
 	eventIn := models.Event{
 		Device: devID1,
 	}
 	expectedResult := `{"device":"id1"}`
 	conv := Conversion{}
-	result := conv.TransformToJSON(&eventIn, "", "", "")
+	continuePipeline, result := conv.TransformToJSON(&eventIn, "", "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
+	}
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
 	}
 	if result.(string) != expectedResult {
 		t.Fatal("result does not match expectedResult")
@@ -149,9 +175,12 @@ func TestTransformToJSONMultipleParametersTwoEvents(t *testing.T) {
 	}
 	expectedResult := `{"device":"id2"}`
 	conv := Conversion{}
-	result := conv.TransformToJSON(&eventIn2, &eventIn1, "", "")
+	continuePipeline, result := conv.TransformToJSON(&eventIn2, &eventIn1, "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
+	}
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
 	}
 	if result.(string) != expectedResult {
 		t.Fatal("result does not match expectedResult")

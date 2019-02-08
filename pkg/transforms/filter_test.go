@@ -28,11 +28,14 @@ func TestFilterByDeviceIDFound(t *testing.T) {
 		Device: devID1,
 	}
 	filter := Filter{
-		DeviceIDs: []string{"id1"},
+		FilterValues: []string{"id1"},
 	}
-	result := filter.FilterByDeviceID(eventIn)
+	continuePipeline, result := filter.FilterByDeviceID(eventIn)
 	if result == nil {
 		t.Fatal("result should not be nil")
+	}
+	if continuePipeline == false {
+		t.Fatal("Pipeline should continue processing")
 	}
 	if eventOut, ok := result.(*models.Event); ok {
 		if eventOut.Device != "id1" {
@@ -46,20 +49,26 @@ func TestFilterByDeviceIDNotFound(t *testing.T) {
 		Device: devID1,
 	}
 	filter := Filter{
-		DeviceIDs: []string{"id2"},
+		FilterValues: []string{"id2"},
 	}
-	result := filter.FilterByDeviceID(eventIn)
+	continuePipeline, result := filter.FilterByDeviceID(eventIn)
 	if result != nil {
 		t.Fatal("result should be nil")
+	}
+	if continuePipeline == true {
+		t.Fatal("Pipeline should stop processing")
 	}
 }
 
 func TestFilterByDeviceIDNoParameters(t *testing.T) {
 	filter := Filter{
-		DeviceIDs: []string{"id2"},
+		FilterValues: []string{"id2"},
 	}
-	result := filter.FilterByDeviceID()
+	continuePipeline, result := filter.FilterByDeviceID()
 	if result != nil {
 		t.Fatal("result should be nil")
+	}
+	if continuePipeline == true {
+		t.Fatal("Pipeline should stop processing")
 	}
 }

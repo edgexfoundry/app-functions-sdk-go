@@ -20,29 +20,56 @@ import (
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
-// Filter houses various built in filter transforms
+// Filter houses various the parameters for which filter transforms filter on
 type Filter struct {
-	DeviceIDs []string
+	FilterValues []string
 }
 
 // FilterByDeviceID ...
-func (f Filter) FilterByDeviceID(params ...interface{}) interface{} {
+func (f Filter) FilterByDeviceID(params ...interface{}) (continuePipeline bool, result interface{}) {
 
 	println("FILTER BY DEVICEID")
 
 	if len(params) != 1 {
-		return nil
+		return false, nil
 	}
-	deviceIDs := f.DeviceIDs
+	deviceIDs := f.FilterValues
 	event := params[0].(models.Event)
 
 	for _, devID := range deviceIDs {
 		if event.Device == devID {
 			// LoggingClient.Debug(fmt.Sprintf("Event accepted: %s", event.Device))
-			return event
+			return true, event
 		}
 	}
-	return nil
+	return false, nil
 	// fmt.Println(event.Data)
 	// edgexcontext.Complete("")
+}
+func (f Filter) FilterByValueDescriptor(params ...interface{}) (continuePipeline bool, result interface{}) {
+	println("FILTER BY VALUE DESCRIPTOR ID")
+
+	if len(params) != 1 {
+		return false, nil
+	}
+
+	existingEvent := params[0].(models.Event)
+	auxEvent := &models.Event{
+		Pushed:   existingEvent.Pushed,
+		Device:   existingEvent.Device,
+		Created:  existingEvent.Created,
+		Modified: existingEvent.Modified,
+		Origin:   existingEvent.Origin,
+		Readings: []models.Reading{},
+	}
+
+	for _, filterID := range f.FilterValues {
+		for _, reading := range existingEvent.Readings {
+			if reading.Name == filterID {
+				// LoggingClient.Debug(fmt.Sprintf("Reading filtered: %s", reading.Name))
+				auxEvent.Readings = append(auxEvent.Readings, reading)
+			}
+		}
+	}
+	return true, auxEvent
 }
