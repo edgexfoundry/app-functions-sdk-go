@@ -18,6 +18,7 @@ package runtime
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/context"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
@@ -40,6 +41,9 @@ func (gr GolangRuntime) ProcessEvent(edgexcontext context.Context, event models.
 			continuePipeline, result = trxFunc(event)
 		}
 		if continuePipeline != true {
+			if result != nil {
+				log.Fatal(result)
+			}
 			break
 		}
 	}

@@ -16,6 +16,7 @@
 package runtime
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/context"
@@ -148,7 +149,7 @@ func TestProcessEventThreeCustomTransformsOneFail(t *testing.T) {
 			}
 		}
 
-		return false, "Transform1Result"
+		return false, errors.New("Transform1Result")
 	}
 	transform2 := func(params ...interface{}) (bool, interface{}) {
 		transform2WasCalled = true

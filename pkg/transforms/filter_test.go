@@ -108,6 +108,9 @@ func TestFilterValue(t *testing.T) {
 	if continuePipeline {
 		t.Fatal("Pipeline should stop since no parameter was passed")
 	}
+	if res.(error).Error() != "No event to filter" {
+		t.Fatal("Should have an error when no parameter was passed")
+	}
 
 	continuePipeline, res = f1.FilterByValueDescriptor(event1)
 	if !continuePipeline {

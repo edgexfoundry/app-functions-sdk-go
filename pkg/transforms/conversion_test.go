@@ -50,8 +50,8 @@ func TestTransformToXML(t *testing.T) {
 func TestTransformToXMLNoParameters(t *testing.T) {
 	conv := Conversion{}
 	continuePipeline, result := conv.TransformToXML()
-	if result != nil {
-		t.Fatal("result should be nil")
+	if result.(error).Error() != "No Event Received" {
+		t.Fatal("result should be an error that says \"No Event Received\"")
 	}
 	if continuePipeline == true {
 		t.Fatal("Pipeline should stop processing")
@@ -129,8 +129,8 @@ func TestTransformToJSON(t *testing.T) {
 func TestTransformToJSONNoEvent(t *testing.T) {
 	conv := Conversion{}
 	continuePipeline, result := conv.TransformToJSON()
-	if result != nil {
-		t.Fatal("result should be nil")
+	if result.(error).Error() != "No Event Received" {
+		t.Fatal("result should be an error that says \"No Event Received\"")
 	}
 	if continuePipeline == true {
 		t.Fatal("Pipeline should stop processing")
