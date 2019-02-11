@@ -21,22 +21,24 @@ import (
 )
 
 func main() {
-	// 1) First thing to do is to create an instance of the EdgeX SDK.
-	edgexsdk := &edgexsdk.AppFunctionsSDK{}
+	// 1) First thing to do is to create an instance of the EdgeX SDK and initialize it.
+	edgexSdk := &edgexsdk.AppFunctionsSDK{}
+	edgexSdk.Initialize(true,"","sampleFilterXml")
 
 	// 2) Since our FilterByDeviceID Function requires the list of DeviceID's we would
 	// like to search for, we'll go ahead and define that now.
 	deviceIDs := []string{"GS1-AC-Drive01"}
 	// 3) This is our pipeline configuration, the collection of functions to
 	// execute everytime an event is triggered.
-	edgexsdk.SetPipeline(
-		edgexsdk.FilterByDeviceID(deviceIDs),
-		edgexsdk.TransformToXML(),
+	edgexSdk.SetPipeline(
+		edgexSdk.FilterByDeviceID(deviceIDs),
+		edgexSdk.TransformToXML(),
 		printXMLToConsole,
 	)
+
 	// 4) Lastly, we'll go ahead and tell the SDK to "start" and begin listening for events
 	// to trigger the pipeline.
-	edgexsdk.MakeItRun()
+	edgexSdk.MakeItRun()
 }
 
 func printXMLToConsole(params ...interface{}) (bool, interface{}) {
