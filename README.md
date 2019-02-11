@@ -37,7 +37,7 @@ The above example is meant to merely demonstrate the structure of your applicati
 func printXMLToConsole(params ...interface{}) (bool,interface{}) {
 	if len(params) < 1 {
 		// We didn't receive a result
-		return false, nil
+		return false, errors.New("No Data Received")
 	}
 	println(params[0].(string))
 	return true, nil
