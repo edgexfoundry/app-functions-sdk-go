@@ -68,9 +68,14 @@ There are two basic types of filtering included in the SDK to add to your pipeli
  - `TransformToJSON()` - This function takes an `events.Model` type and converts it to JSON format
 ## Configuration
  - WIP
+
 ## Error Handling
- - Each transform returns a `true` or `false` as part of the return signature. This is called the `continuePipeline` flag and indicates whether the SDK should continue calling successive transforms in the pipeline. `return false, nil` will stop the pipeline gracefully and stop processing the event. This is useful for example when filtering on values and nothing matches the criteria you've filtered on. 
- If you `return false, error` -- still WIP
+ - Each transform returns a `true` or `false` as part of the return signature. This is called the `continuePipeline` flag and indicates whether the SDK should continue calling successive transforms in the pipeline.
+ - `return false, nil` will stop the pipeline and stop processing the event. This is useful for example when filtering on values and nothing matches the criteria you've filtered on. 
+ - `return false, error`, will stop the pipeline as well and the SDK will log the errorString you have returned.
+- Returning `true` tells the SDK to continue, and will call the next function in the pipeline with your result.
+
+
 
 
 
