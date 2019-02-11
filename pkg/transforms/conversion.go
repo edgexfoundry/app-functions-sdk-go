@@ -21,6 +21,7 @@ import (
 	"encoding/xml"
 	"errors"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
@@ -29,7 +30,7 @@ type Conversion struct {
 }
 
 // TransformToXML ...
-func (f Conversion) TransformToXML(params ...interface{}) (continuePipeline bool, stringType interface{}) {
+func (f Conversion) TransformToXML(edgexcontext excontext.Context, params ...interface{}) (continuePipeline bool, stringType interface{}) {
 	if len(params) < 1 {
 		return false, errors.New("No Event Received")
 	}
@@ -48,7 +49,7 @@ func (f Conversion) TransformToXML(params ...interface{}) (continuePipeline bool
 }
 
 // TransformToJSON ...
-func (f Conversion) TransformToJSON(params ...interface{}) (continuePipeline bool, stringType interface{}) {
+func (f Conversion) TransformToJSON(edgexcontext excontext.Context, params ...interface{}) (continuePipeline bool, stringType interface{}) {
 	if len(params) < 1 {
 		return false, errors.New("No Event Received")
 	}
@@ -64,5 +65,5 @@ func (f Conversion) TransformToJSON(params ...interface{}) (continuePipeline boo
 		// return b
 		return true, string(b)
 	}
-	return false, nil
+	return false, errors.New("Unexpected type received")
 }

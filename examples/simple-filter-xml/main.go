@@ -18,6 +18,7 @@ package main
 
 import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 	// execute everytime an event is triggered.
 	edgexsdk.SetPipeline(
 		edgexsdk.FilterByDeviceID(deviceIDs),
-		edgexsdk.TransformToXML(),
+		edgexsdk.TransformToJSON(),
 		printXMLToConsole,
 	)
 	// 4) Lastly, we'll go ahead and tell the SDK to "start" and begin listening for events
@@ -39,11 +40,13 @@ func main() {
 	edgexsdk.MakeItRun()
 }
 
-func printXMLToConsole(params ...interface{}) (bool, interface{}) {
+func printXMLToConsole(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
 	if len(params) < 1 {
 		// We didn't receive a result
 		return false, nil
 	}
+
 	println(params[0].(string))
+	edgexcontext.Complete(params[0].(string))
 	return false, nil
 }

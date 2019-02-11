@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package context
+package excontext
 
 import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
@@ -28,6 +28,6 @@ type Context struct {
 }
 
 // Complete called when ready to send output and function is finished
-func (context Context) Complete(output string) {
+func (context Context) Complete(output interface{}) {
 	(context.Trigger).Complete(output)
 }

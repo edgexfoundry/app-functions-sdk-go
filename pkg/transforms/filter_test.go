@@ -19,6 +19,7 @@ package transforms
 import (
 	"testing"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
@@ -35,7 +36,7 @@ func TestFilterByDeviceIDFound(t *testing.T) {
 	filter := Filter{
 		FilterValues: []string{"id1"},
 	}
-	continuePipeline, result := filter.FilterByDeviceID(eventIn)
+	continuePipeline, result := filter.FilterByDeviceID(excontext.Context{}, eventIn)
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
@@ -56,7 +57,7 @@ func TestFilterByDeviceIDNotFound(t *testing.T) {
 	filter := Filter{
 		FilterValues: []string{"id2"},
 	}
-	continuePipeline, result := filter.FilterByDeviceID(eventIn)
+	continuePipeline, result := filter.FilterByDeviceID(excontext.Context{}, eventIn)
 	if result != nil {
 		t.Fatal("result should be nil")
 	}
@@ -68,9 +69,9 @@ func TestFilterByDeviceIDNoParameters(t *testing.T) {
 	filter := Filter{
 		FilterValues: []string{"id2"},
 	}
-	continuePipeline, result := filter.FilterByDeviceID()
-	if result != nil {
-		t.Fatal("result should be nil")
+	continuePipeline, result := filter.FilterByDeviceID(excontext.Context{})
+	if result.(error).Error() != "No Event Received" {
+		t.Fatal("Should have an error when no parameter was passed")
 	}
 	if continuePipeline == true {
 		t.Fatal("Pipeline should stop processing")
@@ -104,15 +105,15 @@ func TestFilterValue(t *testing.T) {
 	event12.Readings = append(event12.Readings, models.Reading{Name: descriptor1})
 	event12.Readings = append(event12.Readings, models.Reading{Name: descriptor2})
 
-	continuePipeline, res := f1.FilterByValueDescriptor()
+	continuePipeline, res := f1.FilterByValueDescriptor(excontext.Context{})
 	if continuePipeline {
 		t.Fatal("Pipeline should stop since no parameter was passed")
 	}
-	if res.(error).Error() != "No event to filter" {
+	if res.(error).Error() != "No Event Received" {
 		t.Fatal("Should have an error when no parameter was passed")
 	}
 
-	continuePipeline, res = f1.FilterByValueDescriptor(event1)
+	continuePipeline, res = f1.FilterByValueDescriptor(excontext.Context{}, event1)
 	if !continuePipeline {
 		t.Fatal("Pipeline should continue")
 	}
@@ -120,7 +121,7 @@ func TestFilterValue(t *testing.T) {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
-	continuePipeline, res = f1.FilterByValueDescriptor(event12)
+	continuePipeline, res = f1.FilterByValueDescriptor(excontext.Context{}, event12)
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
@@ -128,12 +129,12 @@ func TestFilterValue(t *testing.T) {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
-	continuePipeline, res = f1.FilterByValueDescriptor(event2)
+	continuePipeline, res = f1.FilterByValueDescriptor(excontext.Context{}, event2)
 	if continuePipeline {
 		t.Fatal("Event should be filtered out")
 	}
 
-	continuePipeline, res = f12.FilterByValueDescriptor(event1)
+	continuePipeline, res = f12.FilterByValueDescriptor(excontext.Context{}, event1)
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
@@ -141,7 +142,7 @@ func TestFilterValue(t *testing.T) {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
-	continuePipeline, res = f12.FilterByValueDescriptor(event12)
+	continuePipeline, res = f12.FilterByValueDescriptor(excontext.Context{}, event12)
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
@@ -149,7 +150,7 @@ func TestFilterValue(t *testing.T) {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
-	continuePipeline, res = f12.FilterByValueDescriptor(event2)
+	continuePipeline, res = f12.FilterByValueDescriptor(excontext.Context{}, event2)
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
