@@ -22,6 +22,11 @@ import (
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
+const (
+	descriptor1 = "Descriptor1"
+	descriptor2 = "Descriptor2"
+)
+
 func TestFilterByDeviceIDFound(t *testing.T) {
 	// Event from device 1
 	eventIn := models.Event{
@@ -59,7 +64,6 @@ func TestFilterByDeviceIDNotFound(t *testing.T) {
 		t.Fatal("Pipeline should stop processing")
 	}
 }
-
 func TestFilterByDeviceIDNoParameters(t *testing.T) {
 	filter := Filter{
 		FilterValues: []string{"id2"},
@@ -70,5 +74,83 @@ func TestFilterByDeviceIDNoParameters(t *testing.T) {
 	}
 	if continuePipeline == true {
 		t.Fatal("Pipeline should stop processing")
+	}
+	// if result != errors.new()("") {
+	// 	t.Fatal("Pipeline should return no paramater error")
+	// }
+}
+
+func TestFilterValue(t *testing.T) {
+
+	f1 := Filter{
+		FilterValues: []string{descriptor1},
+	}
+	f12 := Filter{
+		FilterValues: []string{descriptor1, descriptor2},
+	}
+
+	// event with a value descriptor 1
+	event1 := models.Event{
+		Device: devID1,
+	}
+	event1.Readings = append(event1.Readings, models.Reading{Name: descriptor1})
+
+	// event with a value descriptor 2
+	event2 := models.Event{}
+	event2.Readings = append(event2.Readings, models.Reading{Name: descriptor2})
+
+	// event with a value descriptor 1 and another 2
+	event12 := models.Event{}
+	event12.Readings = append(event12.Readings, models.Reading{Name: descriptor1})
+	event12.Readings = append(event12.Readings, models.Reading{Name: descriptor2})
+
+	continuePipeline, res := f1.FilterByValueDescriptor()
+	if continuePipeline {
+		t.Fatal("Pipeline should stop since no parameter was passed")
+	}
+
+	continuePipeline, res = f1.FilterByValueDescriptor(event1)
+	if !continuePipeline {
+		t.Fatal("Pipeline should continue")
+	}
+	if len(res.(*models.Event).Readings) != 1 {
+		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
+	}
+
+	continuePipeline, res = f1.FilterByValueDescriptor(event12)
+	if !continuePipeline {
+		t.Fatal("Event should be continuePipeline")
+	}
+	if len(res.(*models.Event).Readings) != 1 {
+		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
+	}
+
+	continuePipeline, res = f1.FilterByValueDescriptor(event2)
+	if continuePipeline {
+		t.Fatal("Event should be filtered out")
+	}
+
+	continuePipeline, res = f12.FilterByValueDescriptor(event1)
+	if !continuePipeline {
+		t.Fatal("Event should be continuePipeline")
+	}
+	if len(res.(*models.Event).Readings) != 1 {
+		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
+	}
+
+	continuePipeline, res = f12.FilterByValueDescriptor(event12)
+	if !continuePipeline {
+		t.Fatal("Event should be continuePipeline")
+	}
+	if len(res.(*models.Event).Readings) != 2 {
+		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
+	}
+
+	continuePipeline, res = f12.FilterByValueDescriptor(event2)
+	if !continuePipeline {
+		t.Fatal("Event should be continuePipeline")
+	}
+	if len(res.(*models.Event).Readings) != 1 {
+		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 }

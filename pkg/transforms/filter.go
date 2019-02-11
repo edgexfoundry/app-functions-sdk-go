@@ -46,6 +46,8 @@ func (f Filter) FilterByDeviceID(params ...interface{}) (continuePipeline bool, 
 	// fmt.Println(event.Data)
 	// edgexcontext.Complete("")
 }
+
+// FilterByValueDescriptor - filters events by value descriptors
 func (f Filter) FilterByValueDescriptor(params ...interface{}) (continuePipeline bool, result interface{}) {
 	println("FILTER BY VALUE DESCRIPTOR ID")
 
@@ -71,5 +73,5 @@ func (f Filter) FilterByValueDescriptor(params ...interface{}) (continuePipeline
 			}
 		}
 	}
-	return true, auxEvent
+	return len(auxEvent.Readings) > 0, auxEvent
 }
