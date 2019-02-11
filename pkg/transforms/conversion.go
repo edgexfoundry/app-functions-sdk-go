@@ -19,6 +19,7 @@ package transforms
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
@@ -30,14 +31,14 @@ type Conversion struct {
 // TransformToXML ...
 func (f Conversion) TransformToXML(params ...interface{}) (continuePipeline bool, stringType interface{}) {
 	if len(params) < 1 {
-		return false, nil //errors.New("No Data Received")
+		return false, errors.New("No Event Received")
 	}
 	println("TRANSFORMING TO XML")
 	if result, ok := params[0].(*models.Event); ok {
 		b, err := xml.Marshal(result)
 		if err != nil {
 			// LoggingClient.Error(fmt.Sprintf("Error parsing XML. Error: %s", err.Error()))
-			return false, nil //errors.New("Incorrect type received, expecting models.Event")
+			return false, errors.New("Incorrect type received, expecting models.Event")
 		}
 		// should we return a byte[] or string?
 		// return b
@@ -49,15 +50,15 @@ func (f Conversion) TransformToXML(params ...interface{}) (continuePipeline bool
 // TransformToJSON ...
 func (f Conversion) TransformToJSON(params ...interface{}) (continuePipeline bool, stringType interface{}) {
 	if len(params) < 1 {
-		return false, nil
+		return false, errors.New("No Event Received")
 	}
 	println("TRANSFORMING TO JSON")
 
 	if result, ok := params[0].(*models.Event); ok {
 		b, err := json.Marshal(result)
 		if err != nil {
-			// LoggingClient.Error(fmt.Sprintf("Error parsing XML. Error: %s", err.Error()))
-			return false, nil
+			// LoggingClient.Error(fmt.Sprintf("Error parsing JSON. Error: %s", err.Error()))
+			return false, errors.New("Error marshalling JSON")
 		}
 		// should we return a byte[] or string?
 		// return b

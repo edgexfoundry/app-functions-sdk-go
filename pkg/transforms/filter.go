@@ -17,6 +17,8 @@
 package transforms
 
 import (
+	"errors"
+
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
@@ -31,7 +33,7 @@ func (f Filter) FilterByDeviceID(params ...interface{}) (continuePipeline bool, 
 	println("FILTER BY DEVICEID")
 
 	if len(params) != 1 {
-		return false, nil
+		return false, errors.New("No Event Received")
 	}
 	deviceIDs := f.FilterValues
 	event := params[0].(models.Event)
@@ -52,7 +54,7 @@ func (f Filter) FilterByValueDescriptor(params ...interface{}) (continuePipeline
 	println("FILTER BY VALUE DESCRIPTOR ID")
 
 	if len(params) != 1 {
-		return false, nil
+		return false, errors.New("No Event Received")
 	}
 
 	existingEvent := params[0].(models.Event)
