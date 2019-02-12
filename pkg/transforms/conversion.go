@@ -35,7 +35,7 @@ func (f Conversion) TransformToXML(edgexcontext excontext.Context, params ...int
 		return false, errors.New("No Event Received")
 	}
 	println("TRANSFORMING TO XML")
-	if result, ok := params[0].(*models.Event); ok {
+	if result, ok := params[0].(models.Event); ok {
 		b, err := xml.Marshal(result)
 		if err != nil {
 			// LoggingClient.Error(fmt.Sprintf("Error parsing XML. Error: %s", err.Error()))
@@ -45,7 +45,7 @@ func (f Conversion) TransformToXML(edgexcontext excontext.Context, params ...int
 		// return b
 		return true, string(b)
 	}
-	return false, nil
+	return false, errors.New("Unexpected type received")
 }
 
 // TransformToJSON ...
