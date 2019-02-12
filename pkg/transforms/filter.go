@@ -19,6 +19,7 @@ package transforms
 import (
 	"errors"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
@@ -28,7 +29,7 @@ type Filter struct {
 }
 
 // FilterByDeviceID ...
-func (f Filter) FilterByDeviceID(params ...interface{}) (continuePipeline bool, result interface{}) {
+func (f Filter) FilterByDeviceID(edgexcontext excontext.Context, params ...interface{}) (continuePipeline bool, result interface{}) {
 
 	println("FILTER BY DEVICEID")
 
@@ -37,7 +38,6 @@ func (f Filter) FilterByDeviceID(params ...interface{}) (continuePipeline bool, 
 	}
 	deviceIDs := f.FilterValues
 	event := params[0].(models.Event)
-
 	for _, devID := range deviceIDs {
 		if event.Device == devID {
 			// LoggingClient.Debug(fmt.Sprintf("Event accepted: %s", event.Device))
@@ -46,11 +46,11 @@ func (f Filter) FilterByDeviceID(params ...interface{}) (continuePipeline bool, 
 	}
 	return false, nil
 	// fmt.Println(event.Data)
-	// edgexcontext.Complete("")
+
 }
 
 // FilterByValueDescriptor - filters events by value descriptors
-func (f Filter) FilterByValueDescriptor(params ...interface{}) (continuePipeline bool, result interface{}) {
+func (f Filter) FilterByValueDescriptor(edgexcontext excontext.Context, params ...interface{}) (continuePipeline bool, result interface{}) {
 	println("FILTER BY VALUE DESCRIPTOR ID")
 
 	if len(params) != 1 {

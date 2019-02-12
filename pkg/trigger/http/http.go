@@ -25,9 +25,8 @@ import (
 
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/context"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 )
 
@@ -51,7 +50,7 @@ func (h *HTTPTrigger) requestHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	// event := event.Event{Data: "DATA FROM HTTP"}
-	edgexContext := context.Context{Configuration: h.Configuration,
+	edgexContext := excontext.Context{Configuration: h.Configuration,
 		Trigger: h,
 	}
 	var event models.Event

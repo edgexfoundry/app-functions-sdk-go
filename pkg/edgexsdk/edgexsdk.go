@@ -17,6 +17,8 @@
 package edgexsdk
 
 import (
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
+
 	"fmt"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
@@ -32,17 +34,17 @@ import (
 
 // AppFunctionsSDK ...
 type AppFunctionsSDK struct {
-	transforms []func(params ...interface{}) (bool, interface{})
+	transforms []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})
 	config     common.ConfigurationStruct
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
-func (sdk *AppFunctionsSDK) SetPipeline(transforms ...func(params ...interface{}) (bool, interface{})) {
+func (sdk *AppFunctionsSDK) SetPipeline(transforms ...func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})) {
 	sdk.transforms = transforms
 }
 
 // FilterByDeviceID ...
-func (sdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(excontext.Context, ...interface{}) (bool, interface{}) {
 	transforms := transforms.Filter{
 		FilterValues: deviceIDs,
 	}
@@ -50,7 +52,7 @@ func (sdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...interfa
 }
 
 // FilterByValueDescriptor ...
-func (sdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(excontext.Context, ...interface{}) (bool, interface{}) {
 	transforms := transforms.Filter{
 		FilterValues: valueIDs,
 	}
@@ -58,9 +60,15 @@ func (sdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(...i
 }
 
 // TransformToXML ...
-func (sdk *AppFunctionsSDK) TransformToXML() func(...interface{}) (bool, interface{}) {
+func (afsdk *AppFunctionsSDK) TransformToXML() func(excontext.Context, ...interface{}) (bool, interface{}) {
 	transforms := transforms.Conversion{}
 	return transforms.TransformToXML
+}
+
+// TransformToJSON ...
+func (afsdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...interface{}) (bool, interface{}) {
+	transforms := transforms.Conversion{}
+	return transforms.TransformToJSON
 }
 
 //MakeItRun the SDK

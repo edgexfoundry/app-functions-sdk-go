@@ -19,6 +19,7 @@ package transforms
 import (
 	"testing"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
@@ -36,7 +37,7 @@ func TestTransformToXML(t *testing.T) {
 	}
 	expectedResult := `<Event><ID></ID><Pushed>0</Pushed><Device>id1</Device><Created>0</Created><Modified>0</Modified><Origin>0</Origin><Event></Event></Event>`
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToXML(&eventIn)
+	continuePipeline, result := conv.TransformToXML(excontext.Context{}, &eventIn)
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
@@ -49,7 +50,7 @@ func TestTransformToXML(t *testing.T) {
 }
 func TestTransformToXMLNoParameters(t *testing.T) {
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToXML()
+	continuePipeline, result := conv.TransformToXML(excontext.Context{})
 	if result.(error).Error() != "No Event Received" {
 		t.Fatal("result should be an error that says \"No Event Received\"")
 	}
@@ -59,7 +60,7 @@ func TestTransformToXMLNoParameters(t *testing.T) {
 }
 func TestTransformToXMLNotAnEvent(t *testing.T) {
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToXML("")
+	continuePipeline, result := conv.TransformToXML(excontext.Context{}, "")
 	if result != nil {
 		t.Fatal("result should be nil")
 	}
@@ -74,7 +75,7 @@ func TestTransformToXMLMultipleParametersValid(t *testing.T) {
 	}
 	expectedResult := `<Event><ID></ID><Pushed>0</Pushed><Device>id1</Device><Created>0</Created><Modified>0</Modified><Origin>0</Origin><Event></Event></Event>`
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToXML(&eventIn, "", "", "")
+	continuePipeline, result := conv.TransformToXML(excontext.Context{}, &eventIn, "", "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
@@ -96,7 +97,7 @@ func TestTransformToXMLMultipleParametersTwoEvents(t *testing.T) {
 	}
 	expectedResult := `<Event><ID></ID><Pushed>0</Pushed><Device>id2</Device><Created>0</Created><Modified>0</Modified><Origin>0</Origin><Event></Event></Event>`
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToXML(&eventIn2, &eventIn1, "", "")
+	continuePipeline, result := conv.TransformToXML(excontext.Context{}, &eventIn2, &eventIn1, "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
@@ -115,7 +116,7 @@ func TestTransformToJSON(t *testing.T) {
 	}
 	expectedResult := `{"device":"id1"}`
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToJSON(&eventIn)
+	continuePipeline, result := conv.TransformToJSON(excontext.Context{}, &eventIn)
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
@@ -128,7 +129,7 @@ func TestTransformToJSON(t *testing.T) {
 }
 func TestTransformToJSONNoEvent(t *testing.T) {
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToJSON()
+	continuePipeline, result := conv.TransformToJSON(excontext.Context{})
 	if result.(error).Error() != "No Event Received" {
 		t.Fatal("result should be an error that says \"No Event Received\"")
 	}
@@ -138,9 +139,9 @@ func TestTransformToJSONNoEvent(t *testing.T) {
 }
 func TestTransformToJSONNotAnEvent(t *testing.T) {
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToJSON("")
-	if result != nil {
-		t.Fatal("result should be nil")
+	continuePipeline, result := conv.TransformToJSON(excontext.Context{}, "")
+	if result.(error).Error() != "Unexpected type received" {
+		t.Fatal("Should have an error when wrong type was passed")
 	}
 	if continuePipeline == true {
 		t.Fatal("Pipeline should stop processing")
@@ -153,7 +154,7 @@ func TestTransformToJSONMultipleParametersValid(t *testing.T) {
 	}
 	expectedResult := `{"device":"id1"}`
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToJSON(&eventIn, "", "", "")
+	continuePipeline, result := conv.TransformToJSON(excontext.Context{}, &eventIn, "", "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}
@@ -175,7 +176,7 @@ func TestTransformToJSONMultipleParametersTwoEvents(t *testing.T) {
 	}
 	expectedResult := `{"device":"id2"}`
 	conv := Conversion{}
-	continuePipeline, result := conv.TransformToJSON(&eventIn2, &eventIn1, "", "")
+	continuePipeline, result := conv.TransformToJSON(excontext.Context{}, &eventIn2, &eventIn1, "", "")
 	if result == nil {
 		t.Fatal("result should not be nil")
 	}

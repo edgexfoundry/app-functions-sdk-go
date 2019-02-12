@@ -18,31 +18,30 @@ package runtime
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/context"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
 // GolangRuntime represents the golang runtime environment
 type GolangRuntime struct {
-	Transforms []func(...interface{}) (bool, interface{})
+	Transforms []func(excontext.Context, ...interface{}) (bool, interface{})
 }
 
 // ProcessEvent handles processing the event
-func (gr GolangRuntime) ProcessEvent(edgexcontext context.Context, event models.Event) error {
+func (gr GolangRuntime) ProcessEvent(edgexcontext excontext.Context, event models.Event) error {
 	fmt.Println("EVENT PROCESSED BY GO")
 	var result interface{}
 	var continuePipeline = true
 	for _, trxFunc := range gr.Transforms {
 		if result != nil {
-			continuePipeline, result = trxFunc(result)
+			continuePipeline, result = trxFunc(edgexcontext, result)
 		} else {
-			continuePipeline, result = trxFunc(event)
+			continuePipeline, result = trxFunc(edgexcontext, event)
 		}
 		if continuePipeline != true {
 			if result != nil {
-				log.Fatal(result)
+				fmt.Println(result)
 			}
 			break
 		}

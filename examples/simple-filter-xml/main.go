@@ -19,10 +19,11 @@ package main
 import (
 	"flag"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 )
 
 const (
-	serviceKey  = "sampleFilterXml"
+	serviceKey = "sampleFilterXml"
 )
 
 func main() {
@@ -42,10 +43,10 @@ func main() {
 	// like to search for, we'll go ahead and define that now.
 	deviceIDs := []string{"GS1-AC-Drive01"}
 	// 3) This is our pipeline configuration, the collection of functions to
-	// execute everytime an event is triggered.
+	// execute every time an event is triggered.
 	edgexSdk.SetPipeline(
 		edgexSdk.FilterByDeviceID(deviceIDs),
-		edgexSdk.TransformToXML(),
+		edgexSdk.TransformToJSON(),
 		printXMLToConsole,
 	)
 
@@ -54,11 +55,13 @@ func main() {
 	edgexSdk.MakeItRun()
 }
 
-func printXMLToConsole(params ...interface{}) (bool, interface{}) {
+func printXMLToConsole(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
 	if len(params) < 1 {
 		// We didn't receive a result
 		return false, nil
 	}
+
 	println(params[0].(string))
+	edgexcontext.Complete(params[0].(string))
 	return false, nil
 }
