@@ -20,15 +20,16 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 
 	"fmt"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
-	"github.com/edgexfoundry/go-mod-registry"
+	httptrigger "github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
+	messagebustrigger "github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
+	registry "github.com/edgexfoundry/go-mod-registry"
 	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
 )
 
@@ -71,13 +72,13 @@ func (afsdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...inter
 	return transforms.TransformToJSON
 }
 
-// // HTTPPost ...
-// func (afsdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
-// 	transforms := transforms.HTTPSender{
-// 		URL: url,
-// 	}
-// 	return transforms.HTTPPost
-// }
+// HTTPPost ...
+func (afsdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
+	transforms := transforms.HTTPSender{
+		URL: url,
+	}
+	return transforms.HTTPPost
+}
 
 //MakeItRun the SDK
 func (sdk *AppFunctionsSDK) MakeItRun() {
