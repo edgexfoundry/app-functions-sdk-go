@@ -27,8 +27,8 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
-	httptrigger "github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
-	messagebustrigger "github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
 	registry "github.com/edgexfoundry/go-mod-registry"
 	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
 )
@@ -110,9 +110,9 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configurati
 	switch configuration.Bindings[0].Type {
 	case "http":
 		println("Loading Http Trigger")
-		trigger = &httptrigger.HTTPTrigger{Configuration: configuration, Runtime: runtime}
+		trigger = &http.HTTPTrigger{Configuration: configuration, Runtime: runtime}
 	case "messageBus":
-		trigger = &messagebustrigger.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
+		trigger = &messagebus.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
 	}
 	return trigger
 }

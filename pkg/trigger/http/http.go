@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package httptrigger
+package http
 
 import (
 	"bytes"

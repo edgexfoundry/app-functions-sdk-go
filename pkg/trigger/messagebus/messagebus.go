@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package messagebustrigger
+package messagebus
 
 import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
