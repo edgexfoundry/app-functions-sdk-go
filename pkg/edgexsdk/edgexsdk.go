@@ -80,7 +80,7 @@ func (sdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...interfa
 }
 
 // HTTPPost ...
-func (afsdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
 	transforms := transforms.HTTPSender{
 		URL: url,
 	}
