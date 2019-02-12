@@ -67,6 +67,14 @@ func (afsdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...inter
 	return transforms.TransformToJSON
 }
 
+// // HTTPPost ...
+// func (afsdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
+// 	transforms := transforms.HTTPSender{
+// 		URL: url,
+// 	}
+// 	return transforms.HTTPPost
+// }
+
 //MakeItRun the SDK
 func (afsdk *AppFunctionsSDK) MakeItRun() {
 
