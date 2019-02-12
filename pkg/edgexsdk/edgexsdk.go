@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
-	httptrigger "github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
-	messagebustrigger "github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
 	"github.com/edgexfoundry/go-mod-registry"
+	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
 )
 
 // AppFunctionsSDK ...
@@ -36,12 +37,12 @@ type AppFunctionsSDK struct {
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
-func (afsdk *AppFunctionsSDK) SetPipeline(transforms ...func(params ...interface{}) (bool, interface{})) {
-	afsdk.transforms = transforms
+func (sdk *AppFunctionsSDK) SetPipeline(transforms ...func(params ...interface{}) (bool, interface{})) {
+	sdk.transforms = transforms
 }
 
 // FilterByDeviceID ...
-func (afsdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...interface{}) (bool, interface{}) {
 	transforms := transforms.Filter{
 		FilterValues: deviceIDs,
 	}
@@ -49,7 +50,7 @@ func (afsdk *AppFunctionsSDK) FilterByDeviceID(deviceIDs []string) func(...inter
 }
 
 // FilterByValueDescriptor ...
-func (afsdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(...interface{}) (bool, interface{}) {
 	transforms := transforms.Filter{
 		FilterValues: valueIDs,
 	}
@@ -57,14 +58,14 @@ func (afsdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(..
 }
 
 // TransformToXML ...
-func (afsdk *AppFunctionsSDK) TransformToXML() func(...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) TransformToXML() func(...interface{}) (bool, interface{}) {
 	transforms := transforms.Conversion{}
 	return transforms.TransformToXML
 }
 
 //MakeItRun the SDK
-func (afsdk *AppFunctionsSDK) MakeItRun() {
-
+func (sdk *AppFunctionsSDK) MakeItRun() {
+	// TODO: reconcile this with the new configuration.toml/Registry
 	// load the configuration
 	configuration := configuration.Configuration{
 		Bindings: []configuration.Binding{
@@ -73,21 +74,20 @@ func (afsdk *AppFunctionsSDK) MakeItRun() {
 			},
 		},
 	} //configuration.LoadConfiguration()
-
 	// a little telemetry where?
 
 	//determine which runtime to load
-	runtime := runtime.GolangRuntime{Transforms: afsdk.transforms}
+	runtime := runtime.GolangRuntime{Transforms: sdk.transforms}
 
 	// determine input type and create trigger for it
-	trigger := afsdk.setupTrigger(configuration, runtime)
+	trigger := sdk.setupTrigger(configuration, runtime)
 
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
 	trigger.Initialize()
 
 }
 
-func (afsdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configuration, runtime runtime.GolangRuntime) trigger.ITrigger {
+func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configuration, runtime runtime.GolangRuntime) trigger.ITrigger {
 	var trigger trigger.ITrigger
 	// Need to make dynamic, search for the binding that is input
 	switch configuration.Bindings[0].Type {
@@ -99,10 +99,21 @@ func (afsdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configura
 	}
 	return trigger
 }
-func (afsdk *AppFunctionsSDK) Initialize(useRegistry bool, useProfile string, serviceKey string ) error {
-	//We currently have to load configuration from filesystem first in order to obtain Registry Host/Port
+
+func (sdk *AppFunctionsSDK) Initialize(useRegistry bool, profile string, serviceKey string ) error {
+	err := sdk.InitializeConfiguration(useRegistry, profile, serviceKey)
+	if err != nil {
+		return fmt.Errorf("failed to initialize configuration: %v", err)
+	}
+
+	// TODO: Add additional initialization like logging, message bus, etc.
+	return nil
+}
+
+func (sdk *AppFunctionsSDK) InitializeConfiguration(useRegistry bool, profile string, serviceKey string) error {
+	// Currently have to load configuration from filesystem first in order to obtain Registry Host/Port
 	config := &common.ConfigurationStruct{}
-	err := common.LoadFromFile(useProfile, config)
+	err := common.LoadFromFile(profile, config)
 	if err != nil {
 		return err
 	}
@@ -111,15 +122,15 @@ func (afsdk *AppFunctionsSDK) Initialize(useRegistry bool, useProfile string, se
 		registryConfig := registry.Config{
 			Host:          config.Registry.Host,
 			Port:          config.Registry.Port,
-			Type:          "consul",
-			Stem:          "edgex/core/1.0/",
+			Type:          config.Registry.Type,
+			Stem:          internal.ConfigRegistryStem,
 			CheckInterval: "1s",
-			CheckRoute:    "/api/v1/ping",
-			ServiceHost: 	config.Service.Host,
-			ServicePort: 	config.Service.Port,
+			CheckRoute:    internal.ApiPingRoute,
+			ServiceHost:   config.Service.Host,
+			ServicePort:   config.Service.Port,
 		}
 
-		registryClient, err := registry.NewRegistryClient(registryConfig, serviceKey)
+		registryClient, err := factory.NewRegistryClient(registryConfig, serviceKey)
 		if err != nil {
 			return fmt.Errorf("connection to Registry could not be made: %v", err)
 		}
@@ -130,7 +141,7 @@ func (afsdk *AppFunctionsSDK) Initialize(useRegistry bool, useProfile string, se
 			return fmt.Errorf("could not register service with Registry: %v", err)
 		}
 
-		rawConfig, err := registry.Client.GetConfiguration(config)
+		rawConfig, err := registryClient.GetConfiguration(config)
 		if err != nil {
 			return fmt.Errorf("could not get configuration from Registry: %v", err)
 		}
@@ -140,40 +151,51 @@ func (afsdk *AppFunctionsSDK) Initialize(useRegistry bool, useProfile string, se
 			return fmt.Errorf("configuration from Registry failed type check")
 		}
 
-		afsdk.config = *actual
+		sdk.config = *actual
 
-		go func() {
-			var errChannel chan error //A channel for "config wait error" sourced from Registry
-			var updateChannel chan interface{} //A channel for "config updates" sourced from Registry
-
-
-			registry.Client.WatchForChanges(updateChannel, errChannel, &common.WritableInfo{}, internal.WritableKey)
-
-			for {
-				select {
-				case ex := <-errChannel:
-					LoggingClient.Error(ex.Error())
-
-				case raw, ok := <-updateChannel:
-					if !ok {
-						return
-					}
-
-					actual, ok := raw.(*common.WritableInfo)
-					if !ok {
-						LoggingClient.Error("listenForConfigChanges() type check failed")
-						return
-					}
-
-					afsdk.config.Writable = *actual
-
-					LoggingClient.Info("Writeable configuration has been updated. Setting log level to " + afsdk.config.Writable.LogLevel)
-					LoggingClient.SetLogLevel(afsdk.config.Writable.LogLevel)
-				}
-			}
-		}()
-
+		go sdk.listenForConfigChanges(registryClient)
 	}
 
 	return nil
 }
+
+func (sdk *AppFunctionsSDK) listenForConfigChanges(registryClient registry.Client) {
+	var errChannel chan error //A channel for "config wait error" sourced from Registry
+	var updateChannel chan interface{} //A channel for "config updates" sourced from Registry
+
+
+	registryClient.WatchForChanges(updateChannel, errChannel, &common.WritableInfo{}, internal.WritableKey)
+
+	for {
+		select {
+		case err := <-errChannel:
+			// TODO: remove println and uncomment Logging once logging package is available
+			//LoggingClient.Error(err.Error())
+			fmt.Println(err.Error())
+
+		case raw, ok := <-updateChannel:
+			if !ok {
+				return
+			}
+
+			actual, ok := raw.(*common.WritableInfo)
+			if !ok {
+				// TODO: remove println and uncomment Logging once logging package is available
+				//LoggingClient.Error("listenForConfigChanges() type check failed")
+				fmt.Println("listenForConfigChanges() type check failed")
+				return
+			}
+
+			sdk.config.Writable = *actual
+
+			// TODO: remove println and uncomment Logging once logging package is available
+			//LoggingClient.Info("Writeable configuration has been updated. Setting log level to " + sdk.config.Writable.LogLevel)
+			fmt.Println("Writeable configuration has been updated. Setting log level to " + sdk.config.Writable.LogLevel)
+			//LoggingClient.SetLogLevel(sdk.config.Writable.LogLevel)
+
+			// TODO: Deal with pub/sub topics may have changed. Save copy of writeable so that we can determine what if anything changed?
+		}
+	}
+}
+
+
