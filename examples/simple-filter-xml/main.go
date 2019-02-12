@@ -48,7 +48,7 @@ func main() {
 	// execute every time an event is triggered.
 	edgexSdk.SetPipeline(
 		edgexSdk.FilterByDeviceID(deviceIDs),
-		edgexSdk.TransformToJSON(),
+		edgexSdk.TransformToXML(),
 		printXMLToConsole,
 	)
 
