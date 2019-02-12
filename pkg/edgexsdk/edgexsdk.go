@@ -17,12 +17,12 @@
 package edgexsdk
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
-
+	"flag"
 	"fmt"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
@@ -30,12 +30,19 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
 	"github.com/edgexfoundry/go-mod-registry"
 	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // AppFunctionsSDK ...
 type AppFunctionsSDK struct {
-	transforms []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})
-	config     common.ConfigurationStruct
+	transforms    []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})
+	ServiceKey    string
+	configProfile string
+	configDir     string
+	useRegistry   bool
+	config        common.ConfigurationStruct
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
@@ -60,13 +67,13 @@ func (sdk *AppFunctionsSDK) FilterByValueDescriptor(valueIDs []string) func(exco
 }
 
 // TransformToXML ...
-func (afsdk *AppFunctionsSDK) TransformToXML() func(excontext.Context, ...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) TransformToXML() func(excontext.Context, ...interface{}) (bool, interface{}) {
 	transforms := transforms.Conversion{}
 	return transforms.TransformToXML
 }
 
 // TransformToJSON ...
-func (afsdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...interface{}) (bool, interface{}) {
+func (sdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...interface{}) (bool, interface{}) {
 	transforms := transforms.Conversion{}
 	return transforms.TransformToJSON
 }
@@ -116,39 +123,55 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configurati
 	return trigger
 }
 
-func (sdk *AppFunctionsSDK) Initialize(useRegistry bool, profile string, serviceKey string) error {
-	err := sdk.InitializeConfiguration(useRegistry, profile, serviceKey)
+func (sdk *AppFunctionsSDK) Initialize() error {
+	// Handles SIGINT/SIGTERM and exits gracefully
+	listenForInterrupts()
+
+	flag.BoolVar(&sdk.useRegistry, "registry", false, "Indicates the service should use the registry.")
+	flag.BoolVar(&sdk.useRegistry, "r", false, "Indicates the service should use registry.")
+	flag.StringVar(&sdk.configProfile, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&sdk.configProfile, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&sdk.configDir, "config", "", "Specify an alternate configuration directory.")
+	flag.StringVar(&sdk.configDir, "c", "", "Specify an alternate configuration directory.")
+	flag.Parse()
+
+	err := sdk.InitializeRegistry()
 	if err != nil {
-		return fmt.Errorf("failed to initialize configuration: %v", err)
+		return fmt.Errorf("failed to initialize Registry: %v", err)
 	}
 
 	// TODO: Add additional initialization like logging, message bus, etc.
 	return nil
 }
 
-func (sdk *AppFunctionsSDK) InitializeConfiguration(useRegistry bool, profile string, serviceKey string) error {
+func (sdk *AppFunctionsSDK) InitializeRegistry() error {
+
 	// Currently have to load configuration from filesystem first in order to obtain Registry Host/Port
-	config := &common.ConfigurationStruct{}
-	err := common.LoadFromFile(profile, config)
+	configuration := &common.ConfigurationStruct{}
+	err := common.LoadFromFile(sdk.configProfile, sdk.configDir, configuration)
 	if err != nil {
 		return err
 	}
 
-	if useRegistry {
+	if sdk.useRegistry {
 		registryConfig := registry.Config{
-			Host:          config.Registry.Host,
-			Port:          config.Registry.Port,
-			Type:          config.Registry.Type,
+			Host:          configuration.Registry.Host,
+			Port:          configuration.Registry.Port,
+			Type:          configuration.Registry.Type,
 			Stem:          internal.ConfigRegistryStem,
 			CheckInterval: "1s",
 			CheckRoute:    internal.ApiPingRoute,
-			ServiceHost:   config.Service.Host,
-			ServicePort:   config.Service.Port,
+			ServiceHost:   configuration.Service.Host,
+			ServicePort:   configuration.Service.Port,
 		}
 
-		registryClient, err := factory.NewRegistryClient(registryConfig, serviceKey)
+		registryClient, err := factory.NewRegistryClient(registryConfig, sdk.ServiceKey)
 		if err != nil {
 			return fmt.Errorf("connection to Registry could not be made: %v", err)
+		}
+
+		if !registryClient.IsRegistryRunning() {
+			return fmt.Errorf("registry (%s) is not running", registryConfig.Type)
 		}
 
 		// Register the service with Registry
@@ -157,7 +180,7 @@ func (sdk *AppFunctionsSDK) InitializeConfiguration(useRegistry bool, profile st
 			return fmt.Errorf("could not register service with Registry: %v", err)
 		}
 
-		rawConfig, err := registryClient.GetConfiguration(config)
+		rawConfig, err := registryClient.GetConfiguration(configuration)
 		if err != nil {
 			return fmt.Errorf("could not get configuration from Registry: %v", err)
 		}
@@ -211,4 +234,15 @@ func (sdk *AppFunctionsSDK) listenForConfigChanges(registryClient registry.Clien
 			// TODO: Deal with pub/sub topics may have changed. Save copy of writeable so that we can determine what if anything changed?
 		}
 	}
+}
+
+func listenForInterrupts() {
+	go func() {
+		signalChan := make(chan os.Signal)
+		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+		signalReceived := <-signalChan
+		fmt.Printf("Terminating: %s\n", signalReceived)
+		os.Exit(0)
+	}()
 }

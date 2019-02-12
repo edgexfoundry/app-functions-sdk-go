@@ -17,7 +17,8 @@
 package main
 
 import (
-	"flag"
+	"fmt"
+	"os"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
@@ -28,22 +29,18 @@ const (
 )
 
 func main() {
-	var configProfile string
-	var useRegistry bool
-	// need to move to boostrap outside of main and into SDK portion
-	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use the registry.")
-	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use registry.")
-	flag.StringVar(&configProfile, "profile", "", "Specify a profile other than default.")
-	flag.StringVar(&configProfile, "p", "", "Specify a profile other than default.")
-
-	flag.Parse()
 	// 1) First thing to do is to create an instance of the EdgeX SDK and initialize it.
-	edgexSdk := &edgexsdk.AppFunctionsSDK{}
-	edgexSdk.Initialize(useRegistry, configProfile, serviceKey)
+	edgexSdk := &edgexsdk.AppFunctionsSDK{ServiceKey: serviceKey}
+	if err := edgexSdk.Initialize(); err != nil {
+		// TODO: Log rather than print
+		fmt.Printf("SDK initialization failed: %v\n", err)
+		os.Exit(-1)
+	}
 
 	// 2) Since our FilterByDeviceID Function requires the list of DeviceID's we would
 	// like to search for, we'll go ahead and define that now.
 	deviceIDs := []string{"GS1-AC-Drive01"}
+
 	// 3) This is our pipeline configuration, the collection of functions to
 	// execute every time an event is triggered.
 	edgexSdk.SetPipeline(

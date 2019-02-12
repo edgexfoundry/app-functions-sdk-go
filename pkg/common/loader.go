@@ -15,7 +15,6 @@
 package common
 
 import (
-	"flag"
 	"fmt"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"io/ioutil"
@@ -27,13 +26,11 @@ import (
 
 const (
 	configDirectory = "./res"
-	configDirEnv = "EDGEX_CONF_DIR"
+	configDirEnv    = "EDGEX_CONF_DIR"
 )
 
-var confDir = flag.String("confdir", "", "Specify local configuration directory")
-
-func LoadFromFile(profile string, configuration interface{}) error {
-	path := determinePath()
+func LoadFromFile(profile string, configDir string, configuration interface{}) error {
+	path := determinePath(configDir)
 	fileName := path + "/" + internal.ConfigFileName //default profile
 	if len(profile) > 0 {
 		fileName = path + "/" + profile + "/" + internal.ConfigFileName
@@ -52,10 +49,8 @@ func LoadFromFile(profile string, configuration interface{}) error {
 	return nil
 }
 
-func determinePath() string {
-	flag.Parse()
-
-	path := *confDir
+func determinePath(configDir string) string {
+	path := configDir
 
 	if len(path) == 0 { //No cmd line param passed
 		//Assumption: one service per container means only one var is needed, set accordingly for each deployment.
@@ -70,7 +65,7 @@ func determinePath() string {
 	return path
 }
 
-func VerifyTomlFiles(configuration interface{}) error {
+func VerifyTomlFiles(configuration interface{}, configDir string) error {
 	files, _ := filepath.Glob("res/*/*.toml")
 	files2, _ := filepath.Glob("res/configuration.toml")
 
@@ -88,7 +83,7 @@ func VerifyTomlFiles(configuration interface{}) error {
 			// remove the dash
 			profile = profile[1:]
 		}
-		err := LoadFromFile(profile, configuration)
+		err := LoadFromFile(profile, configDir, configuration)
 		if err != nil {
 			return fmt.Errorf("Error loading toml file %s: %v", profile, err)
 		}
