@@ -33,7 +33,7 @@ import (
 // AppFunctionsSDK ...
 type AppFunctionsSDK struct {
 	transforms []func(params ...interface{}) (bool, interface{})
-	config common.ConfigurationStruct
+	config     common.ConfigurationStruct
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
@@ -100,7 +100,7 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configurati
 	return trigger
 }
 
-func (sdk *AppFunctionsSDK) Initialize(useRegistry bool, profile string, serviceKey string ) error {
+func (sdk *AppFunctionsSDK) Initialize(useRegistry bool, profile string, serviceKey string) error {
 	err := sdk.InitializeConfiguration(useRegistry, profile, serviceKey)
 	if err != nil {
 		return fmt.Errorf("failed to initialize configuration: %v", err)
@@ -160,9 +160,8 @@ func (sdk *AppFunctionsSDK) InitializeConfiguration(useRegistry bool, profile st
 }
 
 func (sdk *AppFunctionsSDK) listenForConfigChanges(registryClient registry.Client) {
-	var errChannel chan error //A channel for "config wait error" sourced from Registry
+	var errChannel chan error          //A channel for "config wait error" sourced from Registry
 	var updateChannel chan interface{} //A channel for "config updates" sourced from Registry
-
 
 	registryClient.WatchForChanges(updateChannel, errChannel, &common.WritableInfo{}, internal.WritableKey)
 
@@ -197,5 +196,3 @@ func (sdk *AppFunctionsSDK) listenForConfigChanges(registryClient registry.Clien
 		}
 	}
 }
-
-
