@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 )
@@ -35,6 +36,7 @@ func main() {
 	flag.StringVar(&configProfile, "profile", "", "Specify a profile other than default.")
 	flag.StringVar(&configProfile, "p", "", "Specify a profile other than default.")
 
+	flag.Parse()
 	// 1) First thing to do is to create an instance of the EdgeX SDK and initialize it.
 	edgexSdk := &edgexsdk.AppFunctionsSDK{}
 	edgexSdk.Initialize(useRegistry, configProfile, serviceKey)
