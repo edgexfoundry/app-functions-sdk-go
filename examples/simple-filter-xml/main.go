@@ -30,7 +30,7 @@ const (
 func main() {
 	var configProfile string
 	var useRegistry bool
-
+	// need to move to boostrap outside of main and into SDK portion
 	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use the registry.")
 	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use registry.")
 	flag.StringVar(&configProfile, "profile", "", "Specify a profile other than default.")
