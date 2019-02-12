@@ -17,27 +17,42 @@
 package main
 
 import (
+	"flag"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 )
 
+const (
+	serviceKey = "sampleFilterXml"
+)
+
 func main() {
-	// 1) First thing to do is to create an instance of the EdgeX SDK.
-	edgexsdk := &edgexsdk.AppFunctionsSDK{}
+	var configProfile string
+	var useRegistry bool
+
+	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use the registry.")
+	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use registry.")
+	flag.StringVar(&configProfile, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&configProfile, "p", "", "Specify a profile other than default.")
+
+	// 1) First thing to do is to create an instance of the EdgeX SDK and initialize it.
+	edgexSdk := &edgexsdk.AppFunctionsSDK{}
+	edgexSdk.Initialize(useRegistry, configProfile, serviceKey)
 
 	// 2) Since our FilterByDeviceID Function requires the list of DeviceID's we would
 	// like to search for, we'll go ahead and define that now.
 	deviceIDs := []string{"GS1-AC-Drive01"}
 	// 3) This is our pipeline configuration, the collection of functions to
-	// execute everytime an event is triggered.
-	edgexsdk.SetPipeline(
-		edgexsdk.FilterByDeviceID(deviceIDs),
-		edgexsdk.TransformToJSON(),
+	// execute every time an event is triggered.
+	edgexSdk.SetPipeline(
+		edgexSdk.FilterByDeviceID(deviceIDs),
+		edgexSdk.TransformToJSON(),
 		printXMLToConsole,
 	)
+
 	// 4) Lastly, we'll go ahead and tell the SDK to "start" and begin listening for events
 	// to trigger the pipeline.
-	edgexsdk.MakeItRun()
+	edgexSdk.MakeItRun()
 }
 
 func printXMLToConsole(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {

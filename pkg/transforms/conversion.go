@@ -55,7 +55,7 @@ func (f Conversion) TransformToJSON(edgexcontext excontext.Context, params ...in
 	}
 	println("TRANSFORMING TO JSON")
 
-	if result, ok := params[0].(*models.Event); ok {
+	if result, ok := params[0].(models.Event); ok {
 		b, err := json.Marshal(result)
 		if err != nil {
 			// LoggingClient.Error(fmt.Sprintf("Error parsing JSON. Error: %s", err.Error()))
