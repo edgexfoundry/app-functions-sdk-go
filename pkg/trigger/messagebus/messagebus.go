@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package messagebustrigger
+package messagebus
 
 import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
@@ -45,7 +45,7 @@ func (mb *MessageBusTrigger) GetData() interface{} {
 }
 
 // Complete ...
-func (mb *MessageBusTrigger) Complete(outputData interface{}) {
+func (mb *MessageBusTrigger) Complete(outputData string) {
 	//
 	mb.outputData = outputData
 }

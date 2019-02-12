@@ -19,6 +19,7 @@ package edgexsdk
 import (
 	"flag"
 	"fmt"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
@@ -28,7 +29,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
-	"github.com/edgexfoundry/go-mod-registry"
+	registry "github.com/edgexfoundry/go-mod-registry"
 	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
 	"os"
 	"os/signal"
@@ -78,13 +79,13 @@ func (sdk *AppFunctionsSDK) TransformToJSON() func(excontext.Context, ...interfa
 	return transforms.TransformToJSON
 }
 
-// // HTTPPost ...
-// func (afsdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
-// 	transforms := transforms.HTTPSender{
-// 		URL: url,
-// 	}
-// 	return transforms.HTTPPost
-// }
+// HTTPPost ...
+func (afsdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...interface{}) (bool, interface{}) {
+	transforms := transforms.HTTPSender{
+		URL: url,
+	}
+	return transforms.HTTPPost
+}
 
 //MakeItRun the SDK
 func (sdk *AppFunctionsSDK) MakeItRun() {
@@ -116,9 +117,9 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configurati
 	switch configuration.Bindings[0].Type {
 	case "http":
 		println("Loading Http Trigger")
-		trigger = &httptrigger.HTTPTrigger{Configuration: configuration, Runtime: runtime}
+		trigger = &http.HTTPTrigger{Configuration: configuration, Runtime: runtime}
 	case "messageBus":
-		trigger = &messagebustrigger.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
+		trigger = &messagebus.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
 	}
 	return trigger
 }

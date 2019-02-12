@@ -28,6 +28,6 @@ type Context struct {
 }
 
 // Complete called when ready to send output and function is finished
-func (context Context) Complete(output interface{}) {
+func (context Context) Complete(output string) {
 	(context.Trigger).Complete(output)
 }
