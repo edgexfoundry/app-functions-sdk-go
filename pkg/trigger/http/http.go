@@ -34,7 +34,7 @@ import (
 type HTTPTrigger struct {
 	Configuration configuration.Configuration
 	Runtime       runtime.GolangRuntime
-	outputData    interface{}
+	outputData    string
 }
 
 // Initialize ...
@@ -57,8 +57,8 @@ func (h *HTTPTrigger) requestHandler(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&event)
 
 	h.Runtime.ProcessEvent(edgexContext, event)
-	bytes, _ := getBytes(h.outputData)
-	w.Write(bytes)
+	// bytes, _ := getBytes(h.outputData)
+	w.Write(([]byte)(h.outputData))
 }
 func getBytes(key interface{}) ([]byte, error) {
 	var buf bytes.Buffer
@@ -68,7 +68,6 @@ func getBytes(key interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
-
 }
 
 // GetConfiguration gets the config
@@ -83,7 +82,7 @@ func (h *HTTPTrigger) GetData() interface{} {
 }
 
 // Complete ...
-func (h *HTTPTrigger) Complete(outputData interface{}) {
+func (h *HTTPTrigger) Complete(outputData string) {
 	//
 	h.outputData = outputData
 

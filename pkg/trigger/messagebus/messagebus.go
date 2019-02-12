@@ -45,7 +45,7 @@ func (mb *MessageBusTrigger) GetData() interface{} {
 }
 
 // Complete ...
-func (mb *MessageBusTrigger) Complete(outputData interface{}) {
+func (mb *MessageBusTrigger) Complete(outputData string) {
 	//
 	mb.outputData = outputData
 }

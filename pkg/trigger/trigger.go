@@ -30,5 +30,5 @@ type ITrigger interface {
 	// function to call to retrieve data from input
 	GetData() interface{}
 
-	Complete(interface{})
+	Complete(string)
 }
