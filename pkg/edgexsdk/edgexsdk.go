@@ -26,7 +26,6 @@ import (
 
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
@@ -90,29 +89,20 @@ func (sdk *AppFunctionsSDK) HTTPPost(url string) func(excontext.Context, ...inte
 
 //MakeItRun the SDK
 func (sdk *AppFunctionsSDK) MakeItRun() {
-	// TODO: reconcile this with the new configuration.toml/Registry
-	// load the configuration
-	configuration := configuration.Configuration{
-		Bindings: []configuration.Binding{
-			configuration.Binding{
-				Type: "http",
-			},
-		},
-	} //configuration.LoadConfiguration()
 	// a little telemetry where?
 
 	//determine which runtime to load
 	runtime := runtime.GolangRuntime{Transforms: sdk.transforms}
 
 	// determine input type and create trigger for it
-	trigger := sdk.setupTrigger(configuration, runtime)
+	trigger := sdk.setupTrigger(sdk.config, runtime)
 
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
 	trigger.Initialize()
 
 }
 
-func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configuration, runtime runtime.GolangRuntime) trigger.ITrigger {
+func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruct, runtime runtime.GolangRuntime) trigger.ITrigger {
 	var trigger trigger.ITrigger
 	// Need to make dynamic, search for the binding that is input
 	switch configuration.Bindings[0].Type {
@@ -158,6 +148,7 @@ func (sdk *AppFunctionsSDK) initializeRegistry() error {
 	if err != nil {
 		return err
 	}
+	sdk.config = *configuration
 
 	if sdk.useRegistry {
 		registryConfig := registry.Config{

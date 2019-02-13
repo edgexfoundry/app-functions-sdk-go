@@ -16,47 +16,59 @@
 
 package common
 
+//WritingInfo ...
 type WritableInfo struct {
 	SubscribeTopic string
 	PublishTopic   string
 	LogLevel       string
 }
 
+// ConfigurationStruct ...
 type ConfigurationStruct struct {
 	Writable   WritableInfo
 	Logging    LoggingInfo
 	Registry   RegistryInfo
 	Service    ServiceInfo
 	MessageBus MessageBusInfo
+	Bindings   []Binding
 }
 
+// RegistryInfo ...
 type RegistryInfo struct {
 	Host string
 	Port int
 	Type string
 }
 
+// MessageBusInfo ...
 type MessageBusInfo struct {
 	Host string
 	Port int
 	Type string
 }
 
+// LoggingInfo ...
 type LoggingInfo struct {
 	EnableRemote bool
 	File         string
 }
 
+// ServiceInfo ...
 type ServiceInfo struct {
-	BootTimeout int
+	BootTimeout   int
 	CheckInterval string
 	ClientMonitor int
-	Host string
-	Port int
-	Protocol string
-	StartupMsg string
-	ReadMaxLimit int
-	Timeout int
+	Host          string
+	Port          int
+	Protocol      string
+	StartupMsg    string
+	ReadMaxLimit  int
+	Timeout       int
 }
 
-
+// Binding contains Metadata associated with each binding
+type Binding struct {
+	Type  string
+	Name  string
+	Topic string
+}

@@ -17,14 +17,14 @@
 package excontext
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
 )
 
 // Context ...
 type Context struct {
 	Trigger       trigger.ITrigger
-	Configuration configuration.Configuration
+	Configuration common.ConfigurationStruct
 }
 
 // Complete called when ready to send output and function is finished

@@ -27,3 +27,6 @@ Type = 'zeroMQ'
 [Logging]
 EnableRemote = false
 File = './logs/edgex-core-data.log'
+
+[[Bindings]]
+ Type="http"

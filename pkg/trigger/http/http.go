@@ -23,16 +23,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
+	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
 // HTTPTrigger implements ITrigger to support HTTPTriggers
 type HTTPTrigger struct {
-	Configuration configuration.Configuration
+	Configuration common.ConfigurationStruct
 	Runtime       runtime.GolangRuntime
 	outputData    string
 }
@@ -71,7 +70,7 @@ func getBytes(key interface{}) ([]byte, error) {
 }
 
 // GetConfiguration gets the config
-func (h *HTTPTrigger) GetConfiguration() configuration.Configuration {
+func (h *HTTPTrigger) GetConfiguration() common.ConfigurationStruct {
 	//
 	return h.Configuration
 }
