@@ -9,9 +9,9 @@ The SDK is built around the idea of a "Pipeline". A pipeline is a collection of 
 package main
 
 import (
-	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
+  "fmt"
+  "github.com/edgexfoundry/app-functions-sdk-go/pkg/edgexsdk"
+  "github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 )
 func main() {
 
@@ -48,9 +48,9 @@ func printXMLToConsole(edgexcontext excontext.Context, params ...interface{}) (b
 After placing the above function in your code, the next step is to modify the pipeline to call this function:
 ```golang
 edgexsdk.SetPipeline(
-edgexsdk.FilterByDeviceID(deviceIDs),
-	edgexsdk.TransformToXML(),
-	printXMLToConsole //notice this is not a function call, but simply a function pointer. 
+  edgexsdk.FilterByDeviceID(deviceIDs),
+  edgexsdk.TransformToXML(),
+  printXMLToConsole //notice this is not a function call, but simply a function pointer. 
 )
 ```
 After making the above modifications, you should now see data printing out to the console in XML when an event is triggered.
