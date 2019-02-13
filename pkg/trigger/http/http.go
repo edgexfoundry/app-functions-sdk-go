@@ -58,6 +58,8 @@ func (h *HTTPTrigger) requestHandler(w http.ResponseWriter, r *http.Request) {
 	h.Runtime.ProcessEvent(edgexContext, event)
 	// bytes, _ := getBytes(h.outputData)
 	w.Write(([]byte)(h.outputData))
+
+	h.outputData = ""
 }
 func getBytes(key interface{}) ([]byte, error) {
 	var buf bytes.Buffer
