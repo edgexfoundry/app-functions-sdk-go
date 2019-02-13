@@ -20,6 +20,10 @@ import (
 	"flag"
 	"fmt"
 
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
@@ -31,9 +35,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
 	registry "github.com/edgexfoundry/go-mod-registry"
 	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // AppFunctionsSDK ...
@@ -124,19 +125,23 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration configuration.Configurati
 	return trigger
 }
 
+// Initialize the SDK
 func (sdk *AppFunctionsSDK) Initialize() error {
 	// Handles SIGINT/SIGTERM and exits gracefully
 	listenForInterrupts()
 
 	flag.BoolVar(&sdk.useRegistry, "registry", false, "Indicates the service should use the registry.")
 	flag.BoolVar(&sdk.useRegistry, "r", false, "Indicates the service should use registry.")
+
 	flag.StringVar(&sdk.configProfile, "profile", "", "Specify a profile other than default.")
 	flag.StringVar(&sdk.configProfile, "p", "", "Specify a profile other than default.")
+
 	flag.StringVar(&sdk.configDir, "config", "", "Specify an alternate configuration directory.")
 	flag.StringVar(&sdk.configDir, "c", "", "Specify an alternate configuration directory.")
+
 	flag.Parse()
 
-	err := sdk.InitializeRegistry()
+	err := sdk.initializeRegistry()
 	if err != nil {
 		return fmt.Errorf("failed to initialize Registry: %v", err)
 	}
@@ -145,7 +150,7 @@ func (sdk *AppFunctionsSDK) Initialize() error {
 	return nil
 }
 
-func (sdk *AppFunctionsSDK) InitializeRegistry() error {
+func (sdk *AppFunctionsSDK) initializeRegistry() error {
 
 	// Currently have to load configuration from filesystem first in order to obtain Registry Host/Port
 	configuration := &common.ConfigurationStruct{}
