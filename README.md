@@ -75,7 +75,7 @@ There are two basic types of filtering included in the SDK to add to your pipeli
  - `return false, error`, will stop the pipeline as well and the SDK will log the errorString you have returned.
 - Returning `true` tells the SDK to continue, and will call the next function in the pipeline with your result.
 
-
+- The SDK will handle exiting when receiving a SIGTERM/SIGINT event. 
 
 
 
