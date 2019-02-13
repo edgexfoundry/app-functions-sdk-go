@@ -56,6 +56,7 @@ edgexsdk.FilterByDeviceID(deviceIDs),
 After making the above modifications, you should now see data printing out to the console in XML when an event is triggered.
 > You can find this example in the `examples` directory located in this repository. You can also use the provided `EdgeX Applications Function SDK.postman_collection.json" file to load into postman to trigger the sample pipeline.
 
+
 Up until this point, the pipeline has been triggered by an event and the data at the end of that pipeline lands in the last function specified. In the example, data ends up printed to the console. Perhaps we'd like to send the data back to where it came from. In the case of an HTTP trigger, this could be the HTTP response. In the case of a message bus, this could be a new topic to send the data back to for other applications that wish to receive it. To do this, simply call `edgexcontext.Complete(...)` passing in the data you wish to "respond" with. In the above `printXMLToConsole(...)` function, replace `println(params[0].(string))` with `edgexcontext.Complete(params[0].(string))`. You should now see the response in your postman window when testing the pipeline.
 
 
