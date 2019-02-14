@@ -14,16 +14,16 @@
 // limitations under the License.
 //
 
-package messagebustrigger
+package messagebus
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 )
 
 // MessageBusTrigger implements ITrigger to support MessageBusData
 type MessageBusTrigger struct {
-	Configuration configuration.Configuration
+	Configuration common.ConfigurationStruct
 	Runtime       runtime.GolangRuntime
 	outputData    interface{}
 }
@@ -34,7 +34,7 @@ func (mb *MessageBusTrigger) Initialize() error {
 }
 
 // GetConfiguration ...
-func (mb *MessageBusTrigger) GetConfiguration() configuration.Configuration {
+func (mb *MessageBusTrigger) GetConfiguration() common.ConfigurationStruct {
 	//
 	return mb.Configuration
 }
@@ -45,7 +45,7 @@ func (mb *MessageBusTrigger) GetData() interface{} {
 }
 
 // Complete ...
-func (mb *MessageBusTrigger) Complete(outputData interface{}) {
+func (mb *MessageBusTrigger) Complete(outputData string) {
 	//
 	mb.outputData = outputData
 }

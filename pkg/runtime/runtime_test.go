@@ -16,9 +16,10 @@
 package runtime
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/context"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
@@ -34,7 +35,7 @@ func TestProcessEventNoTransforms(t *testing.T) {
 	eventIn := models.Event{
 		Device: devID1,
 	}
-	context := context.Context{}
+	context := excontext.Context{}
 	runtime := GolangRuntime{}
 	result := runtime.ProcessEvent(context, eventIn)
 	if result != nil {
@@ -46,9 +47,9 @@ func TestProcessEventOneCustomTransform(t *testing.T) {
 	eventIn := models.Event{
 		Device: devID1,
 	}
-	context := context.Context{}
+	context := excontext.Context{}
 	transform1WasCalled := false
-	transform1 := func(params ...interface{}) interface{} {
+	transform1 := func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
 		if len(params) != 1 {
 			t.Fatal("should have been passed the first event from CoreData")
 		}
@@ -62,10 +63,10 @@ func TestProcessEventOneCustomTransform(t *testing.T) {
 			}
 		}
 		transform1WasCalled = true
-		return "Hello"
+		return true, "Hello"
 	}
 	runtime := GolangRuntime{
-		Transforms: []func(params ...interface{}) interface{}{transform1},
+		Transforms: []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}){transform1},
 	}
 	result := runtime.ProcessEvent(context, eventIn)
 	if result != nil {
@@ -80,11 +81,11 @@ func TestProcessEventTwoCustomTransforms(t *testing.T) {
 	eventIn := models.Event{
 		Device: devID1,
 	}
-	context := context.Context{}
+	context := excontext.Context{}
 	transform1WasCalled := false
 	transform2WasCalled := false
 
-	transform1 := func(params ...interface{}) interface{} {
+	transform1 := func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
 		transform1WasCalled = true
 		if len(params) != 1 {
 			t.Fatal("should have been passed the first event from CoreData")
@@ -99,18 +100,18 @@ func TestProcessEventTwoCustomTransforms(t *testing.T) {
 			}
 		}
 
-		return "Transform1Result"
+		return true, "Transform1Result"
 	}
-	transform2 := func(params ...interface{}) interface{} {
+	transform2 := func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
 		transform2WasCalled = true
 
 		if params[0] != "Transform1Result" {
 			t.Fatal("Did not recieve result from previous transform")
 		}
-		return "Hello"
+		return true, "Hello"
 	}
 	runtime := GolangRuntime{
-		Transforms: []func(params ...interface{}) interface{}{transform1, transform2},
+		Transforms: []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}){transform1, transform2},
 	}
 	result := runtime.ProcessEvent(context, eventIn)
 	if result != nil {
@@ -121,5 +122,66 @@ func TestProcessEventTwoCustomTransforms(t *testing.T) {
 	}
 	if transform2WasCalled == false {
 		t.Fatal("transform2 should have been called")
+	}
+}
+func TestProcessEventThreeCustomTransformsOneFail(t *testing.T) {
+	// Event from device 1
+	eventIn := models.Event{
+		Device: devID1,
+	}
+	context := excontext.Context{}
+	transform1WasCalled := false
+	transform2WasCalled := false
+	transform3WasCalled := false
+
+	transform1 := func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
+		transform1WasCalled = true
+		if len(params) != 1 {
+			t.Fatal("should have been passed the first event from CoreData")
+		}
+		if result, ok := params[0].(*models.Event); ok {
+			if ok == false {
+				t.Fatal("Should have receieved CoreData event")
+			}
+
+			if result.Device != devID1 {
+				t.Fatal("Did not receive expected CoreData event")
+			}
+		}
+
+		return false, errors.New("Transform1Result")
+	}
+	transform2 := func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
+		transform2WasCalled = true
+
+		if params[0] != "Transform1Result" {
+			t.Fatal("Did not recieve result from previous transform")
+		}
+		return true, "Hello"
+	}
+	transform3 := func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}) {
+		transform3WasCalled = true
+
+		if params[0] != "Transform1Result" {
+			t.Fatal("Did not recieve result from previous transform")
+		}
+		return true, "Hello"
+	}
+	runtime := GolangRuntime{
+		Transforms: []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{}){transform1, transform2, transform3},
+	}
+
+	result := runtime.ProcessEvent(context, eventIn)
+	if result != nil {
+		t.Fatal("result should be null")
+	}
+	if transform1WasCalled == false {
+		t.Fatal("transform1 should have been called")
+	}
+	if transform2WasCalled == true {
+		t.Fatal("transform2 should NOT have been called")
+	}
+	if transform3WasCalled == true {
+		t.Fatal("transform3 should NOT have been called")
 	}
 }
