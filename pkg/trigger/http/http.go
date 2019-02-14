@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package httptrigger
+package http
 
 import (
 	"bytes"
@@ -23,19 +23,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/context"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/configuration"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
+	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
 // HTTPTrigger implements ITrigger to support HTTPTriggers
 type HTTPTrigger struct {
-	Configuration configuration.Configuration
+	Configuration common.ConfigurationStruct
 	Runtime       runtime.GolangRuntime
-	outputData    interface{}
+	outputData    string
 }
 
 // Initialize ...
@@ -51,15 +49,17 @@ func (h *HTTPTrigger) requestHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	// event := event.Event{Data: "DATA FROM HTTP"}
-	edgexContext := context.Context{Configuration: h.Configuration,
+	edgexContext := excontext.Context{Configuration: h.Configuration,
 		Trigger: h,
 	}
 	var event models.Event
 	decoder.Decode(&event)
 
 	h.Runtime.ProcessEvent(edgexContext, event)
-	bytes, _ := getBytes(h.outputData)
-	w.Write(bytes)
+	// bytes, _ := getBytes(h.outputData)
+	w.Write(([]byte)(h.outputData))
+
+	h.outputData = ""
 }
 func getBytes(key interface{}) ([]byte, error) {
 	var buf bytes.Buffer
@@ -69,11 +69,10 @@ func getBytes(key interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
-
 }
 
 // GetConfiguration gets the config
-func (h *HTTPTrigger) GetConfiguration() configuration.Configuration {
+func (h *HTTPTrigger) GetConfiguration() common.ConfigurationStruct {
 	//
 	return h.Configuration
 }
@@ -84,7 +83,7 @@ func (h *HTTPTrigger) GetData() interface{} {
 }
 
 // Complete ...
-func (h *HTTPTrigger) Complete(outputData interface{}) {
+func (h *HTTPTrigger) Complete(outputData string) {
 	//
 	h.outputData = outputData
 
