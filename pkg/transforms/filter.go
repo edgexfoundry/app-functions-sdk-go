@@ -58,7 +58,7 @@ func (f Filter) FilterByValueDescriptor(edgexcontext excontext.Context, params .
 	}
 
 	existingEvent := params[0].(models.Event)
-	auxEvent := &models.Event{
+	auxEvent := models.Event{
 		Pushed:   existingEvent.Pushed,
 		Device:   existingEvent.Device,
 		Created:  existingEvent.Created,
