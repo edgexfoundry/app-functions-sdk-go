@@ -8,12 +8,10 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 )
 
-const mimeTypeJSON = "application/json"
-
 // HTTPSender ...
 type HTTPSender struct {
-	URL    string
-	Method string
+	URL      string
+	MimeType string
 }
 
 // HTTPPost ...
@@ -22,9 +20,13 @@ func (sender HTTPSender) HTTPPost(edgexcontext excontext.Context, params ...inte
 		// We didn't receive a result
 		return false, errors.New("No Data Received")
 	}
+	if sender.MimeType == "" {
+		sender.MimeType = "application/json"
+	}
 	if result, ok := params[0].(string); ok {
-		response, err := http.Post(sender.URL, mimeTypeJSON, bytes.NewReader(([]byte)(result)))
+		response, err := http.Post(sender.URL, sender.MimeType, bytes.NewReader(([]byte)(result)))
 		if err != nil {
+
 			//LoggingClient.Error(err.Error())
 			return false, err
 		}
