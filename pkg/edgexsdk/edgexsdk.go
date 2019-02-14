@@ -17,6 +17,7 @@
 package edgexsdk
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 
@@ -47,8 +48,12 @@ type AppFunctionsSDK struct {
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
-func (sdk *AppFunctionsSDK) SetPipeline(transforms ...func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})) {
+func (sdk *AppFunctionsSDK) SetPipeline(transforms ...func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})) error {
+	if len(transforms) == 0 {
+		return errors.New("No transforms provided to pipeline")
+	}
 	sdk.transforms = transforms
+	return nil
 }
 
 // FilterByDeviceID ...
@@ -99,7 +104,6 @@ func (sdk *AppFunctionsSDK) MakeItRun() {
 
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
 	trigger.Initialize()
-
 }
 
 func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruct, runtime runtime.GolangRuntime) trigger.ITrigger {
@@ -115,7 +119,7 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruc
 	return trigger
 }
 
-// Initialize the SDK
+// Initialize will parse command line flags, register for interrupts, initalize the logging system, and ingest configuration.
 func (sdk *AppFunctionsSDK) Initialize() error {
 	// Handles SIGINT/SIGTERM and exits gracefully
 	listenForInterrupts()
@@ -166,7 +170,6 @@ func (sdk *AppFunctionsSDK) initializeRegistry() error {
 		if err != nil {
 			return fmt.Errorf("connection to Registry could not be made: %v", err)
 		}
-
 		if !registryClient.IsRegistryRunning() {
 			return fmt.Errorf("registry (%s) is not running", registryConfig.Type)
 		}
