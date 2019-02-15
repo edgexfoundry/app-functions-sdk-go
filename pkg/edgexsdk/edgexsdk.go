@@ -20,6 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"strings"
 
 	"os"
 	"os/signal"
@@ -109,11 +110,11 @@ func (sdk *AppFunctionsSDK) MakeItRun() {
 func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruct, runtime runtime.GolangRuntime) trigger.ITrigger {
 	var trigger trigger.ITrigger
 	// Need to make dynamic, search for the binding that is input
-	switch configuration.Bindings[0].Type {
-	case "http":
+	switch strings.ToUpper(configuration.Bindings[0].Type) {
+	case "HTTP":
 		println("Loading Http Trigger")
 		trigger = &http.HTTPTrigger{Configuration: configuration, Runtime: runtime}
-	case "messageBus":
+	case "MESSAGEBUS":
 		trigger = &messagebus.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
 	}
 	return trigger
