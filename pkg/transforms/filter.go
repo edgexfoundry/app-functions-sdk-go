@@ -28,7 +28,8 @@ type Filter struct {
 	FilterValues []string
 }
 
-// FilterByDeviceID ...
+// FilterByDeviceID filters events received from CoreData based off the specified DeviceIDs.
+// This function returns an Event
 func (f Filter) FilterByDeviceID(edgexcontext excontext.Context, params ...interface{}) (continuePipeline bool, result interface{}) {
 
 	println("FILTER BY DEVICEID")
@@ -49,7 +50,8 @@ func (f Filter) FilterByDeviceID(edgexcontext excontext.Context, params ...inter
 
 }
 
-// FilterByValueDescriptor - filters events by value descriptors
+// FilterByValueDescriptor - filters events received from CoreData based on specified value descriptors
+// This function returns an Event
 func (f Filter) FilterByValueDescriptor(edgexcontext excontext.Context, params ...interface{}) (continuePipeline bool, result interface{}) {
 	println("FILTER BY VALUE DESCRIPTOR ID")
 
@@ -75,5 +77,10 @@ func (f Filter) FilterByValueDescriptor(edgexcontext excontext.Context, params .
 			}
 		}
 	}
-	return len(auxEvent.Readings) > 0, auxEvent
+	thereExistReadings := len(auxEvent.Readings) > 0
+	var returnResult models.Event
+	if thereExistReadings {
+		returnResult = auxEvent
+	}
+	return thereExistReadings, returnResult
 }
