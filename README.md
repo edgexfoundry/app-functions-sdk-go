@@ -15,9 +15,16 @@ import (
 )
 func main() {
 
-  // 1) First thing to do is to create an instance of the EdgeX SDK.
-  edgexsdk := &edgexsdk.AppFunctionsSDK{}
-
+  // 1) First thing to do is to create an instance of the EdgeX SDK, giving it a service key
+  edgexsdk := &edgexsdk.AppFunctionsSDK{
+    ServiceKey: "SimpleFilterXMLApp" // Key used by Consul
+  }
+  // 2) Next, we need to Initilize the SDK
+  if err := edgexSdk.Initialize(); err != nil {
+		// TODO: Log rather than print
+		fmt.Printf("SDK initialization failed: %v\n", err)
+		os.Exit(-1)
+	}
   // 2) Since our FilterByDeviceID Function requires the list of DeviceID's we would
   // like to search for, we'll go ahead and define that now.
   deviceIDs := []string{"GS1-AC-Drive01"}
