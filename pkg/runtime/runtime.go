@@ -19,8 +19,9 @@ package runtime
 import (
 	"fmt"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
 // GolangRuntime represents the golang runtime environment
