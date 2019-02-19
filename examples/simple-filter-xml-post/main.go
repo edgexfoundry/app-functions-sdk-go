@@ -30,7 +30,7 @@ const (
 
 func main() {
 	// 1) First thing to do is to create an instance of the EdgeX SDK and initialize it.
-	edgexSdk := &edgexsdk.AppFunctionsSDK{}
+	edgexSdk := &edgexsdk.AppFunctionsSDK{ServiceKey: serviceKey}
 	if err := edgexSdk.Initialize(); err != nil {
 		// TODO: Log rather than print
 		fmt.Printf("SDK initialization failed: %v\n", err)
