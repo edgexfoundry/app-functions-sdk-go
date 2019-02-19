@@ -17,6 +17,7 @@
 package edgexsdk
 
 import (
+	"time"
 	"flag"
 	"fmt"
 
@@ -24,6 +25,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
@@ -43,7 +45,10 @@ type AppFunctionsSDK struct {
 	configProfile string
 	configDir     string
 	useRegistry   bool
+	registryClient registry.Client
 	config        common.ConfigurationStruct
+	LoggingClient logger.LoggingClient
+
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
@@ -98,6 +103,8 @@ func (sdk *AppFunctionsSDK) MakeItRun() {
 	trigger := sdk.setupTrigger(sdk.config, runtime)
 
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
+
+	sdk.LoggingClient.Info("Initializing...")
 	trigger.Initialize()
 
 }
@@ -107,9 +114,10 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruc
 	// Need to make dynamic, search for the binding that is input
 	switch configuration.Bindings[0].Type {
 	case "http":
-		println("Loading Http Trigger")
+		sdk.LoggingClient.Info("Loading Http Trigger")
 		trigger = &http.HTTPTrigger{Configuration: configuration, Runtime: runtime}
 	case "messageBus":
+		sdk.LoggingClient.Info("Loading messageBus Trigger")
 		trigger = &messagebus.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
 	}
 	return trigger
@@ -117,8 +125,8 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruc
 
 // Initialize the SDK
 func (sdk *AppFunctionsSDK) Initialize() error {
-	// Handles SIGINT/SIGTERM and exits gracefully
-	listenForInterrupts()
+	
+	
 
 	flag.BoolVar(&sdk.useRegistry, "registry", false, "Indicates the service should use the registry.")
 	flag.BoolVar(&sdk.useRegistry, "r", false, "Indicates the service should use registry.")
@@ -131,12 +139,31 @@ func (sdk *AppFunctionsSDK) Initialize() error {
 
 	flag.Parse()
 
-	err := sdk.initializeRegistry()
-	if err != nil {
-		return fmt.Errorf("failed to initialize Registry: %v", err)
+	now := time.Now()
+	until := now.Add(time.Millisecond * time.Duration(internal.BootTimeoutDefault))
+	for now.Before(until) {
+		err := sdk.initializeRegistry()
+		if err != nil {
+			fmt.Printf("failed to initialize Registry: %v\n", err)
+		} else {
+			//initialize logger
+			sdk.LoggingClient = logger.NewClient("AppFunctionsSDK", false, "./test.txt", sdk.config.Writable.LogLevel)
+			sdk.LoggingClient.Info("Registry successfully retrieved from registry")
+			break
+		}
+	
+		time.Sleep(time.Second * time.Duration(1))
+	}
+	
+	
+
+
+	if sdk.useRegistry {
+	go sdk.listenForConfigChanges()
 	}
 
-	// TODO: Add additional initialization like logging, message bus, etc.
+	// Handles SIGINT/SIGTERM and exits gracefully
+	sdk.listenForInterrupts()
 	return nil
 }
 
@@ -162,22 +189,25 @@ func (sdk *AppFunctionsSDK) initializeRegistry() error {
 			ServicePort:   configuration.Service.Port,
 		}
 
-		registryClient, err := factory.NewRegistryClient(registryConfig, sdk.ServiceKey)
+		client, err := factory.NewRegistryClient(registryConfig, sdk.ServiceKey)
 		if err != nil {
 			return fmt.Errorf("connection to Registry could not be made: %v", err)
 		}
+		//set registryClient
+		sdk.registryClient = client
 
-		if !registryClient.IsRegistryRunning() {
+
+		if !sdk.registryClient.IsRegistryRunning() {
 			return fmt.Errorf("registry (%s) is not running", registryConfig.Type)
 		}
 
 		// Register the service with Registry
-		err = registryClient.Register()
+		err = sdk.registryClient.Register()
 		if err != nil {
 			return fmt.Errorf("could not register service with Registry: %v", err)
 		}
 
-		rawConfig, err := registryClient.GetConfiguration(configuration)
+		rawConfig, err := sdk.registryClient.GetConfiguration(configuration)
 		if err != nil {
 			return fmt.Errorf("could not get configuration from Registry: %v", err)
 		}
@@ -189,57 +219,56 @@ func (sdk *AppFunctionsSDK) initializeRegistry() error {
 
 		sdk.config = *actual
 
-		go sdk.listenForConfigChanges(registryClient)
+		
+
+		
 	}
 
 	return nil
 }
 
-func (sdk *AppFunctionsSDK) listenForConfigChanges(registryClient registry.Client) {
+func (sdk *AppFunctionsSDK) listenForConfigChanges() {
 	var errChannel chan error          //A channel for "config wait error" sourced from Registry
 	var updateChannel chan interface{} //A channel for "config updates" sourced from Registry
 
-	registryClient.WatchForChanges(updateChannel, errChannel, &common.WritableInfo{}, internal.WritableKey)
+	sdk.LoggingClient.Info("Listening for changes from registry")
+	sdk.registryClient.WatchForChanges(updateChannel, errChannel, &common.WritableInfo{}, internal.WritableKey)
 
 	for {
 		select {
 		case err := <-errChannel:
-			// TODO: remove println and uncomment Logging once logging package is available
-			//LoggingClient.Error(err.Error())
-			fmt.Println(err.Error())
+			sdk.LoggingClient.Error(err.Error())
 
 		case raw, ok := <-updateChannel:
 			if !ok {
+				sdk.LoggingClient.Error("Failed to receive changes from update channel")
 				return
 			}
 
 			actual, ok := raw.(*common.WritableInfo)
 			if !ok {
-				// TODO: remove println and uncomment Logging once logging package is available
-				//LoggingClient.Error("listenForConfigChanges() type check failed")
-				fmt.Println("listenForConfigChanges() type check failed")
+				sdk.LoggingClient.Error("listenForConfigChanges() type check failed")
 				return
 			}
 
 			sdk.config.Writable = *actual
 
-			// TODO: remove println and uncomment Logging once logging package is available
-			//LoggingClient.Info("Writeable configuration has been updated. Setting log level to " + sdk.config.Writable.LogLevel)
-			fmt.Println("Writeable configuration has been updated. Setting log level to " + sdk.config.Writable.LogLevel)
-			//LoggingClient.SetLogLevel(sdk.config.Writable.LogLevel)
+			sdk.LoggingClient.Info("Writeable configuration has been updated. Setting log level to " + sdk.config.Writable.LogLevel)
+			sdk.LoggingClient.SetLogLevel(sdk.config.Writable.LogLevel)
 
 			// TODO: Deal with pub/sub topics may have changed. Save copy of writeable so that we can determine what if anything changed?
 		}
 	}
 }
 
-func listenForInterrupts() {
+func (sdk *AppFunctionsSDK) listenForInterrupts() {
+	sdk.LoggingClient.Info("Listening for interrupts")
 	go func() {
 		signalChan := make(chan os.Signal)
 		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
 		signalReceived := <-signalChan
-		fmt.Printf("Terminating: %s\n", signalReceived)
+		sdk.LoggingClient.Info("Terminating: " + signalReceived.String())
 		os.Exit(0)
 	}()
 }
