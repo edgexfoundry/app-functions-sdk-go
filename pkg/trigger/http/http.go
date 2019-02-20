@@ -27,18 +27,17 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
 )
 
-// HTTPTrigger implements ITrigger to support HTTPTriggers
-type HTTPTrigger struct {
+// Trigger implements ITrigger to support Triggers
+type Trigger struct {
 	Configuration common.ConfigurationStruct
 	Runtime       runtime.GolangRuntime
 	outputData    string
 }
 
 // Initialize ...
-func (h *HTTPTrigger) Initialize() error {
+func (h *Trigger) Initialize() error {
 	http.HandleFunc("/", h.requestHandler)   // set router - just a GET for now
 	err := http.ListenAndServe(":9090", nil) // set listen port
 	if err != nil {
@@ -46,7 +45,7 @@ func (h *HTTPTrigger) Initialize() error {
 	}
 	return nil
 }
-func (h *HTTPTrigger) requestHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Trigger) requestHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	// event := event.Event{Data: "DATA FROM HTTP"}
@@ -73,18 +72,18 @@ func getBytes(key interface{}) ([]byte, error) {
 }
 
 // GetConfiguration gets the config
-func (h *HTTPTrigger) GetConfiguration() common.ConfigurationStruct {
+func (h *Trigger) GetConfiguration() common.ConfigurationStruct {
 	//
 	return h.Configuration
 }
 
 // GetData This function might return data
-func (h *HTTPTrigger) GetData() interface{} {
+func (h *Trigger) GetData() interface{} {
 	return "data"
 }
 
 // Complete ...
-func (h *HTTPTrigger) Complete(outputData string) {
+func (h *Trigger) Complete(outputData string) {
 	//
 	h.outputData = outputData
 

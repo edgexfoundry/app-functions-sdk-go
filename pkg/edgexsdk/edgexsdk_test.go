@@ -94,7 +94,7 @@ func TestSetupHTTPTrigger(t *testing.T) {
 	}
 	runtime := runtime.GolangRuntime{Transforms: sdk.transforms}
 	trigger := sdk.setupTrigger(sdk.config, runtime)
-	result := IsInstanceOf(trigger, (*http.HTTPTrigger)(nil))
+	result := IsInstanceOf(trigger, (*http.Trigger)(nil))
 	if !result {
 		t.Error("Expected HTTP Trigger")
 	}
@@ -111,7 +111,7 @@ func TestSetupMessageBusTrigger(t *testing.T) {
 	}
 	runtime := runtime.GolangRuntime{Transforms: sdk.transforms}
 	trigger := sdk.setupTrigger(sdk.config, runtime)
-	result := IsInstanceOf(trigger, (*messagebus.MessageBusTrigger)(nil))
+	result := IsInstanceOf(trigger, (*messagebus.Trigger)(nil))
 	if !result {
 		t.Error("Expected Message Bus Trigger")
 	}

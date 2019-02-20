@@ -21,7 +21,6 @@ import (
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
 )
 
 // Filter houses various the parameters for which filter transforms filter on

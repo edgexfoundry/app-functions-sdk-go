@@ -17,17 +17,16 @@
 package edgexsdk
 
 import (
-	"time"
 	"errors"
 	"flag"
 	"fmt"
 	"strings"
+	"time"
 
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
@@ -36,21 +35,21 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/http"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger/messagebus"
+	logger "github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 	registry "github.com/edgexfoundry/go-mod-registry"
 	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
 )
 
 // AppFunctionsSDK ...
 type AppFunctionsSDK struct {
-	transforms    []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})
-	ServiceKey    string
-	configProfile string
-	configDir     string
-	useRegistry   bool
+	transforms     []func(edgexcontext excontext.Context, params ...interface{}) (bool, interface{})
+	ServiceKey     string
+	configProfile  string
+	configDir      string
+	useRegistry    bool
 	registryClient registry.Client
-	config        common.ConfigurationStruct
-	LoggingClient logger.LoggingClient
-
+	config         common.ConfigurationStruct
+	LoggingClient  logger.LoggingClient
 }
 
 // SetPipeline defines the order in which each function will be called as each event comes in.
@@ -103,7 +102,7 @@ func (sdk *AppFunctionsSDK) MakeItRun() {
 	// a little telemetry where?
 
 	//determine which runtime to load
-	runtime := runtime.GolangRuntime{Transforms: sdk.transforms}
+	runtime := runtime.GolangRuntime{Transforms: sdk.transforms, LoggingClient: sdk.LoggingClient}
 
 	// determine input type and create trigger for it
 	trigger := sdk.setupTrigger(sdk.config, runtime)
@@ -120,18 +119,16 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruc
 	switch strings.ToUpper(configuration.Bindings[0].Type) {
 	case "HTTP":
 		sdk.LoggingClient.Info("Loading Http Trigger")
-		trigger = &http.HTTPTrigger{Configuration: configuration, Runtime: runtime}
+		trigger = &http.Trigger{Configuration: configuration, Runtime: runtime}
 	case "MESSAGEBUS":
 		sdk.LoggingClient.Info("Loading messageBus Trigger")
-		trigger = &messagebus.MessageBusTrigger{Configuration: configuration, Runtime: runtime}
+		trigger = &messagebus.Trigger{Configuration: configuration, Runtime: runtime}
 	}
 	return trigger
 }
 
 // Initialize will parse command line flags, register for interrupts, initalize the logging system, and ingest configuration.
 func (sdk *AppFunctionsSDK) Initialize() error {
-	
-	
 
 	flag.BoolVar(&sdk.useRegistry, "registry", false, "Indicates the service should use the registry.")
 	flag.BoolVar(&sdk.useRegistry, "r", false, "Indicates the service should use registry.")
@@ -156,15 +153,12 @@ func (sdk *AppFunctionsSDK) Initialize() error {
 			sdk.LoggingClient.Info("Registry successfully retrieved from registry")
 			break
 		}
-	
+
 		time.Sleep(time.Second * time.Duration(1))
 	}
-	
-	
-
 
 	if sdk.useRegistry {
-	go sdk.listenForConfigChanges()
+		go sdk.listenForConfigChanges()
 	}
 
 	// Handles SIGINT/SIGTERM and exits gracefully
@@ -201,7 +195,6 @@ func (sdk *AppFunctionsSDK) initializeRegistry() error {
 		//set registryClient
 		sdk.registryClient = client
 
-
 		if !sdk.registryClient.IsRegistryRunning() {
 			return fmt.Errorf("registry (%s) is not running", registryConfig.Type)
 		}
@@ -224,9 +217,6 @@ func (sdk *AppFunctionsSDK) initializeRegistry() error {
 
 		sdk.config = *actual
 
-		
-
-		
 	}
 
 	return nil

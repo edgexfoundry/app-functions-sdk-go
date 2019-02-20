@@ -21,31 +21,31 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
 )
 
-// MessageBusTrigger implements ITrigger to support MessageBusData
-type MessageBusTrigger struct {
+// Trigger implements ITrigger to support MessageBusData
+type Trigger struct {
 	Configuration common.ConfigurationStruct
 	Runtime       runtime.GolangRuntime
 	outputData    interface{}
 }
 
 // Initialize ...
-func (mb *MessageBusTrigger) Initialize() error {
+func (mb *Trigger) Initialize() error {
 	return nil
 }
 
 // GetConfiguration ...
-func (mb *MessageBusTrigger) GetConfiguration() common.ConfigurationStruct {
+func (mb *Trigger) GetConfiguration() common.ConfigurationStruct {
 	//
 	return mb.Configuration
 }
 
 // GetData ...
-func (mb *MessageBusTrigger) GetData() interface{} {
+func (mb *Trigger) GetData() interface{} {
 	return "data"
 }
 
 // Complete ...
-func (mb *MessageBusTrigger) Complete(outputData string) {
+func (mb *Trigger) Complete(outputData string) {
 	//
 	mb.outputData = outputData
 }

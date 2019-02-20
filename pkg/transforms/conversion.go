@@ -23,7 +23,6 @@ import (
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
 )
 
 // Conversion houses various built in conversion transforms (XML, JSON, CSV)

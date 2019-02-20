@@ -21,7 +21,6 @@ import (
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
 )
 
 const (
@@ -118,7 +117,7 @@ func TestFilterValue(t *testing.T) {
 	if !continuePipeline {
 		t.Fatal("Pipeline should continue")
 	}
-	if len(res.(*models.Event).Readings) != 1 {
+	if len(res.(models.Event).Readings) != 1 {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
@@ -126,7 +125,7 @@ func TestFilterValue(t *testing.T) {
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
-	if len(res.(*models.Event).Readings) != 1 {
+	if len(res.(models.Event).Readings) != 1 {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
@@ -139,7 +138,7 @@ func TestFilterValue(t *testing.T) {
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
-	if len(res.(*models.Event).Readings) != 1 {
+	if len(res.(models.Event).Readings) != 1 {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
@@ -147,7 +146,7 @@ func TestFilterValue(t *testing.T) {
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
-	if len(res.(*models.Event).Readings) != 2 {
+	if len(res.(models.Event).Readings) != 2 {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 
@@ -155,7 +154,7 @@ func TestFilterValue(t *testing.T) {
 	if !continuePipeline {
 		t.Fatal("Event should be continuePipeline")
 	}
-	if len(res.(*models.Event).Readings) != 1 {
+	if len(res.(models.Event).Readings) != 1 {
 		t.Fatal("Event should be one reading, there are ", len(res.(models.Event).Readings))
 	}
 }

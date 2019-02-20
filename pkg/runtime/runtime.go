@@ -17,8 +17,9 @@
 package runtime
 
 import (
-	"fmt"
+	"strconv"
 
+	logger "github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
@@ -26,12 +27,13 @@ import (
 
 // GolangRuntime represents the golang runtime environment
 type GolangRuntime struct {
-	Transforms []func(excontext.Context, ...interface{}) (bool, interface{})
+	Transforms    []func(excontext.Context, ...interface{}) (bool, interface{})
+	LoggingClient logger.LoggingClient
 }
 
 // ProcessEvent handles processing the event
 func (gr GolangRuntime) ProcessEvent(edgexcontext excontext.Context, event models.Event) error {
-	fmt.Println("EVENT PROCESSED BY GO")
+	gr.LoggingClient.Info("Processing Event: " + strconv.Itoa(len(gr.Transforms)) + " Transforms")
 	var result interface{}
 	var continuePipeline = true
 	for _, trxFunc := range gr.Transforms {
@@ -42,7 +44,7 @@ func (gr GolangRuntime) ProcessEvent(edgexcontext excontext.Context, event model
 		}
 		if continuePipeline != true {
 			if result != nil {
-				fmt.Println(result)
+				gr.LoggingClient.Error((result).(error).Error())
 			}
 			break
 		}

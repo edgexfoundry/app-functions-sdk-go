@@ -16,10 +16,11 @@ package common
 
 import (
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 
 	"github.com/BurntSushi/toml"
 )
@@ -29,6 +30,7 @@ const (
 	configDirEnv    = "EDGEX_CONF_DIR"
 )
 
+// LoadFromFile loads .toml file for configuration
 func LoadFromFile(profile string, configDir string, configuration interface{}) error {
 	path := determinePath(configDir)
 	fileName := path + "/" + internal.ConfigFileName //default profile
@@ -65,6 +67,7 @@ func determinePath(configDir string) string {
 	return path
 }
 
+// VerifyTomlFiles Verifies toml file exists and loads it
 func VerifyTomlFiles(configuration interface{}, configDir string) error {
 	files, _ := filepath.Glob("res/*/*.toml")
 	files2, _ := filepath.Glob("res/configuration.toml")

@@ -19,12 +19,14 @@ package excontext
 import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/trigger"
+	logger "github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 )
 
 // Context ...
 type Context struct {
 	Trigger       trigger.ITrigger
 	Configuration common.ConfigurationStruct
+	LoggingClient logger.LoggingClient
 }
 
 // Complete called when ready to send output and function is finished

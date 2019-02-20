@@ -16,7 +16,7 @@
 
 package common
 
-//WritingInfo ...
+// WritableInfo ...
 type WritableInfo struct {
 	SubscribeTopic string
 	PublishTopic   string

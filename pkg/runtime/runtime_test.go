@@ -38,6 +38,7 @@ func TestProcessEventNoTransforms(t *testing.T) {
 	}
 	context := excontext.Context{}
 	runtime := GolangRuntime{}
+
 	result := runtime.ProcessEvent(context, eventIn)
 	if result != nil {
 		t.Fatal("result should be nil since no transforms have been passed")
