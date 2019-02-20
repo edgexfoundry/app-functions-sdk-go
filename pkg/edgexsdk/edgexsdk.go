@@ -102,7 +102,7 @@ func (sdk *AppFunctionsSDK) MakeItRun() {
 	// a little telemetry where?
 
 	//determine which runtime to load
-	runtime := runtime.GolangRuntime{Transforms: sdk.transforms, LoggingClient: sdk.LoggingClient}
+	runtime := runtime.GolangRuntime{Transforms: sdk.transforms}
 
 	// determine input type and create trigger for it
 	trigger := sdk.setupTrigger(sdk.config, runtime)
@@ -110,7 +110,7 @@ func (sdk *AppFunctionsSDK) MakeItRun() {
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
 
 	sdk.LoggingClient.Info("Initializing...")
-	trigger.Initialize()
+	trigger.Initialize(sdk.LoggingClient)
 }
 
 func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruct, runtime runtime.GolangRuntime) trigger.ITrigger {

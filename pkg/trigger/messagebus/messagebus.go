@@ -19,6 +19,7 @@ package messagebus
 import (
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
+	logger "github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 )
 
 // Trigger implements ITrigger to support MessageBusData
@@ -29,7 +30,7 @@ type Trigger struct {
 }
 
 // Initialize ...
-func (mb *Trigger) Initialize() error {
+func (mb *Trigger) Initialize(logger logger.LoggingClient) error {
 	return nil
 }
 

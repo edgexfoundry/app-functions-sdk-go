@@ -16,12 +16,15 @@
 
 package trigger
 
-import "github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
+import (
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
+	logger "github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+)
 
 // ITrigger interface is used to hold event data and allow function to
 type ITrigger interface {
 	// Initialize performs post creation initializations
-	Initialize() error
+	Initialize(logger.LoggingClient) error
 
 	// function to call to get current configuration for function
 	GetConfiguration() common.ConfigurationStruct

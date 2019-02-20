@@ -23,6 +23,8 @@ import (
 	"log"
 	"net/http"
 
+	logger "github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/excontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/runtime"
@@ -34,10 +36,12 @@ type Trigger struct {
 	Configuration common.ConfigurationStruct
 	Runtime       runtime.GolangRuntime
 	outputData    string
+	logging       logger.LoggingClient
 }
 
 // Initialize ...
-func (h *Trigger) Initialize() error {
+func (h *Trigger) Initialize(logger logger.LoggingClient) error {
+	h.logging = logger
 	http.HandleFunc("/", h.requestHandler)   // set router - just a GET for now
 	err := http.ListenAndServe(":9090", nil) // set listen port
 	if err != nil {
@@ -50,7 +54,8 @@ func (h *Trigger) requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// event := event.Event{Data: "DATA FROM HTTP"}
 	edgexContext := excontext.Context{Configuration: h.Configuration,
-		Trigger: h,
+		Trigger:       h,
+		LoggingClient: h.logging,
 	}
 	var event models.Event
 	decoder.Decode(&event)
