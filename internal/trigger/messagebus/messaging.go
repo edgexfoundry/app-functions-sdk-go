@@ -73,7 +73,9 @@ func (trigger *Trigger) Initialize(logger logger.LoggingClient) error {
 					outputEnvelope := types.MessageEnvelope{
 						CorrelationID: edgexContext.CorrelationID,
 						Payload:       edgexContext.OutputData,
+						ContentType:   clients.ContentTypeJSON,
 					}
+
 					err := trigger.client.Publish(outputEnvelope, trigger.Configuration.Binding.PublishTopic)
 					if err != nil {
 						logger.Error(fmt.Sprintf("Failed to publish Message to bus, %v", err))
