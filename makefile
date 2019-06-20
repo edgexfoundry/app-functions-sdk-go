@@ -44,5 +44,8 @@ test:
 	gofmt -l .
 	[ "`gofmt -l .`" = "" ]
 
+prepare:
+	echo "You've prepared nothing"
+	
 clean:
 	rm -f $(MICROSERVICES)
