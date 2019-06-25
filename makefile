@@ -32,7 +32,7 @@ docker:
 		.
 
 test:
-	$(GO) test ./... -cover
+	$(GO) test ./... -coverprofile=coverage.out
 
 clean:
 	rm -f $(MICROSERVICES)
