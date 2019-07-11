@@ -96,7 +96,7 @@ pipeline {
         stage('Semver Bump Pre-Release Version') {
             when { expression { edgex.isReleaseStream() } }
             steps {
-                edgeXSemver('bump pre')
+                edgeXSemver('bump patch')
                 edgeXSemver('push')
             }
         }
