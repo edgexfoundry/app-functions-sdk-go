@@ -23,6 +23,12 @@ Type = 'consul'
   Host = 'edgex-core-data'
   Port = 48080
 
+  [Clients.Logging]
+  Name = "edgex-support-logging"
+  Protocol = "http"
+  Host = "edgex-support-logging"
+  Port = 48061
+
 [MessageBus]
 Type = 'zero'
     [MessageBus.PublishHost]
