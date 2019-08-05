@@ -235,11 +235,15 @@ func (dynamic AppFunctionsSDKConfigurable) MQTTSend(parameters map[string]string
 	}
 	dynamic.Sdk.LoggingClient.Debug("MQTT Send Parameters", "Address", addr, Qos, qosVal, Retain, retainVal, AutoReconnect, autoreconnectVal, Cert, cert, Key, key)
 
+	pair := transforms.KeyCertPair{}
+	pair.CertFile = cert
+	pair.KeyFile = key
+
 	mqttconfig := transforms.NewMqttConfig()
 	mqttconfig.SetQos(byte(qos))
 	mqttconfig.SetRetain(retain)
 	mqttconfig.SetAutoreconnect(autoreconnect)
-	sender := transforms.NewMQTTSender(dynamic.Sdk.LoggingClient, addr, cert, key, mqttconfig)
+	sender := transforms.NewMQTTSender(dynamic.Sdk.LoggingClient, addr, &pair, mqttconfig)
 	return sender.MQTTSend
 }
 
