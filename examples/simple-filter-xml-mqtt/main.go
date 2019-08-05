@@ -55,8 +55,9 @@ func main() {
 		Topic:     "sampleTopic",
 	}
 
+	pair := transforms.KeyCertPair{}
 	mqttConfig := transforms.NewMqttConfig()
-	mqttSender := transforms.NewMQTTSender(edgexSdk.LoggingClient, addressable, "", "", mqttConfig)
+	mqttSender := transforms.NewMQTTSender(edgexSdk.LoggingClient, addressable, &pair, mqttConfig)
 
 	// 3) This is our pipeline configuration, the collection of functions to
 	// execute every time an event is triggered.
