@@ -55,7 +55,10 @@ func main() {
 		Topic:     "sampleTopic",
 	}
 
-	pair := transforms.KeyCertPair{}
+	pair := transforms.KeyCertPair{
+        KeyFile:    "",
+        CertFile:   "",
+    }
 	mqttConfig := transforms.NewMqttConfig()
 	mqttSender := transforms.NewMQTTSender(edgexSdk.LoggingClient, addressable, &pair, mqttConfig)
 
