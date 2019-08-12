@@ -56,9 +56,9 @@ func main() {
 	}
 
 	pair := transforms.KeyCertPair{
-        KeyFile:    "",
-        CertFile:   "",
-    }
+		KeyFile:  "",
+		CertFile: "",
+	}
 	mqttConfig := transforms.NewMqttConfig()
 	mqttSender := transforms.NewMQTTSender(edgexSdk.LoggingClient, addressable, &pair, mqttConfig)
 
