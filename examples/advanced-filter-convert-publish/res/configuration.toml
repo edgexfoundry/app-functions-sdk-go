@@ -63,6 +63,11 @@ Type="messagebus"
 SubscribeTopic="events"
 PublishTopic="converted"
 
+[StoreAndForward]
+Enabled = false
+RetryInterval = 50000 # 5mins
+MaxRetryCount = 10
+
 [ApplicationSettings]
 ApplicationName = "advanced-filter-convert-publish"
 ValueDescriptors = "RandomValue_Float32, RandomValue_Float64"

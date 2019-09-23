@@ -21,10 +21,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/appsdk"
 	"github.com/edgexfoundry/app-functions-sdk-go/examples/advanced-filter-convert-publish/functions"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
 )
 
 const (

@@ -17,6 +17,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -39,7 +40,7 @@ type Trigger struct {
 }
 
 // Initialize initializes the Trigger for logging and REST route
-func (trigger *Trigger) Initialize() error {
+func (trigger *Trigger) Initialize(appCtx context.Context) error {
 	logger := trigger.EdgeXClients.LoggingClient
 
 	logger.Info("Initializing HTTP Trigger")

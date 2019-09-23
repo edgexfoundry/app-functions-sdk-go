@@ -44,12 +44,6 @@ File = './logs/simple-filter-xml-post.log'
   Host = "localhost"
   Port = 48061
 
-  # Required when using Store and Forward
-  [Clients.Scheduler]
-  Protocol = 'http'
-  Host = 'localhost'
-  Port = 48085
-
 [MessageBus]
 Type = 'zero'
     [MessageBus.PublishHost]

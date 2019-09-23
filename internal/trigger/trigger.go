@@ -16,8 +16,10 @@
 
 package trigger
 
+import "context"
+
 // Trigger interface is used to hold event data and allow function to
 type Trigger interface {
 	// Initialize performs post creation initializations
-	Initialize() error
+	Initialize(ctx context.Context) error
 }

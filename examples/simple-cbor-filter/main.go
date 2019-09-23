@@ -26,12 +26,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
-
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/appcontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/appsdk"
+	"github.com/edgexfoundry/app-functions-sdk-go/pkg/transforms"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 const (

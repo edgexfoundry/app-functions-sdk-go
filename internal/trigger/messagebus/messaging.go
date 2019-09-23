@@ -17,6 +17,7 @@
 package messagebus
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/appcontext"
@@ -37,7 +38,7 @@ type Trigger struct {
 }
 
 // Initialize ...
-func (trigger *Trigger) Initialize() error {
+func (trigger *Trigger) Initialize(appCtx context.Context) error {
 	var err error
 	logger := trigger.EdgeXClients.LoggingClient
 
@@ -55,6 +56,9 @@ func (trigger *Trigger) Initialize() error {
 	go func() {
 		for receiveMessage {
 			select {
+			case <-appCtx.Done():
+				return
+
 			case msgErr := <-messageErrors:
 				logger.Error(fmt.Sprintf("Failed to receive ZMQ Message, %v", msgErr))
 			case msgs := <-trigger.topics[0].Messages:
