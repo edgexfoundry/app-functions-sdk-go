@@ -45,12 +45,10 @@ For directions installing ZeroMQ on Windows, please see the Windows documentatio
 
 #### pkg-config
 
-The 0MQ pkgconfig path will need to be added to the PKG_CONFIG_PATH environment variable.
+The 0MQ pkgconfig (PC) file is needed. Install the Go centric version of pkgconfig globally with `go
+get github.com/rjeczalik/pkgconfig/cmd/pkg-config`. Pkgconfig can download the necessary PC files. On Linux/MacOS, add `export PKG_CONFIG_GITHUB=1` to your environment.
 
-On Linux, add this line to your local profile:
-
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/Cellar/zeromq/4.2.5/lib/pkgconfig/
-For macOS, install the package with brew via `brew install pkg-config`.
+### The SDK
 
 The SDK is built around the idea of a "Functions Pipeline". A functions pipeline is a collection of various functions that process the data in the order that you've specified. The functions pipeline is executed by the specified [trigger](#triggers) in the `configuration.toml` . The first function in the pipeline is called with the event that triggered the pipeline (ex. `events.Model`). Each successive call in the pipeline is called with the return result of the previous function. Let's take a look at a simple example that creates a pipeline to filter particular device ids and subsequently transform the data to XML:
 ```golang
