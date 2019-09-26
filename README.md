@@ -29,6 +29,29 @@ Table of contents
 
 ## Getting Started
 
+### Build Prerequisites
+
+#### Go
+The current targeted version of the Go language runtime is v1.12
+
+#### ZeroMQ
+Several EdgeX Foundry services depend on ZeroMQ for communications by default.
+
+The easiest way to get and install ZeroMQ on Linux is to use this setup script.
+
+For macOS, use brew via `brew install zeromq`.
+
+For directions installing ZeroMQ on Windows, please see the Windows documentation.
+
+#### pkg-config
+
+The 0MQ pkgconfig path will need to be added to the PKG_CONFIG_PATH environment variable.
+
+On Linux, add this line to your local profile:
+
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/Cellar/zeromq/4.2.5/lib/pkgconfig/
+For macOS, install the package with brew via `brew install pkg-config`.
+
 The SDK is built around the idea of a "Functions Pipeline". A functions pipeline is a collection of various functions that process the data in the order that you've specified. The functions pipeline is executed by the specified [trigger](#triggers) in the `configuration.toml` . The first function in the pipeline is called with the event that triggered the pipeline (ex. `events.Model`). Each successive call in the pipeline is called with the return result of the previous function. Let's take a look at a simple example that creates a pipeline to filter particular device ids and subsequently transform the data to XML:
 ```golang
 package main
