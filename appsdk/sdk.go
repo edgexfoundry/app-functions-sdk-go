@@ -22,6 +22,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/edgexfoundry/app-functions-sdk-go/internal/trigger/messagebus"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -54,7 +55,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/telemetry"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/trigger/http"
-	"github.com/edgexfoundry/app-functions-sdk-go/internal/trigger/messagebus"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/urlclient"
 	"github.com/edgexfoundry/app-functions-sdk-go/pkg/util"
@@ -546,7 +546,8 @@ func (sdk *AppFunctionsSDK) setupTrigger(configuration common.ConfigurationStruc
 		t = &http.Trigger{Configuration: configuration, Runtime: runtime, Webserver: sdk.webserver, EdgeXClients: sdk.edgexClients}
 	case "MESSAGEBUS":
 		sdk.LoggingClient.Info("MessageBus trigger selected")
-		t = &messagebus.Trigger{Configuration: configuration, Runtime: runtime, EdgeXClients: sdk.edgexClients}
+		//t = &messagebus.Trigger{Configuration: configuration, Runtime: runtime, EdgeXClients: sdk.edgexClients}
+		t = messagebus.NewMessageBusTrigger(configuration, runtime, sdk.edgexClients)
 	}
 
 	return t
