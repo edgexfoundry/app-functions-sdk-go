@@ -18,6 +18,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.2
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/pelletier/go-toml v1.2.0
 	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
