@@ -17,7 +17,10 @@
 package transforms
 
 import (
+	"encoding/json"
 	"testing"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 
 	"github.com/stretchr/testify/require"
 
@@ -169,4 +172,51 @@ func TestTransformToJSONMultipleParametersTwoEvents(t *testing.T) {
 	assert.True(t, continuePipeline)
 	assert.Equal(t, expectedResult, result.(string))
 
+}
+
+func TestTransformToCloudEvent(t *testing.T) {
+	// Event from device 1
+	eventIn := models.Event{
+		ID:       "event-" + devID1,
+		Device:   devID1,
+		Readings: []models.Reading{models.Reading{Id: "123-abc", Name: "test-reading"}},
+	}
+	expectedJSON := `{"data":{"id":"event-id1","device":"id1","readings":[{"id":"123-abc","name":"test-reading"}]},"id":"event-id1","source":"id1","specversion":"1.0","type":"models.Event"}`
+	var expectedResult cloudevents.Event
+	json.Unmarshal([]byte(expectedJSON), &expectedResult)
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context, eventIn)
+
+	assert.NotNil(t, result)
+	assert.True(t, continuePipeline)
+	assert.Equal(t, expectedResult, result)
+}
+
+func TestTransformToCloudEventWrongEvent(t *testing.T) {
+	eventIn := "Not a models.Event, a string"
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context, eventIn)
+
+	assert.Error(t, result.(error))
+	assert.False(t, continuePipeline)
+}
+
+func TestTransformToCloudEventNoReadings(t *testing.T) {
+	eventIn := models.Event{
+		ID:     "event-" + devID1,
+		Device: devID1,
+	}
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context, eventIn)
+
+	assert.Error(t, result.(error))
+	assert.False(t, continuePipeline)
+}
+
+func TestTransformToCloudEventNoEvent(t *testing.T) {
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context)
+
+	assert.Error(t, result.(error))
+	assert.False(t, continuePipeline)
 }

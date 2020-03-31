@@ -313,11 +313,12 @@ Included in the SDK is an in-memory batch function that will hold on to your dat
   - `Batch` - This function will apply the selected strategy in your pipeline.
   
 ### Conversion
-There are two conversions included in the SDK that can be added to your pipeline. These transforms return a `string`.
+There are multiple conversions included in the SDK that can be added to your pipeline. Some of these transforms return a `string`, the Cloud Events conversion returns a cloudevents.Event [see reference here](https://github.com/cloudevents/sdk-go).
 
  - `NewConversion()` - This function returns a `Conversion` instance that is used to access the following conversion functions: 
     - `TransformToXML`  - This function receives an `events.Model` type, converts it to XML format and returns the XML string to the pipeline. 
     - `TransformToJSON` - This function receives an `events.Model` type and converts it to JSON format and returns the JSON string to the pipeline.
+    - `TransformToCloudEvent` - This function receives an `events.Model` type and converts it to `cloudevents.Event` and returns it to the pipeline.
 
 ### Compressions
 There are two compression types included in the SDK that can be added to your pipeline. These transforms return a `[]byte`.
