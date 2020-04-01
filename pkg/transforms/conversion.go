@@ -20,9 +20,13 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/appcontext"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+
+	cloudevents "github.com/cloudevents/sdk-go"
 )
 
 // Conversion houses various built in conversion transforms (XML, JSON, CSV)
@@ -70,6 +74,58 @@ func (f Conversion) TransformToJSON(edgexcontext *appcontext.Context, params ...
 		// should we return a byte[] or string?
 		// return b
 		return true, string(b)
+	}
+	return false, errors.New("Unexpected type received")
+}
+
+// TransformToCloudEvent will transform a models.Event to a Cloud Event
+// It will return an error and stop the pipeline if a non-edgex event is received or if no data is received.
+func (f Conversion) TransformToCloudEvent(edgexcontext *appcontext.Context, params ...interface{}) (continuePipeline bool, stringType interface{}) {
+	if len(params) < 1 {
+		return false, errors.New("No Event Received")
+	}
+	edgexcontext.LoggingClient.Debug("Transforming to CloudEvent")
+	if result, ok := params[0].(models.Event); ok {
+		if len(result.Readings) == 0 {
+			return false, errors.New("No event readings to transform")
+		}
+
+		source := result.Device
+		event := cloudevents.NewEvent(cloudevents.VersionV1)
+		event.SetID(result.ID)
+		event.SetType(reflect.TypeOf(result).String())
+		event.SetSource(source)
+		// The whole event containing all of the readings is serialized into the cloud event.
+		if err := event.SetData(result); err != nil {
+			return false, fmt.Errorf("Error setting data field for cloud event, %s", err)
+		}
+		return true, event
+	}
+	return false, errors.New("Unexpected type received")
+}
+
+// TransformFromCloudEvent will transform a Cloud Event to an Edgex models.Event
+// It will return an error and stop the pipeline if a non-edgex event is received or if no data is received.
+func (f Conversion) TransformFromCloudEvent(edgexcontext *appcontext.Context, params ...interface{}) (continuePipeline bool, stringType interface{}) {
+	if len(params) < 1 {
+		return false, errors.New("No Event Received")
+	}
+	edgexcontext.LoggingClient.Debug("Transforming from CloudEvent to models.Event")
+	if cloudevent, ok := params[0].(cloudevents.Event); ok {
+		dataBytes, err := cloudevent.DataBytes()
+		if err != nil {
+			return false, err
+		}
+		var event models.Event
+		if err := json.Unmarshal(dataBytes, &event); err != nil {
+			return false, err
+		}
+
+		if len(event.Readings) == 0 {
+			return false, errors.New("Event has no readings value")
+		}
+
+		return true, event
 	}
 	return false, errors.New("Unexpected type received")
 }

@@ -17,7 +17,10 @@
 package transforms
 
 import (
+	"encoding/json"
 	"testing"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 
 	"github.com/stretchr/testify/require"
 
@@ -169,4 +172,99 @@ func TestTransformToJSONMultipleParametersTwoEvents(t *testing.T) {
 	assert.True(t, continuePipeline)
 	assert.Equal(t, expectedResult, result.(string))
 
+}
+
+func TestTransformToCloudEvent(t *testing.T) {
+	// Event from device 1
+	eventIn := models.Event{
+		ID:       "event-" + devID1,
+		Device:   devID1,
+		Readings: []models.Reading{models.Reading{Id: "123-abc", Name: "test-reading"}},
+	}
+	expectedJSON := `{"data":{"id":"event-id1","device":"id1","readings":[{"id":"123-abc","name":"test-reading"}]},"id":"event-id1","source":"id1","specversion":"1.0","type":"models.Event"}`
+	var expectedResult cloudevents.Event
+	json.Unmarshal([]byte(expectedJSON), &expectedResult)
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context, eventIn)
+
+	assert.NotNil(t, result)
+	assert.True(t, continuePipeline)
+	assert.Equal(t, expectedResult, result)
+}
+
+func TestTransformToCloudEventWrongEvent(t *testing.T) {
+	eventIn := "Not a models.Event, a string"
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context, eventIn)
+
+	assert.Error(t, result.(error))
+	assert.False(t, continuePipeline)
+}
+
+func TestTransformToCloudEventNoReadings(t *testing.T) {
+	eventIn := models.Event{
+		ID:     "event-" + devID1,
+		Device: devID1,
+	}
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context, eventIn)
+
+	assert.Error(t, result.(error))
+	assert.False(t, continuePipeline)
+}
+
+func TestTransformToCloudEventNoEvent(t *testing.T) {
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformToCloudEvent(context)
+
+	assert.Error(t, result.(error))
+	assert.False(t, continuePipeline)
+}
+
+func TestTransformFromCloudEvent(t *testing.T) {
+	cloudeventJSON := `{"data":{"id":"event-id1","device":"id1","readings":[{"id":"123-abc","name":"test-reading", "value":"123"}]},"id":"event-id1","source":"id1","specversion":"1.0","type":"models.Event"}`
+	var cloudEvent cloudevents.Event
+	json.Unmarshal([]byte(cloudeventJSON), &cloudEvent)
+
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformFromCloudEvent(context, cloudEvent)
+
+	expectedEvent := models.Event{
+		ID:       "event-" + devID1,
+		Device:   devID1,
+		Readings: []models.Reading{models.Reading{Id: "123-abc", Name: "test-reading", Value: "123"}},
+	}
+
+	edgexEvent, ok := result.(models.Event)
+	assert.NotNil(t, result)
+	assert.True(t, ok)
+	assert.True(t, continuePipeline)
+	assert.Equal(t, expectedEvent.ID, edgexEvent.ID)
+	assert.Equal(t, expectedEvent.Readings[0].Id, edgexEvent.Readings[0].Id)
+	assert.Equal(t, expectedEvent.Readings[0].Name, edgexEvent.Readings[0].Name)
+	assert.Equal(t, expectedEvent.Readings[0].Value, edgexEvent.Readings[0].Value)
+}
+
+func TestTransformFromCloudEventEmptyCloudEvent(t *testing.T) {
+	var cloudEvent cloudevents.Event
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformFromCloudEvent(context, cloudEvent)
+	_, ok := result.(error)
+
+	assert.True(t, ok)
+	assert.NotNil(t, result)
+	assert.False(t, continuePipeline)
+}
+
+func TestTransformFromCloudEventEmptyReadins(t *testing.T) {
+	cloudeventJSON := `{"data":{"id":"event-id1","device":"id1","readings":[]},"id":"event-id1","source":"id1","specversion":"1.0","type":"models.Event"}`
+	var cloudEvent cloudevents.Event
+	json.Unmarshal([]byte(cloudeventJSON), &cloudEvent)
+	conv := NewConversion()
+	continuePipeline, result := conv.TransformFromCloudEvent(context, cloudEvent)
+	_, ok := result.(error)
+
+	assert.NotNil(t, result)
+	assert.True(t, ok)
+	assert.False(t, continuePipeline)
 }

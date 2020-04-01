@@ -137,3 +137,18 @@ https://github.com/go-yaml/yaml/blob/v2/LICENSE
 
 github.com/diegoholiveira/jsonlogic (MIT) https://github.com/diegoholiveira/
 https://github.com/diegoholiveira/jsonlogic/blob/master/LICENSE
+
+github.com/cloudevents/sdk-go (Apache License 2.0) https://github.com/cloudevents/sdk-go
+https://github.com/cloudevents/sdk-go/blob/master/LICENSE
+
+github.com/gogo/protobuf (Unspecified) https://github.com/gogo/protobuf
+https://github.com/gogo/protobuf/blob/master/LICENSE
+
+github.com/prometheus/client_golang (Apache License 2.0) https://github.com/prometheus/client_golang
+https://github.com/prometheus/client_golang/blob/master/LICENSE
+
+golang.org/x/tools (Unspecified) https://github.com/golang/tools
+https://github.com/golang/tools/blob/master/LICENSE
+
+honnef.co/go/tools (MIT) https://github.com/dominikh/go-tools
+https://github.com/dominikh/go-tools/blob/master/LICENSE
