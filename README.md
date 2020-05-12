@@ -1,5 +1,7 @@
 # App Functions SDK (Golang) - Beta
 
+![Go](https://github.com/rsdmike/app-functions-sdk-go/workflows/Go/badge.svg)
+
 Welcome the App Functions SDK for EdgeX. This sdk is meant to provide all the plumbing necessary for developers to get started in processing/transforming/exporting data out of EdgeX. 
 
 Table of contents
