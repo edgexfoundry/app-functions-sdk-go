@@ -1,5 +1,6 @@
 /********************************************************************************
  *  Copyright 2019 Dell Inc.
+ *  Copyright 2020 Dell Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -21,6 +22,8 @@ import (
 	"sync"
 	"time"
 
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/config"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/security/authtokenloader"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/security/client"
@@ -40,6 +43,8 @@ type SecretProvider struct {
 	configuration         *common.ConfigurationStruct
 	cacheMuxtex           *sync.Mutex
 	loggingClient         logger.LoggingClient
+	//used to track when secrets have last been retrieved
+	LastUpdated time.Time
 }
 
 // NewSecretProvider returns a new secret provider
@@ -49,73 +54,88 @@ func NewSecretProvider(loggingClient logger.LoggingClient, configuration *common
 		cacheMuxtex:   &sync.Mutex{},
 		configuration: configuration,
 		loggingClient: loggingClient,
+		LastUpdated:   time.Now(),
 	}
 
 	return sp
 }
 
-// Initialize creates a SecretClient to be used for obtaining secrets from a secrets store manager.
+// Initialize creates SecretClients to be used for obtaining secrets from a secrets store manager.
 func (s *SecretProvider) Initialize(ctx context.Context) bool {
-	sharedSecretConfig, err := s.getSecretConfig(s.configuration.SecretStore)
-	if err != nil {
-		s.loggingClient.Error(fmt.Sprintf("unable to parse secret store configuration: %s", err.Error()))
+	var err error
+
+	// initialize shared secret client if configured
+	if s.SharedSecretClient, err = s.initializeSecretClient(ctx, s.configuration.SecretStore); err != nil {
+		s.loggingClient.Error(fmt.Sprintf("unable to create shared secret client : %s", err.Error()))
 		return false
 	}
 
-	exclusiveSecretConfig, err := s.getSecretConfig(s.configuration.SecretStoreExclusive)
-	if err != nil {
-		s.loggingClient.Error(fmt.Sprintf("unable to parse exclusive secret store configuration: %s", err.Error()))
+	// initialize exclusive secret client if configured
+	if s.ExclusiveSecretClient, err = s.initializeSecretClient(ctx, s.configuration.SecretStoreExclusive); err != nil {
+		s.loggingClient.Error(fmt.Sprintf("unable to create exclusive secret client : %s", err.Error()))
 		return false
 	}
 
-	// attempt to create a new SecretProvider client only if security is enabled.
-	if s.isSecurityEnabled() {
-		for i := 0; i < sharedSecretConfig.AdditionalRetryAttempts; i++ {
-			// create secret client based on SecretStore config for db credentials
-			s.SharedSecretClient, err = client.NewVault(ctx, sharedSecretConfig, s.loggingClient).Get(s.configuration.SecretStore)
-			if err == nil {
-				break
-			} else {
-				waitTIme, err := time.ParseDuration(sharedSecretConfig.RetryWaitPeriod)
-				if err != nil {
-					s.loggingClient.Error(fmt.Sprintf("invalid retry wait period for shared secret store config: %s", err.Error()))
-					return false
-				}
-				time.Sleep(waitTIme)
-				continue
-			}
-		}
-		if err != nil {
-			s.loggingClient.Error(fmt.Sprintf("unable to create shared SecretClient: %s", err.Error()))
-			return false
-		}
-
-		for i := 0; i < exclusiveSecretConfig.AdditionalRetryAttempts; i++ {
-			// create secret client based on SecretStoreExclusive config for per-service credentials
-			s.ExclusiveSecretClient, err = client.NewVault(ctx, exclusiveSecretConfig, s.loggingClient).Get(s.configuration.SecretStoreExclusive)
-			if err == nil {
-				break
-			} else {
-				waitTIme, err := time.ParseDuration(exclusiveSecretConfig.RetryWaitPeriod)
-				if err != nil {
-					s.loggingClient.Error(fmt.Sprintf("invalid retry wait period for exlusive secret store config: %s", err.Error()))
-					return false
-				}
-				time.Sleep(waitTIme)
-				continue
-			}
-		}
-		if err != nil {
-			s.loggingClient.Error(fmt.Sprintf("unable to create exclusive SecretClient: %s", err.Error()))
-			return false
-		}
-	}
 	return true
+}
+
+func (s *SecretProvider) initializeSecretClient(
+	ctx context.Context,
+	secretStoreInfo bootstrapConfig.SecretStoreInfo) (pkg.SecretClient, error) {
+	var secretClient pkg.SecretClient
+
+	// secretStoreInfo is optional so that secret config can be empty
+	secretConfig, secretStoreEmpty, err := s.getSecretConfig(secretStoreInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// no secret client to be created
+	if secretStoreEmpty {
+		return nil, nil
+	}
+
+	if s.isSecurityEnabled() {
+		secretClient, err = client.NewVault(ctx, secretConfig, s.loggingClient).Get(secretStoreInfo)
+
+		if err == nil || secretConfig.AdditionalRetryAttempts <= 0 {
+			return secretClient, err
+		}
+
+		// retries some more times if secretConfig.AdditionalRetryAttempts is > 0
+		waitTIme, parseErr := time.ParseDuration(secretConfig.RetryWaitPeriod)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid retry wait period for secret config: %s", parseErr.Error())
+		}
+
+		for retry := 0; retry < secretConfig.AdditionalRetryAttempts; retry++ {
+			time.Sleep(waitTIme)
+
+			secretClient, err = client.NewVault(ctx, secretConfig, s.loggingClient).Get(secretStoreInfo)
+
+			if err == nil {
+				break
+			}
+		}
+
+		// check whehter the last retry is failed?
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return secretClient, nil
 }
 
 // getSecretConfig creates a SecretConfig based on the SecretStoreInfo configuration properties.
 // If a tokenfile is present it will override the Authentication.AuthToken value.
-func (s *SecretProvider) getSecretConfig(secretStoreInfo common.SecretStoreInfo) (vault.SecretConfig, error) {
+// the return boolean is used to indicate whether the secret store configuration is empty or not
+func (s *SecretProvider) getSecretConfig(secretStoreInfo bootstrapConfig.SecretStoreInfo) (vault.SecretConfig, bool, error) {
+	emptySecretStore := bootstrapConfig.SecretStoreInfo{}
+	if secretStoreInfo == emptySecretStore {
+		return vault.SecretConfig{}, true, nil
+	}
+
 	secretConfig := vault.SecretConfig{
 		Host:                    secretStoreInfo.Host,
 		Port:                    secretStoreInfo.Port,
@@ -130,7 +150,7 @@ func (s *SecretProvider) getSecretConfig(secretStoreInfo common.SecretStoreInfo)
 	}
 
 	if !s.isSecurityEnabled() || secretStoreInfo.TokenFile == "" {
-		return secretConfig, nil
+		return secretConfig, false, nil
 	}
 
 	// only bother getting a token if security is enabled and the configuration-provided tokenfile is not empty.
@@ -139,10 +159,12 @@ func (s *SecretProvider) getSecretConfig(secretStoreInfo common.SecretStoreInfo)
 
 	token, err := authTokenLoader.Load(secretStoreInfo.TokenFile)
 	if err != nil {
-		return secretConfig, err
+		return secretConfig, false, err
 	}
+
 	secretConfig.Authentication.AuthToken = token
-	return secretConfig, nil
+
+	return secretConfig, false, nil
 }
 
 // isSecurityEnabled determines if security has been enabled.

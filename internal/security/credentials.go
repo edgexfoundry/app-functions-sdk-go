@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/store/db"
@@ -29,15 +30,22 @@ func (s *SecretProvider) GetDatabaseCredentials(database db.DatabaseInfo) (commo
 	var credentials map[string]string
 	var err error
 
-	// TODO: remove once Redis has credentials
-	if database.Type == db.RedisDB {
-		return common.Credentials{}, err
-	}
-
 	// If security is disabled then we are to use the insecure credentials supplied by the configuration.
 	if !s.isSecurityEnabled() {
 		credentials, err = s.getInsecureSecrets(database.Type, "username", "password")
+		// TODO: Remove for release version v2.0 when DB Credentials are only in new Insecure Secrets
+		if err != nil {
+			// Not found in new InsecureSecrets,so just use old V1 Database settings.
+			return common.Credentials{
+				Username: database.Username,
+				Password: database.Password,
+			}, nil
+		}
 	} else {
+		if s.SharedSecretClient == nil {
+			return common.Credentials{}, errors.New("SharedSecretClient is required but not configured")
+		}
+
 		credentials, err = s.SharedSecretClient.GetSecrets(database.Type, "username", "password")
 	}
 
@@ -188,6 +196,7 @@ func (s *SecretProvider) StoreSecrets(path string, secrets map[string]string) er
 	// Clearing cache because adding a new secret(s) possibly invalidates the previous cache
 	s.secretsCache = make(map[string]map[string]string)
 	s.cacheMuxtex.Unlock()
-
+	//indicate to the SDK that the cache has been invalidated
+	s.LastUpdated = time.Now()
 	return nil
 }

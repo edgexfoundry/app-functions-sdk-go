@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019 Intel Corporation
+// Copyright (c) 2020 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License. You may obtain a copy of the License at
@@ -20,10 +20,13 @@ import (
 	"context"
 	"net"
 	"net/url"
+	"os"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/config"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/security/mock"
@@ -63,54 +66,106 @@ func TestInitializeClientFromSecretProvider(t *testing.T) {
 
 	lc := logger.NewClient("app_functions_sdk_go", false, "./test.log", "DEBUG")
 
-	testSecretStoreInfo := common.SecretStoreInfo{
-		SecretConfig: vault.SecretConfig{
-			Host:       host,
-			Port:       portNum,
-			Protocol:   "http",
-			ServerName: "mockVaultServer",
-		},
+	testSecretStoreInfo := config.SecretStoreInfo{
+		Host:                    host,
+		Port:                    portNum,
+		Protocol:                "http",
+		ServerName:              "mockVaultServer",
+		AdditionalRetryAttempts: 2,
+		RetryWaitPeriod:         "100ms",
 	}
 
+	emptySecretStoreInfo := config.SecretStoreInfo{}
+
 	tests := []struct {
-		name        string
-		tokenFile   string
-		expectError bool
+		name                             string
+		tokenFileForShared               string
+		tokenFileForExclusive            string
+		sharedSecretStore                config.SecretStoreInfo
+		exclusiveSecretStore             config.SecretStoreInfo
+		expectError                      bool
+		expectSharedSecretClientEmpty    bool
+		expectExclusiveSecretClientEmpty bool
 	}{
 		{
-			name:        "Create client with test-token",
-			tokenFile:   "client/testdata/testToken.json",
-			expectError: false,
+			name:                             "Create client with test-token",
+			tokenFileForShared:               "client/testdata/testToken.json",
+			tokenFileForExclusive:            "client/testdata/testToken.json",
+			sharedSecretStore:                testSecretStoreInfo,
+			exclusiveSecretStore:             testSecretStoreInfo,
+			expectError:                      false,
+			expectSharedSecretClientEmpty:    false,
+			expectExclusiveSecretClientEmpty: false,
 		},
 		{
-			name:        "Create client with expired token, no TTL remaining",
-			tokenFile:   "client/testdata/expiredToken.json",
-			expectError: true,
+			name:                             "Create client with expired token, no TTL remaining",
+			tokenFileForShared:               "client/testdata/expiredToken.json",
+			tokenFileForExclusive:            "client/testdata/expiredToken.json",
+			sharedSecretStore:                testSecretStoreInfo,
+			exclusiveSecretStore:             testSecretStoreInfo,
+			expectError:                      true,
+			expectSharedSecretClientEmpty:    true,
+			expectExclusiveSecretClientEmpty: true,
 		},
 		{
-			name:        "Create client with non-existing TokenFile path",
-			tokenFile:   "client/testdata/non-existing.json",
-			expectError: true,
+			name:                             "Create client with non-existing TokenFile path",
+			tokenFileForShared:               "client/testdata/non-existing.json",
+			tokenFileForExclusive:            "client/testdata/non-existing.json",
+			sharedSecretStore:                testSecretStoreInfo,
+			exclusiveSecretStore:             testSecretStoreInfo,
+			expectError:                      true,
+			expectSharedSecretClientEmpty:    true,
+			expectExclusiveSecretClientEmpty: true,
 		},
 		{
-			name:        "New secret client with no TokenFile",
-			tokenFile:   "",
-			expectError: true,
+			name:                             "New secret client with no TokenFile",
+			sharedSecretStore:                testSecretStoreInfo,
+			exclusiveSecretStore:             testSecretStoreInfo,
+			expectError:                      true,
+			expectSharedSecretClientEmpty:    true,
+			expectExclusiveSecretClientEmpty: true,
+		},
+		{
+			name:                             "empty shared secret store",
+			tokenFileForExclusive:            "client/testdata/testToken.json",
+			sharedSecretStore:                emptySecretStoreInfo,
+			exclusiveSecretStore:             testSecretStoreInfo,
+			expectError:                      false,
+			expectSharedSecretClientEmpty:    true,
+			expectExclusiveSecretClientEmpty: false,
+		},
+		{
+			name:                             "empty exclusive secret store",
+			tokenFileForShared:               "client/testdata/testToken.json",
+			sharedSecretStore:                testSecretStoreInfo,
+			exclusiveSecretStore:             emptySecretStoreInfo,
+			expectError:                      false,
+			expectSharedSecretClientEmpty:    false,
+			expectExclusiveSecretClientEmpty: true,
+		},
+		{
+			name:                             "both empty secret stores",
+			sharedSecretStore:                emptySecretStoreInfo,
+			exclusiveSecretStore:             emptySecretStoreInfo,
+			expectError:                      false,
+			expectSharedSecretClientEmpty:    true,
+			expectExclusiveSecretClientEmpty: true,
 		},
 	}
 
 	for _, test := range tests {
-		// inject testing data
-		testSecretStoreInfo.TokenFile = test.tokenFile
-
-		config := &common.ConfigurationStruct{
-			SecretStore: testSecretStoreInfo,
-		}
-
 		// pinned local test variables to avoid scopelint warnings
 		currentTest := test
 
 		t.Run(test.name, func(t *testing.T) {
+			currentTest.sharedSecretStore.TokenFile = currentTest.tokenFileForShared
+			currentTest.exclusiveSecretStore.TokenFile = currentTest.tokenFileForExclusive
+
+			config := &common.ConfigurationStruct{
+				SecretStore:          currentTest.sharedSecretStore,
+				SecretStoreExclusive: currentTest.exclusiveSecretStore,
+			}
+
 			secretProvider := NewSecretProvider(lc, config)
 			ok := secretProvider.Initialize(ctx)
 
@@ -119,6 +174,97 @@ func TestInitializeClientFromSecretProvider(t *testing.T) {
 			} else {
 				assert.True(t, ok, "Expect no error but got not ok")
 			}
+
+			if currentTest.expectSharedSecretClientEmpty {
+				assert.Nil(t, secretProvider.SharedSecretClient, "shared secret client should be empty")
+			} else {
+				assert.NotNil(t, secretProvider.SharedSecretClient, "shared secret client should NOT be empty")
+			}
+
+			if currentTest.expectExclusiveSecretClientEmpty {
+				assert.Nil(t, secretProvider.ExclusiveSecretClient, "exclusive secret client should be empty")
+			} else {
+				assert.NotNil(t, secretProvider.ExclusiveSecretClient, "exclusive secret client should NOT be empty")
+			}
+		})
+	}
+	// wait for some time to allow renewToken to be run if any
+	time.Sleep(7 * time.Second)
+}
+
+func TestConfigAdditonalRetryAttempts(t *testing.T) {
+	// setup
+	tokenPeriod := 6
+	tokenDataMap := initTokenData(tokenPeriod)
+
+	server := mock.GetMockTokenServer(tokenDataMap)
+
+	defer server.Close()
+
+	serverURL, err := url.Parse(server.URL)
+	require.NoErrorf(t, err, "error on parsing server url %s: %s", server.URL, err)
+
+	host, port, _ := net.SplitHostPort(serverURL.Host)
+	portNum, _ := strconv.Atoi(port)
+
+	ctx, cancelFunc := context.WithCancel(context.Background())
+
+	defer cancelFunc()
+
+	lc := logger.NewClient("app_functions_sdk_go", false, "./test.log", "DEBUG")
+
+	origEnv := os.Getenv("EDGEX_SECURITY_SECRET_STORE")
+
+	defer func() {
+		_ = os.Setenv("EDGEX_SECURITY_SECRET_STORE", origEnv)
+	}()
+
+	os.Setenv("EDGEX_SECURITY_SECRET_STORE", "true")
+
+	testSecretStoreInfo := config.SecretStoreInfo{
+		// configuration with AdditionalRetryAttempts omitted
+		Host:       host,
+		Port:       portNum,
+		Protocol:   "http",
+		ServerName: "mockVaultServer",
+		TokenFile:  "client/testdata/testToken.json",
+	}
+
+	config := &common.ConfigurationStruct{
+		SecretStore: testSecretStoreInfo,
+	}
+
+	tests := []struct {
+		name                   string
+		additonalRetryAttempts int
+	}{
+		{
+			name:                   "Create client with 0 retry",
+			additonalRetryAttempts: 0,
+		},
+		{
+			name:                   "Create client with 1 retry",
+			additonalRetryAttempts: 1,
+		},
+		{
+			name:                   "Create client with 2 (or more) retries",
+			additonalRetryAttempts: 2,
+		},
+	}
+
+	for _, test := range tests {
+		// pinned local test variables to avoid scopelint warnings
+		currentTest := test
+
+		t.Run(test.name, func(t *testing.T) {
+			// inject the test data
+			config.SecretStore.AdditionalRetryAttempts = currentTest.additonalRetryAttempts
+
+			secrClient, err := NewSecretProvider(lc, config).initializeSecretClient(ctx, config.SecretStore)
+
+			require.NoError(t, err)
+
+			require.NotEmpty(t, secrClient, "should have client created even AdditionalRetryAttempts = 0")
 		})
 	}
 	// wait for some time to allow renewToken to be run if any

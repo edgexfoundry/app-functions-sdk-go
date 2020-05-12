@@ -34,7 +34,7 @@ const (
 	InitVector       = "initvector"
 	Url              = "url"
 	MimeType         = "mimetype"
-	PersistOnError   = "persistOnError"
+	PersistOnError   = "persistonerror"
 	Cert             = "cert"
 	SkipVerify       = "skipverify"
 	Qos              = "qos"
@@ -42,6 +42,15 @@ const (
 	AutoReconnect    = "autoreconnect"
 	DeviceName       = "devicename"
 	ReadingName      = "readingname"
+	Rule             = "rule"
+	BatchThreshold   = "batchthreshold"
+	TimeInterval     = "timeinterval"
+	SecretHeaderName = "secretheadername"
+	SecretPath       = "secretpath"
+	BrokerAddress    = "brokeraddress"
+	ClientID         = "clientid"
+	Topic            = "topic"
+	AuthMode         = "authmode"
 )
 
 // AppFunctionsSDKConfigurable contains the helper functions that return the function pointers for building the configurable function pipeline.
@@ -211,10 +220,13 @@ func (dynamic AppFunctionsSDKConfigurable) HTTPPost(parameters map[string]string
 	url = strings.TrimSpace(url)
 	mimeType = strings.TrimSpace(mimeType)
 
-	transform := transforms.HTTPSender{
-		URL:            url,
-		MimeType:       mimeType,
-		PersistOnError: persistOnError,
+	secretHeaderName := parameters[SecretHeaderName]
+	secretPath := parameters[SecretPath]
+	var transform transforms.HTTPSender
+	if secretHeaderName != "" && secretPath != "" {
+		transform = transforms.NewHTTPSenderWithSecretHeader(url, mimeType, persistOnError, secretHeaderName, secretPath)
+	} else {
+		transform = transforms.NewHTTPSender(url, mimeType, persistOnError)
 	}
 	dynamic.Sdk.LoggingClient.Debug("HTTP Post Parameters", Url, transform.URL, MimeType, transform.MimeType)
 	return transform.HTTPPost
@@ -224,54 +236,16 @@ func (dynamic AppFunctionsSDKConfigurable) HTTPPost(parameters map[string]string
 // If no previous function exists, then the event that triggered the pipeline will be used.
 // This function is a configuration function and returns a function pointer.
 func (dynamic AppFunctionsSDKConfigurable) HTTPPostJSON(parameters map[string]string) appcontext.AppFunction {
-	url, ok := parameters[Url]
-	if !ok {
-		dynamic.Sdk.LoggingClient.Error("Could not find " + Url)
-		return nil
-	}
-
-	// PersistOnError is optional and is false by default.
-	persistOnError := false
-	value, ok := parameters[PersistOnError]
-	if ok {
-		var err error
-		persistOnError, err = strconv.ParseBool(value)
-		if err != nil {
-			dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to a bool for '%s' parameter", value, PersistOnError), "error", err)
-			return nil
-		}
-	}
-
-	url = strings.TrimSpace(url)
-	dynamic.Sdk.LoggingClient.Debug("HTTP Post JSON Parameters", Url, url)
-	return transforms.NewHTTPSender(url, "application/json", persistOnError).HTTPPost
+	parameters[MimeType] = "application/json"
+	return dynamic.HTTPPost(parameters)
 }
 
 // HTTPPostXML sends data from the previous function to the specified Endpoint via http POST with a mime type of application/xml.
 // If no previous function exists, then the event that triggered the pipeline will be used.
 // This function is a configuration function and returns a function pointer.
 func (dynamic AppFunctionsSDKConfigurable) HTTPPostXML(parameters map[string]string) appcontext.AppFunction {
-	url, ok := parameters[Url]
-	if !ok {
-		dynamic.Sdk.LoggingClient.Error("Could not find " + Url)
-		return nil
-	}
-
-	// PersistOnError is optional and is false by default.
-	persistOnError := false
-	value, ok := parameters[PersistOnError]
-	if ok {
-		var err error
-		persistOnError, err = strconv.ParseBool(value)
-		if err != nil {
-			dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to a bool for '%s' parameter", value, PersistOnError), "error", err)
-			return nil
-		}
-	}
-
-	url = strings.TrimSpace(url)
-	dynamic.Sdk.LoggingClient.Debug("HTTP Post XML Parameters", Url, url)
-	return transforms.NewHTTPSender(url, "application/xml", persistOnError).HTTPPost
+	parameters[MimeType] = "application/xml"
+	return dynamic.HTTPPost(parameters)
 }
 
 // MQTTSend sends data from the previous function to the specified MQTT broker.
@@ -358,4 +332,166 @@ func (dynamic AppFunctionsSDKConfigurable) MQTTSend(parameters map[string]string
 func (dynamic AppFunctionsSDKConfigurable) SetOutputData() appcontext.AppFunction {
 	transform := transforms.OutputData{}
 	return transform.SetOutputData
+}
+
+// BatchByCount ...
+func (dynamic AppFunctionsSDKConfigurable) BatchByCount(parameters map[string]string) appcontext.AppFunction {
+	batchThreshold, ok := parameters[BatchThreshold]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + BatchThreshold)
+		return nil
+	}
+
+	thresholdValue, err := strconv.Atoi(batchThreshold)
+	if err != nil {
+		dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to an int for '%s' parameter", batchThreshold, BatchThreshold), "error", err)
+		return nil
+	}
+	transform, err := transforms.NewBatchByCount(thresholdValue)
+	if err != nil {
+		dynamic.Sdk.LoggingClient.Error(err.Error())
+	}
+	dynamic.Sdk.LoggingClient.Debug("Batch by count Parameters", BatchThreshold, batchThreshold)
+	return transform.Batch
+}
+
+// BatchByTime ...
+func (dynamic AppFunctionsSDKConfigurable) BatchByTime(parameters map[string]string) appcontext.AppFunction {
+	timeInterval, ok := parameters[TimeInterval]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + TimeInterval)
+		return nil
+	}
+	transform, err := transforms.NewBatchByTime(timeInterval)
+	if err != nil {
+		dynamic.Sdk.LoggingClient.Error(err.Error())
+	}
+	dynamic.Sdk.LoggingClient.Debug("Batch by time Parameters", TimeInterval, timeInterval)
+	return transform.Batch
+}
+
+// BatchByTimeAndCount ...
+func (dynamic AppFunctionsSDKConfigurable) BatchByTimeAndCount(parameters map[string]string) appcontext.AppFunction {
+	timeInterval, ok := parameters[TimeInterval]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + TimeInterval)
+		return nil
+	}
+	batchThreshold, ok := parameters[BatchThreshold]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + BatchThreshold)
+		return nil
+	}
+	thresholdValue, err := strconv.Atoi(batchThreshold)
+	if err != nil {
+		dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to an int for '%s' parameter", batchThreshold, BatchThreshold), "error", err)
+	}
+	transform, err := transforms.NewBatchByTimeAndCount(timeInterval, thresholdValue)
+	if err != nil {
+		dynamic.Sdk.LoggingClient.Error(err.Error())
+	}
+	dynamic.Sdk.LoggingClient.Debug("Batch by time and count Parameters", BatchThreshold, batchThreshold, TimeInterval, timeInterval)
+	return transform.Batch
+}
+
+// JSONLogic ...
+func (dynamic AppFunctionsSDKConfigurable) JSONLogic(parameters map[string]string) appcontext.AppFunction {
+	rule, ok := parameters[Rule]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + Rule)
+		return nil
+	}
+	transform := transforms.NewJSONLogic(rule)
+	return transform.Evaluate
+}
+
+// MQTTSecretSend
+func (dynamic AppFunctionsSDKConfigurable) MQTTSecretSend(parameters map[string]string) appcontext.AppFunction {
+	var err error
+	qos := 0
+	retain := false
+	autoReconnect := false
+	skipCertVerify := false
+
+	brokerAddress, ok := parameters[BrokerAddress]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + BrokerAddress)
+		return nil
+	}
+	topic, ok := parameters[Topic]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + Topic)
+		return nil
+	}
+
+	secretPath, ok := parameters[SecretPath]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + SecretPath)
+		return nil
+	}
+	authMode, ok := parameters[AuthMode]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + AuthMode)
+		return nil
+	}
+	clientID, ok := parameters[ClientID]
+	if !ok {
+		dynamic.Sdk.LoggingClient.Error("Could not find " + ClientID)
+		return nil
+	}
+	qosVal, ok := parameters[Qos]
+	if ok {
+		qos, err = strconv.Atoi(qosVal)
+		if err != nil {
+			dynamic.Sdk.LoggingClient.Error("Unable to parse " + Qos + " value")
+			return nil
+		}
+	}
+	retainVal, ok := parameters[Retain]
+	if ok {
+		retain, err = strconv.ParseBool(retainVal)
+		if err != nil {
+			dynamic.Sdk.LoggingClient.Error("Unable to parse " + Retain + " value")
+			return nil
+		}
+	}
+	autoreconnectVal, ok := parameters[AutoReconnect]
+	if ok {
+		autoReconnect, err = strconv.ParseBool(autoreconnectVal)
+		if err != nil {
+			dynamic.Sdk.LoggingClient.Error("Unable to parse " + AutoReconnect + " value")
+			return nil
+		}
+	}
+	skipVerifyVal, ok := parameters[SkipVerify]
+	if ok {
+		skipCertVerify, err = strconv.ParseBool(skipVerifyVal)
+		if err != nil {
+			dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to a bool for '%s' parameter", skipVerifyVal, SkipVerify), "error", err)
+			return nil
+		}
+	}
+	mqttConfig := transforms.MQTTSecretConfig{
+		Retain:         retain,
+		SkipCertVerify: skipCertVerify,
+		AutoReconnect:  autoReconnect,
+		QoS:            byte(qos),
+		BrokerAddress:  brokerAddress,
+		ClientId:       clientID,
+		SecretPath:     secretPath,
+		Topic:          topic,
+		AuthMode:       authMode,
+	}
+	// PersistOnError is optional and is false by default.
+	persistOnError := false
+	value, ok := parameters[PersistOnError]
+	if ok {
+		persistOnError, err = strconv.ParseBool(value)
+		if err != nil {
+			dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to a bool for '%s' parameter", value, PersistOnError), "error", err)
+			return nil
+		}
+	}
+	transform := transforms.NewMQTTSecretSender(mqttConfig, persistOnError)
+	return transform.MQTTSend
 }
