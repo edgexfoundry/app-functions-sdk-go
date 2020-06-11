@@ -1,5 +1,5 @@
 <a name="v1.2.0"></a>
-## [v1.2.0] - Compatible w/ Geneva Release
+## [v1.2.0] - (Compatible w/ Geneva Release)
 
 ### Fix
 - fixed log message formatting ([#378](https://github.com/rsdmike/app-functions-sdk-go/issues/378))
