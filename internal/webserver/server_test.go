@@ -98,12 +98,12 @@ func TestConfigureAndPingV2Route(t *testing.T) {
 	rr := httptest.NewRecorder()
 	webserver.router.ServeHTTP(rr, req)
 	decoder := json.NewDecoder(rr.Body)
-	var pingResponse gmcccommon.PingResponse
-	assert.NoError(t, decoder.Decode(&pingResponse))
-	assert.Equal(t, requestID, pingResponse.RequestID)
-	assert.Equal(t, "pong", pingResponse.Message)
-	assert.Equal(t, 200, pingResponse.StatusCode)
-	assert.GreaterOrEqual(t, strconv.FormatInt(time.Now().UnixNano(), 10), pingResponse.Timestamp)
+	var response gmcccommon.PingResponse
+	assert.NoError(t, decoder.Decode(&response))
+	assert.Equal(t, requestID, response.RequestID)
+	assert.Equal(t, "pong", response.Message)
+	assert.Equal(t, 200, response.StatusCode)
+	assert.GreaterOrEqual(t, strconv.FormatInt(time.Now().UnixNano(), 10), response.Timestamp)
 
 }
 
@@ -121,6 +121,28 @@ func TestConfigureAndVersionRoute(t *testing.T) {
 	assert.Equal(t, "{\"version\":\"0.0.0\",\"sdk_version\":\"0.0.0\"}\n", body)
 
 }
+func TestConfigureAndVersionV2Route(t *testing.T) {
+
+	sp := security.NewSecretProvider(logClient, config)
+	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
+	webserver.ConfigureStandardRoutes()
+	requestID := "123"
+	payload := []byte("{\"requestId\":\"" + requestID + "\"}")
+
+	req, _ := http.NewRequest(http.MethodPost, "/api/v2/version", bytes.NewReader(payload))
+	rr := httptest.NewRecorder()
+	webserver.router.ServeHTTP(rr, req)
+
+	decoder := json.NewDecoder(rr.Body)
+	var response VersionV2Response
+	assert.NoError(t, decoder.Decode(&response))
+	assert.Equal(t, requestID, response.RequestID)
+	assert.Equal(t, "", response.Message)
+	assert.Equal(t, 200, response.StatusCode)
+	assert.Equal(t, "0.0.0", response.Version)
+	assert.Equal(t, "0.0.0", response.SDKVersion)
+
+}
 func TestConfigureAndConfigRoute(t *testing.T) {
 
 	sp := security.NewSecretProvider(logClient, config)
@@ -132,6 +154,22 @@ func TestConfigureAndConfigRoute(t *testing.T) {
 	webserver.router.ServeHTTP(rr, req)
 
 	expected := `{"Writable":{"LogLevel":"","Pipeline":{"ExecutionOrder":"","UseTargetTypeOfByteArray":false,"Functions":null},"StoreAndForward":{"Enabled":false,"RetryInterval":"","MaxRetryCount":0},"InsecureSecrets":null},"Logging":{"EnableRemote":false,"File":""},"Registry":{"Host":"","Port":0,"Type":""},"Service":{"BootTimeout":"","CheckInterval":"","ClientMonitor":"","Host":"","HTTPSCert":"","HTTPSKey":"","Port":0,"Protocol":"","StartupMsg":"","ReadMaxLimit":0,"Timeout":""},"MessageBus":{"PublishHost":{"Host":"","Port":0,"Protocol":""},"SubscribeHost":{"Host":"","Port":0,"Protocol":""},"Type":"","Optional":null},"Binding":{"Type":"","SubscribeTopic":"","PublishTopic":""},"ApplicationSettings":null,"Clients":null,"Database":{"Type":"","Host":"","Port":0,"Timeout":"","Username":"","Password":"","MaxIdle":0,"BatchSize":0},"SecretStore":{"Host":"","Port":0,"Path":"","Protocol":"","Namespace":"","RootCaCertPath":"","ServerName":"","Authentication":{"AuthType":"","AuthToken":""},"AdditionalRetryAttempts":0,"RetryWaitPeriod":"","TokenFile":""},"SecretStoreExclusive":{"Host":"","Port":0,"Path":"","Protocol":"","Namespace":"","RootCaCertPath":"","ServerName":"","Authentication":{"AuthType":"","AuthToken":""},"AdditionalRetryAttempts":0,"RetryWaitPeriod":"","TokenFile":""},"Startup":{"Duration":0,"Interval":0}}` + "\n"
+
+	body := rr.Body.String()
+	assert.Equal(t, expected, body)
+}
+func TestConfigureAndConfigV2Route(t *testing.T) {
+
+	sp := security.NewSecretProvider(logClient, config)
+	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
+	webserver.ConfigureStandardRoutes()
+	requestID := "123"
+	payload := []byte("{\"requestId\":\"" + requestID + "\"}")
+	req, _ := http.NewRequest(http.MethodPost, "/api/v2/config", bytes.NewReader(payload))
+	rr := httptest.NewRecorder()
+	webserver.router.ServeHTTP(rr, req)
+
+	expected := `{"requestId":"123","message":"","statusCode":200,"config":"{\"Writable\":{\"LogLevel\":\"\",\"Pipeline\":{\"ExecutionOrder\":\"\",\"UseTargetTypeOfByteArray\":false,\"Functions\":null},\"StoreAndForward\":{\"Enabled\":false,\"RetryInterval\":\"\",\"MaxRetryCount\":0},\"InsecureSecrets\":null},\"Logging\":{\"EnableRemote\":false,\"File\":\"\"},\"Registry\":{\"Host\":\"\",\"Port\":0,\"Type\":\"\"},\"Service\":{\"BootTimeout\":\"\",\"CheckInterval\":\"\",\"ClientMonitor\":\"\",\"Host\":\"\",\"HTTPSCert\":\"\",\"HTTPSKey\":\"\",\"Port\":0,\"Protocol\":\"\",\"StartupMsg\":\"\",\"ReadMaxLimit\":0,\"Timeout\":\"\"},\"MessageBus\":{\"PublishHost\":{\"Host\":\"\",\"Port\":0,\"Protocol\":\"\"},\"SubscribeHost\":{\"Host\":\"\",\"Port\":0,\"Protocol\":\"\"},\"Type\":\"\",\"Optional\":null},\"Binding\":{\"Type\":\"\",\"SubscribeTopic\":\"\",\"PublishTopic\":\"\"},\"ApplicationSettings\":null,\"Clients\":null,\"Database\":{\"Type\":\"\",\"Host\":\"\",\"Port\":0,\"Timeout\":\"\",\"Username\":\"\",\"Password\":\"\",\"MaxIdle\":0,\"BatchSize\":0},\"SecretStore\":{\"Host\":\"\",\"Port\":0,\"Path\":\"\",\"Protocol\":\"\",\"Namespace\":\"\",\"RootCaCertPath\":\"\",\"ServerName\":\"\",\"Authentication\":{\"AuthType\":\"\",\"AuthToken\":\"\"},\"AdditionalRetryAttempts\":0,\"RetryWaitPeriod\":\"\",\"TokenFile\":\"\"},\"SecretStoreExclusive\":{\"Host\":\"\",\"Port\":0,\"Path\":\"\",\"Protocol\":\"\",\"Namespace\":\"\",\"RootCaCertPath\":\"\",\"ServerName\":\"\",\"Authentication\":{\"AuthType\":\"\",\"AuthToken\":\"\"},\"AdditionalRetryAttempts\":0,\"RetryWaitPeriod\":\"\",\"TokenFile\":\"\"},\"Startup\":{\"Duration\":0,\"Interval\":0}}"}` + "\n"
 
 	body := rr.Body.String()
 	assert.Equal(t, expected, body)
@@ -157,6 +195,33 @@ func TestConfigureAndMetricsRoute(t *testing.T) {
 	assert.NotZero(t, metrics.Memory.Sys, "Expected Sys value of metrics to be non-zero")
 	assert.NotZero(t, metrics.Memory.TotalAlloc, "Expected TotalAlloc value of metrics to be non-zero")
 	assert.NotNil(t, metrics.CpuBusyAvg, "Expected CpuBusyAvg value of metrics to be not nil")
+}
+
+func TestConfigureAndMetricsV2Route(t *testing.T) {
+	sp := newMockSecretProvider(logClient, config)
+	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
+	webserver.ConfigureStandardRoutes()
+	requestID := "123"
+	payload := []byte("{\"requestId\":\"" + requestID + "\"}")
+	req, _ := http.NewRequest(http.MethodPost, "/api/v2/metrics", bytes.NewReader(payload))
+	rr := httptest.NewRecorder()
+	webserver.router.ServeHTTP(rr, req)
+
+	body := rr.Body.String()
+	response := gmcccommon.MetricsResponse{}
+	json.Unmarshal([]byte(body), &response)
+	assert.NotNil(t, body, "Metrics not populated")
+	assert.Equal(t, requestID, response.RequestID)
+	assert.Equal(t, "", response.Message)
+	assert.Equal(t, 200, response.StatusCode)
+	assert.NotZero(t, response.MemAlloc, "Expected Alloc value of metrics to be non-zero")
+	assert.NotZero(t, response.MemFrees, "Expected Frees value of metrics to be non-zero")
+	assert.NotZero(t, response.MemLiveObjects, "Expected LiveObjects value of metrics to be non-zero")
+	assert.NotZero(t, response.MemMallocs, "Expected Mallocs value of metrics to be non-zero")
+	assert.NotZero(t, response.MemSys, "Expected Sys value of metrics to be non-zero")
+	assert.NotZero(t, response.MemTotalAlloc, "Expected TotalAlloc value of metrics to be non-zero")
+	assert.NotNil(t, response.CpuBusyAvg, "Expected CpuBusyAvg value of metrics to be not nil")
+
 }
 
 func TestSetupTriggerRoute(t *testing.T) {

@@ -49,6 +49,12 @@ type Version struct {
 	SDKVersion string `json:"sdk_version"`
 }
 
+type VersionV2Response struct {
+	gmcccommon.BaseResponse `json:",inline"`
+	Version                 string `json:"version"`
+	SDKVersion              string `json:"sdk_version"`
+}
+
 // NewWebserver returns a new instance of *WebServer
 func NewWebServer(config *common.ConfigurationStruct, secretProvider *security.SecretProvider, lc logger.LoggingClient, router *mux.Router) *WebServer {
 	ws := &WebServer{
@@ -85,7 +91,7 @@ func (webserver *WebServer) pingHandler(writer http.ResponseWriter, _ *http.Requ
 	writer.Header().Set("Content-Type", "text/plain")
 	writer.Write([]byte("pong"))
 }
-func (webserver *WebServer) pingHandler_V2(writer http.ResponseWriter, req *http.Request) {
+func (webserver *WebServer) pingHandlerV2(writer http.ResponseWriter, req *http.Request) {
 	decoder := json.NewDecoder(req.Body)
 	var pingRequest gmcccommon.PingRequest
 
@@ -131,6 +137,31 @@ func (webserver *WebServer) configHandler(writer http.ResponseWriter, _ *http.Re
 	webserver.encode(webserver.Config, writer)
 }
 
+func (webserver *WebServer) configHandlerV2(writer http.ResponseWriter, req *http.Request) {
+	decoder := json.NewDecoder(req.Body)
+	var request gmcccommon.ConfigRequest
+	err := decoder.Decode(&request)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to parse json payload: %v", err)
+		webserver.writeResponse(writer, msg, http.StatusBadRequest)
+		return
+	}
+
+	config, _ := json.Marshal(webserver.Config)
+
+	response := gmcccommon.ConfigResponse{
+		BaseResponse: gmcccommon.BaseResponse{
+			RequestID:  request.RequestID,
+			Message:    "",
+			StatusCode: 200,
+		},
+		Config: string(config),
+	}
+	webserver.encode(response, writer)
+	return
+
+}
+
 // Helper function for encoding things for returning from REST calls
 func (webserver *WebServer) encode(data interface{}, writer http.ResponseWriter) {
 	writer.Header().Add("Content-Type", "application/json")
@@ -148,7 +179,6 @@ func (webserver *WebServer) encode(data interface{}, writer http.ResponseWriter)
 // swagger:operation GET /metrics System_Management_Agent Metrics
 //
 // Metrics
-//
 // Gets the current metrics
 //
 // ---
@@ -168,6 +198,38 @@ func (webserver *WebServer) metricsHandler(writer http.ResponseWriter, _ *http.R
 	telem := telemetry.NewSystemUsage()
 
 	webserver.encode(telem, writer)
+
+	return
+}
+
+func (webserver *WebServer) metricsHandlerV2(writer http.ResponseWriter, req *http.Request) {
+	decoder := json.NewDecoder(req.Body)
+	var request gmcccommon.ConfigRequest
+	err := decoder.Decode(&request)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to parse json payload: %v", err)
+		webserver.writeResponse(writer, msg, http.StatusBadRequest)
+		return
+	}
+
+	telem := telemetry.NewSystemUsage()
+
+	// todo: these should be uint64 and float64  not int int8
+	response := gmcccommon.MetricsResponse{
+		BaseResponse: gmcccommon.BaseResponse{
+			RequestID:  request.RequestID,
+			Message:    "",
+			StatusCode: 200,
+		},
+		MemAlloc:       int(telem.Memory.Alloc),
+		MemFrees:       int(telem.Memory.Frees),
+		MemLiveObjects: int(telem.Memory.LiveObjects),
+		MemMallocs:     int(telem.Memory.Mallocs),
+		MemSys:         int(telem.Memory.Sys),
+		MemTotalAlloc:  int(telem.Memory.TotalAlloc),
+		CpuBusyAvg:     int8(telem.CpuBusyAvg),
+	}
+	webserver.encode(response, writer)
 
 	return
 }
@@ -198,6 +260,29 @@ func (webserver *WebServer) versionHandler(writer http.ResponseWriter, _ *http.R
 	}
 	webserver.encode(version, writer)
 
+	return
+}
+func (webserver *WebServer) versionHandlerV2(writer http.ResponseWriter, req *http.Request) {
+	decoder := json.NewDecoder(req.Body)
+	var versionRequest gmcccommon.VersionRequest
+
+	err := decoder.Decode(&versionRequest)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to parse json payload: %v", err)
+		webserver.writeResponse(writer, msg, http.StatusBadRequest)
+		return
+	}
+
+	response := VersionV2Response{
+		BaseResponse: gmcccommon.BaseResponse{
+			RequestID:  versionRequest.RequestID,
+			Message:    "",
+			StatusCode: 200,
+		},
+		Version:    internal.ApplicationVersion,
+		SDKVersion: internal.SDKVersion,
+	}
+	webserver.encode(response, writer)
 	return
 }
 
@@ -283,6 +368,8 @@ func (webserver *WebServer) secretHandler(writer http.ResponseWriter, req *http.
 	writer.WriteHeader(http.StatusCreated)
 	return
 }
+func (webserver *WebServer) secretHandlerV2(writer http.ResponseWriter, req *http.Request) {
+}
 
 func (webserver *WebServer) writeResponse(writer http.ResponseWriter, msg string, statusCode int) {
 	webserver.LoggingClient.Error(msg)
@@ -305,19 +392,23 @@ func (webserver *WebServer) ConfigureStandardRoutes() {
 
 	// Ping Resource
 	webserver.router.HandleFunc(clients.ApiPingRoute, webserver.pingHandler).Methods(http.MethodGet)
-	webserver.router.HandleFunc("/api/v2/ping", webserver.pingHandler_V2).Methods(http.MethodPost)
+	webserver.router.HandleFunc("/api/v2/ping", webserver.pingHandlerV2).Methods(http.MethodPost)
 
 	// Configuration
 	webserver.router.HandleFunc(clients.ApiConfigRoute, webserver.configHandler).Methods(http.MethodGet)
+	webserver.router.HandleFunc("/api/v2/config", webserver.configHandlerV2).Methods(http.MethodPost)
 
 	// Metrics
 	webserver.router.HandleFunc(clients.ApiMetricsRoute, webserver.metricsHandler).Methods(http.MethodGet)
+	webserver.router.HandleFunc("/api/v2/metrics", webserver.metricsHandlerV2).Methods(http.MethodPost)
 
 	// Version
 	webserver.router.HandleFunc(clients.ApiVersionRoute, webserver.versionHandler).Methods(http.MethodGet)
+	webserver.router.HandleFunc("/api/v2/version", webserver.versionHandlerV2).Methods(http.MethodPost)
 
 	// Secrets
 	webserver.router.HandleFunc(internal.SecretsAPIRoute, webserver.secretHandler).Methods(http.MethodPost)
+	webserver.router.HandleFunc(internal.SecretsAPIV2Route, webserver.secretHandlerV2).Methods(http.MethodPost)
 }
 
 // SetupTriggerRoute adds a route to handle trigger pipeline from HTTP request

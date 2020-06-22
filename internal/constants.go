@@ -40,3 +40,4 @@ var ApplicationVersion string = "0.0.0"
 
 // SecretsAPIRoute api route for posting secrets
 var SecretsAPIRoute = clients.ApiBase + "/secrets"
+var SecretsAPIV2Route = "/api/v2/secrets"
