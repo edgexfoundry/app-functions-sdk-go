@@ -22,7 +22,9 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/security"
 
@@ -31,6 +33,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/telemetry"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	gmcccommon "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,6 +85,25 @@ func TestConfigureAndPingRoute(t *testing.T) {
 
 	body := rr.Body.String()
 	assert.Equal(t, "pong", body)
+
+}
+func TestConfigureAndPingV2Route(t *testing.T) {
+
+	sp := security.NewSecretProvider(logClient, config)
+	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
+	webserver.ConfigureStandardRoutes()
+	requestID := "123"
+	payload := []byte("{\"requestId\":\"" + requestID + "\"}")
+	req, _ := http.NewRequest(http.MethodPost, "/api/v2/ping", bytes.NewReader(payload))
+	rr := httptest.NewRecorder()
+	webserver.router.ServeHTTP(rr, req)
+	decoder := json.NewDecoder(rr.Body)
+	var pingResponse gmcccommon.PingResponse
+	assert.NoError(t, decoder.Decode(&pingResponse))
+	assert.Equal(t, requestID, pingResponse.RequestID)
+	assert.Equal(t, "pong", pingResponse.Message)
+	assert.Equal(t, 200, pingResponse.StatusCode)
+	assert.GreaterOrEqual(t, strconv.FormatInt(time.Now().UnixNano(), 10), pingResponse.Timestamp)
 
 }
 

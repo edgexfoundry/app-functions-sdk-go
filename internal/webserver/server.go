@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,6 +30,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/telemetry"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	gmcccommon "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
 
 	"github.com/gorilla/mux"
 )
@@ -82,6 +84,28 @@ func NewWebServer(config *common.ConfigurationStruct, secretProvider *security.S
 func (webserver *WebServer) pingHandler(writer http.ResponseWriter, _ *http.Request) {
 	writer.Header().Set("Content-Type", "text/plain")
 	writer.Write([]byte("pong"))
+}
+func (webserver *WebServer) pingHandler_V2(writer http.ResponseWriter, req *http.Request) {
+	decoder := json.NewDecoder(req.Body)
+	var pingRequest gmcccommon.PingRequest
+
+	err := decoder.Decode(&pingRequest)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to parse json payload: %v", err)
+		webserver.writeResponse(writer, msg, http.StatusBadRequest)
+		return
+	}
+
+	response := gmcccommon.PingResponse{
+		BaseResponse: gmcccommon.BaseResponse{
+			RequestID:  pingRequest.RequestID,
+			Message:    "pong",
+			StatusCode: 200,
+		},
+		Timestamp: strconv.FormatInt(time.Now().UnixNano(), 10),
+	}
+	webserver.encode(response, writer)
+	return
 }
 
 // swagger:operation GET /config System_Management_Agent Config
@@ -281,6 +305,7 @@ func (webserver *WebServer) ConfigureStandardRoutes() {
 
 	// Ping Resource
 	webserver.router.HandleFunc(clients.ApiPingRoute, webserver.pingHandler).Methods(http.MethodGet)
+	webserver.router.HandleFunc("/api/v2/ping", webserver.pingHandler_V2).Methods(http.MethodPost)
 
 	// Configuration
 	webserver.router.HandleFunc(clients.ApiConfigRoute, webserver.configHandler).Methods(http.MethodGet)

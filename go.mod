@@ -24,3 +24,5 @@ require (
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.1.1
 )
+
+replace github.com/edgexfoundry/go-mod-core-contracts => ../go-mod-core-contracts
