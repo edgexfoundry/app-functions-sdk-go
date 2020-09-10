@@ -174,7 +174,7 @@ func TestMQTTClientGetSecrets(t *testing.T) {
 		}, false},
 	}
 	// setup mock secret client
-	mockSecretProvider := security.NewSecretProvider(nil, nil)
+	mockSecretProvider := security.NewSecretProvider(lc, config)
 	mockSecretProvider.ExclusiveSecretClient = &mockMQTTSecretClient{}
 	context := &appcontext.Context{
 		SecretProvider: mockSecretProvider,

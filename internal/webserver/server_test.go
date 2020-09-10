@@ -18,13 +18,19 @@ package webserver
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/security"
+	"github.com/edgexfoundry/app-functions-sdk-go/internal/store/db"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/internal/common"
@@ -116,7 +122,7 @@ func TestConfigureAndConfigRoute(t *testing.T) {
 }
 
 func TestConfigureAndMetricsRoute(t *testing.T) {
-	sp := newMockSecretProvider(logClient, config)
+	sp := newsecretProviderMock(config)
 	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
 	webserver.ConfigureStandardRoutes()
 
@@ -138,7 +144,7 @@ func TestConfigureAndMetricsRoute(t *testing.T) {
 }
 
 func TestSetupTriggerRoute(t *testing.T) {
-	sp := newMockSecretProvider(logClient, config)
+	sp := newsecretProviderMock(config)
 	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
 
 	handlerFunctionNotCalled := true
@@ -162,7 +168,7 @@ func TestSetupTriggerRoute(t *testing.T) {
 
 func TestPostSecretRoute(t *testing.T) {
 
-	sp := newMockSecretProvider(logClient, config)
+	sp := newsecretProviderMock(config)
 	webserver := NewWebServer(config, sp, logClient, mux.NewRouter())
 	webserver.ConfigureStandardRoutes()
 
@@ -215,22 +221,77 @@ func TestValidateSecretRoute(t *testing.T) {
 	assert.NoError(t, secretDataGoodPath.validateSecretData())
 }
 
-// mockSecretClient is fake vault client
-type mockSecretClient struct {
+type secretProviderMock struct {
+	config          *common.ConfigurationStruct
+	mockSecretStore map[string]map[string]string // secret's path, key, value
+
+	//used to track when secrets have last been retrieved
+	secretsLastUpdated time.Time
 }
 
-// NewMockSecretProvider provides a mocked version of the mockSecretClient to avoiding using vault in our tests
-func newMockSecretProvider(loggingClient logger.LoggingClient, configuration *common.ConfigurationStruct) security.SecretProvider {
-	mockSP := security.NewSecretProvider(logClient, config)
-	return mockSP
+// newsecretProviderMock returns a new mock secret provider
+func newsecretProviderMock(config *common.ConfigurationStruct) *secretProviderMock {
+	sp := &secretProviderMock{}
+	sp.config = config
+	sp.mockSecretStore = make(map[string]map[string]string)
+	return sp
 }
 
-// GetSecrets mock implementation of GetSecrets
-func (s *mockSecretClient) GetSecrets(path string, keys ...string) (map[string]string, error) {
-	return nil, nil
+// Initialize does nothing.
+func (s *secretProviderMock) Initialize(_ context.Context) bool {
+	return true
 }
 
-// StoreSecrets mock implementation of StoreSecrets
-func (s *mockSecretClient) StoreSecrets(path string, secrets map[string]string) error {
+// StoreSecrets saves secrets to the mock secret store.
+func (s *secretProviderMock) StoreSecrets(path string, secrets map[string]string) error {
+	testFullPath := s.config.SecretStoreExclusive.Path + path
+	// Base path should not have any leading slashes, only trailing or none, for this test to work
+	if strings.Contains(testFullPath, "//") || !strings.Contains(testFullPath, "/") {
+		return fmt.Errorf("Path is malformed: path=%s", path)
+	}
+
+	if !s.isSecurityEnabled() {
+		return fmt.Errorf("Storing secrets is not supported when running in insecure mode")
+	}
+	s.mockSecretStore[path] = secrets
 	return nil
+}
+
+// GetSecrets retrieves secrets from a mock secret store.
+func (s *secretProviderMock) GetSecrets(path string, _ ...string) (map[string]string, error) {
+	secrets, ok := s.mockSecretStore[path]
+	if !ok {
+		return nil, fmt.Errorf("no secrets for path '%s' found", path)
+	}
+	return secrets, nil
+}
+
+// GetDatabaseCredentials retrieves the login credentials for the database from mock secret store
+func (s *secretProviderMock) GetDatabaseCredentials(database db.DatabaseInfo) (common.Credentials, error) {
+	credentials, ok := s.mockSecretStore[database.Type]
+	if !ok {
+		return common.Credentials{}, fmt.Errorf("no credentials for type '%s' found", database.Type)
+	}
+
+	return common.Credentials{
+		Username: credentials["username"],
+		Password: credentials["password"],
+	}, nil
+}
+
+// InsecureSecretsUpdated resets LastUpdate is not running in secure mode.If running in secure mode, changes to
+// InsecureSecrets have no impact and are not used.
+func (s *secretProviderMock) InsecureSecretsUpdated() {
+	s.secretsLastUpdated = time.Now()
+}
+
+// SecretsLastUpdated returns the time stamp when the provider secrets cache was latest updated
+func (s *secretProviderMock) SecretsLastUpdated() time.Time {
+	return s.secretsLastUpdated
+}
+
+// isSecurityEnabled determines if security has been enabled.
+func (s *secretProviderMock) isSecurityEnabled() bool {
+	env := os.Getenv(security.EnvSecretStore)
+	return env != "false"
 }

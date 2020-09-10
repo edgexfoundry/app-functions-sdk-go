@@ -151,7 +151,7 @@ func getSecretsTestData() secretTestData {
 }
 
 func TestGetSecrets(t *testing.T) {
-	secretProvider := newMockSecretProvider(nil)
+	secretProvider, _ := setupGetInsecureSecrets(t)
 
 	for i, test := range getSecretsTestData() {
 		i := i
@@ -165,7 +165,7 @@ func TestGetSecrets(t *testing.T) {
 
 			// not re-newing the secretProvider will test the cache for the next item in the getSecretsTestData slice
 			if test.resetSecretsCache {
-				secretProvider = newMockSecretProvider(nil)
+				secretProvider, _ = setupGetInsecureSecrets(t)
 			}
 		})
 	}

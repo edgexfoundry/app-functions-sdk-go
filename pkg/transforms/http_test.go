@@ -18,6 +18,7 @@ package transforms
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -38,15 +39,6 @@ const (
 	path    = "/somepath/foo"
 	badPath = "/somepath/bad"
 )
-
-var logClient logger.LoggingClient
-var config *common.ConfigurationStruct
-
-func TestMain(m *testing.M) {
-	logClient = logger.NewClient("app_functions_sdk_go", false, "./test.log", "DEBUG")
-	config = &common.ConfigurationStruct{}
-	m.Run()
-}
 
 func TestHTTPPost(t *testing.T) {
 
@@ -117,11 +109,12 @@ func TestHTTPPostWithSecrets(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 
 		// this should be here on successful secret retrieval
-		if assert.Equal(t, r.Header.Get("Secret-Header-Name"), "value") {
-			t.Errorf("Unexpected header name received %s, expected %s", r.Header.Get("Content-type"), "application/json")
+		actual := r.Header.Get("Secret-Header-Name")
+		if len(actual) > 0 {
+			expected := "value"
+			require.Equal(t, expected , actual, fmt.Sprintf("Secret-Header-Name missing or wrong value") )
 		}
 	}
-
 	// create test server with handler
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
@@ -187,7 +180,7 @@ type mockSecretClient struct {
 
 // NewMockSecretProvider provides a mocked version of the mockSecretClient to avoiding using vault in our tests
 func newMockSecretProvider(loggingClient logger.LoggingClient, configuration *common.ConfigurationStruct) security.SecretProvider {
-	mockSP := security.NewSecretProvider(logClient, config)
+	mockSP := security.NewSecretProvider(lc, config)
 	mockSP.ExclusiveSecretClient = &mockSecretClient{}
 	return mockSP
 }

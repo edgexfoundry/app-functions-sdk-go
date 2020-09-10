@@ -17,6 +17,7 @@
 package transforms
 
 import (
+	"github.com/edgexfoundry/app-functions-sdk-go/internal/common"
 	"testing"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/urlclient/local"
@@ -34,23 +35,50 @@ import (
 
 var context *appcontext.Context
 var lc logger.LoggingClient
+var config *common.ConfigurationStruct
 
 const (
 	devID1 = "id1"
 	devID2 = "id2"
 )
 
-func init() {
-	lc := logger.NewClient("app_functions_sdk_go", false, "./test.log", "DEBUG")
+func TestMain(m *testing.M) {
+	lc := logger.NewMockClient()
+
+	insecureSecrets := common.InsecureSecrets{
+		"no_path": common.InsecureSecretsInfo{
+			Path: "",
+			Secrets: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+		},
+		"db_secrets": common.InsecureSecretsInfo{
+			Path: "db_secrets",
+			Secrets: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+		},
+	}
+
+	config = &common.ConfigurationStruct{
+		Writable: common.WritableInfo{
+			InsecureSecrets: insecureSecrets,
+		},
+	}
 	eventClient := coredata.NewEventClient(local.New("http://test" + clients.ApiEventRoute))
-	mockSP := newMockSecretProvider(lc, nil)
+	mockSP := newMockSecretProvider(lc, config)
 
 	context = &appcontext.Context{
 		LoggingClient:  lc,
 		EventClient:    eventClient,
 		SecretProvider: mockSP,
 	}
+
+	m.Run()
 }
+
 func TestTransformToXML(t *testing.T) {
 	// Event from device 1
 	eventIn := models.Event{
