@@ -110,35 +110,35 @@ func TestMQTTValidateSecrets(t *testing.T) {
 		ErrorExpectation bool
 		ErrorMessage     string
 	}{
-		//{"Invalid AuthMode", "BadAuthMode", mqttSecrets{}, true, "Invalid AuthMode selected"},
-		//{"No Auth No error", AuthModeNone, mqttSecrets{}, false, ""},
-		//{"UsernamePassword No Error", AuthModeUsernamePassword, mqttSecrets{
-		//	username: "user",
-		//	password: "password",
-		//}, false, ""},
-		//{"UsernamePassword Error no username", AuthModeUsernamePassword, mqttSecrets{
-		//	password: "password",
-		//}, true, "AuthModeUsernamePassword selected however username or password was not found at secret path"},
-		//{"UsernamePassword Error no password", AuthModeUsernamePassword, mqttSecrets{
-		//	username: "user",
-		//}, true, "AuthModeUsernamePassword selected however username or password was not found at secret path"},
+		{"Invalid AuthMode", "BadAuthMode", mqttSecrets{}, true, "Invalid AuthMode selected"},
+		{"No Auth No error", AuthModeNone, mqttSecrets{}, false, ""},
+		{"UsernamePassword No Error", AuthModeUsernamePassword, mqttSecrets{
+			username: "user",
+			password: "password",
+		}, false, ""},
+		{"UsernamePassword Error no username", AuthModeUsernamePassword, mqttSecrets{
+			password: "password",
+		}, true, "AuthModeUsernamePassword selected however username or password was not found at secret path"},
+		{"UsernamePassword Error no password", AuthModeUsernamePassword, mqttSecrets{
+			username: "user",
+		}, true, "AuthModeUsernamePassword selected however username or password was not found at secret path"},
 		{"ClientCert No Error", AuthModeCert, mqttSecrets{
 			certpemblock: []byte("----"),
 			keypemblock:  []byte("----"),
 		}, false, ""},
-		//{"ClientCert No Key", AuthModeCert, mqttSecrets{
-		//	certpemblock: []byte("----"),
-		//}, true, "AuthModeCert selected however the key or cert PEM block was not found at secret path"},
-		//{"ClientCert No Cert", AuthModeCert, mqttSecrets{
-		//	keypemblock: []byte("----"),
-		//}, true, "AuthModeCert selected however the key or cert PEM block was not found at secret path"},
-		//{"CACert no error", AuthModeCA, mqttSecrets{
-		//	capemblock: []byte(testcacert),
-		//}, false, ""},
+		{"ClientCert No Key", AuthModeCert, mqttSecrets{
+			certpemblock: []byte("----"),
+		}, true, "AuthModeCert selected however the key or cert PEM block was not found at secret path"},
+		{"ClientCert No Cert", AuthModeCert, mqttSecrets{
+			keypemblock: []byte("----"),
+		}, true, "AuthModeCert selected however the key or cert PEM block was not found at secret path"},
+		{"CACert no error", AuthModeCA, mqttSecrets{
+			capemblock: []byte(testcacert),
+		}, false, ""},
 		{"CACert invalid error", AuthModeCA, mqttSecrets{
 			capemblock: []byte(`------`),
 		}, true, "Error parsing CA Certificate"},
-		//{"CACert no ca error", AuthModeCA, mqttSecrets{}, true, "AuthModeCA selected however no PEM Block was found at secret path"},
+		{"CACert no ca error", AuthModeCA, mqttSecrets{}, true, "AuthModeCA selected however no PEM Block was found at secret path"},
 	}
 
 	for _, test := range tests {
