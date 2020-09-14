@@ -136,7 +136,7 @@ func (sender *MQTTSecretSender) validateSecrets(secrets mqttSecrets) error {
 		}
 	} else if sender.mqttConfig.AuthMode == AuthModeCA && len(secrets.capemblock) <= 0 {
 		return errors.New("AuthModeCA selected however no PEM Block was found at secret path")
-	} else if sender.mqttConfig.AuthMode != AuthModeNone {
+	} else if sender.mqttConfig.AuthMode != AuthModeNone && sender.mqttConfig.AuthMode != AuthModeCA {
 		return errors.New("Invalid AuthMode selected")
 	}
 
