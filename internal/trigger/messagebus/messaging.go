@@ -19,6 +19,7 @@ package messagebus
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/appcontext"
@@ -30,12 +31,18 @@ import (
 	"github.com/edgexfoundry/go-mod-messaging/pkg/types"
 )
 
+type collectedMsg struct {
+	topic string
+	env   types.MessageEnvelope
+}
+
 // Trigger implements Trigger to support MessageBusData
 type Trigger struct {
 	Configuration *common.ConfigurationStruct
 	Runtime       *runtime.GolangRuntime
 	client        messaging.MessageClient
 	topics        []types.TopicChannel
+	collectedMsgs chan collectedMsg
 	EdgeXClients  common.EdgeXClients
 }
 
@@ -50,7 +57,13 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 	if err != nil {
 		return nil, err
 	}
-	trigger.topics = []types.TopicChannel{{Topic: trigger.Configuration.Binding.SubscribeTopic, Messages: make(chan types.MessageEnvelope)}}
+
+	trigger.collectedMsgs = make(chan collectedMsg)
+
+	for _, tpc := range strings.Split(trigger.Configuration.Binding.SubscribeTopics, ",") {
+		trigger.topics = append(trigger.topics, types.TopicChannel{Topic: tpc, Messages: make(chan types.MessageEnvelope)})
+	}
+
 	messageErrors := make(chan error)
 
 	err = trigger.client.Connect()
@@ -58,13 +71,36 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 		return nil, err
 	}
 
-	logger.Info(fmt.Sprintf("Subscribing to topic: '%s' @ %s://%s:%d",
-		trigger.Configuration.Binding.SubscribeTopic,
+	logger.Info(fmt.Sprintf("Subscribing to topics: '%s' @ %s://%s:%d",
+		trigger.Configuration.Binding.SubscribeTopics,
 		trigger.Configuration.MessageBus.SubscribeHost.Protocol,
 		trigger.Configuration.MessageBus.SubscribeHost.Host,
 		trigger.Configuration.MessageBus.SubscribeHost.Port))
 
-	trigger.client.Subscribe(trigger.topics, messageErrors)
+	for _, tc := range trigger.topics {
+		go func(t types.TopicChannel) {
+			for {
+				select {
+				case <-appCtx.Done():
+					return
+
+				case msg := <-t.Messages:
+					trigger.collectedMsgs <- collectedMsg{
+						topic: t.Topic,
+						env:   msg,
+					}
+				}
+			}
+		}(tc)
+	}
+
+	err = trigger.client.Subscribe(trigger.topics, messageErrors)
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to subscribe to topic(s): [%s] (%s)", trigger.Configuration.Binding.SubscribeTopics, err.Error()))
+		return nil, err
+	}
+
 	receiveMessage := true
 
 	if len(trigger.Configuration.MessageBus.PublishHost.Host) > 0 {
@@ -88,12 +124,12 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 			case msgErr := <-messageErrors:
 				logger.Error(fmt.Sprintf("Failed to receive message from bus, %v", msgErr))
 
-			case msgs := <-trigger.topics[0].Messages:
+			case msgs := <-trigger.collectedMsgs:
 				go func() {
-					logger.Trace("Received message from bus", "topic", trigger.Configuration.Binding.SubscribeTopic, clients.CorrelationHeader, msgs.CorrelationID)
+					logger.Trace("Received message from bus", "topic", msgs.topic, clients.CorrelationHeader, msgs.env.CorrelationID)
 
 					edgexContext := &appcontext.Context{
-						CorrelationID:         msgs.CorrelationID,
+						CorrelationID:         msgs.env.CorrelationID,
 						Configuration:         trigger.Configuration,
 						LoggingClient:         trigger.EdgeXClients.LoggingClient,
 						EventClient:           trigger.EdgeXClients.EventClient,
@@ -102,7 +138,7 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 						NotificationsClient:   trigger.EdgeXClients.NotificationsClient,
 					}
 
-					messageError := trigger.Runtime.ProcessMessage(edgexContext, msgs)
+					messageError := trigger.Runtime.ProcessMessage(edgexContext, msgs.env)
 					if messageError != nil {
 						// ProcessMessage logs the error, so no need to log it here.
 						return
@@ -120,7 +156,7 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 							return
 						}
 
-						logger.Trace("Published message to bus", "topic", trigger.Configuration.Binding.PublishTopic, clients.CorrelationHeader, msgs.CorrelationID)
+						logger.Trace("Published message to bus", "topic", trigger.Configuration.Binding.PublishTopic, clients.CorrelationHeader, msgs.env.CorrelationID)
 					}
 				}()
 			case bg := <-background:

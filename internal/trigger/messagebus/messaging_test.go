@@ -46,9 +46,9 @@ func TestInitialize(t *testing.T) {
 
 	config := common.ConfigurationStruct{
 		Binding: common.BindingInfo{
-			Type:           "meSsaGebus",
-			PublishTopic:   "publish",
-			SubscribeTopic: "events",
+			Type:            "meSsaGebus",
+			PublishTopic:    "publish",
+			SubscribeTopics: "events",
 		},
 		MessageBus: types.MessageBusConfig{
 			Type: "zero",
@@ -79,9 +79,9 @@ func TestInitializeBadConfiguration(t *testing.T) {
 
 	config := common.ConfigurationStruct{
 		Binding: common.BindingInfo{
-			Type:           "meSsaGebus",
-			PublishTopic:   "publish",
-			SubscribeTopic: "events",
+			Type:            "meSsaGebus",
+			PublishTopic:    "publish",
+			SubscribeTopics: "events",
 		},
 		MessageBus: types.MessageBusConfig{
 			Type: "aaaa", //as type is not "zero", should return an error on client initialization
@@ -109,9 +109,9 @@ func TestInitializeAndProcessEventWithNoOutput(t *testing.T) {
 
 	config := common.ConfigurationStruct{
 		Binding: common.BindingInfo{
-			Type:           "meSsaGebus",
-			PublishTopic:   "",
-			SubscribeTopic: "",
+			Type:            "meSsaGebus",
+			PublishTopic:    "",
+			SubscribeTopics: "",
 		},
 		MessageBus: types.MessageBusConfig{
 			Type: "zero",
@@ -174,13 +174,91 @@ func TestInitializeAndProcessEventWithNoOutput(t *testing.T) {
 	assert.True(t, transformWasCalled.Value(), "Transform never called")
 }
 
+func TestInitializeAndProcessEventMultipleTopics(t *testing.T) {
+
+	config := common.ConfigurationStruct{
+		Binding: common.BindingInfo{
+			Type:            "meSsaGebus",
+			PublishTopic:    "",
+			SubscribeTopics: "t1,t2",
+		},
+		MessageBus: types.MessageBusConfig{
+			Type: "zero",
+			PublishHost: types.HostInfo{
+				Host:     "*",
+				Port:     5592,
+				Protocol: "tcp",
+			},
+			SubscribeHost: types.HostInfo{
+				Host:     "localhost",
+				Port:     5594,
+				Protocol: "tcp",
+			},
+		},
+	}
+
+	expectedCorrelationID := "123"
+
+	expectedPayload := []byte(`{"id":"5888dea1bd36573f4681d6f9","created":1485364897029,"modified":1485364897029,"origin":1471806386919,"pushed":0,"device":"livingroomthermostat","readings":[{"id":"5888dea0bd36573f4681d6f8","created":1485364896983,"modified":1485364896983,"origin":1471806386919,"pushed":0,"name":"temperature","value":"38","device":"livingroomthermostat"}]}`)
+	var expectedEvent models.Event
+	json.Unmarshal([]byte(expectedPayload), &expectedEvent)
+
+	transformWasCalled := common.AtomicBool{}
+
+	transform1 := func(edgexcontext *appcontext.Context, params ...interface{}) (bool, interface{}) {
+		transformWasCalled.Set(true)
+		assert.Equal(t, expectedEvent, params[0])
+		return false, nil
+	}
+
+	runtime := &runtime.GolangRuntime{}
+	runtime.Initialize(nil, nil)
+	runtime.SetTransforms([]appcontext.AppFunction{transform1})
+	trigger := Trigger{Configuration: &config, Runtime: runtime, EdgeXClients: common.EdgeXClients{LoggingClient: logClient}}
+	trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
+
+	message := types.MessageEnvelope{
+		CorrelationID: expectedCorrelationID,
+		Payload:       expectedPayload,
+		ContentType:   clients.ContentTypeJSON,
+	}
+
+	testClientConfig := types.MessageBusConfig{
+		PublishHost: types.HostInfo{
+			Host:     "*",
+			Port:     5594,
+			Protocol: "tcp",
+		},
+		Type: "zero",
+	}
+
+	testClient, err := messaging.NewMessageClient(testClientConfig)
+	require.NoError(t, err, "Unable to create to publisher")
+	assert.False(t, transformWasCalled.Value())
+
+	err = testClient.Publish(message, "t1") //transform1 should be called after this executes
+	require.NoError(t, err, "Failed to publish message")
+
+	time.Sleep(3 * time.Second)
+	assert.True(t, transformWasCalled.Value(), "Transform never called")
+
+	//send message through second topic
+	transformWasCalled.Set(false)
+
+	err = testClient.Publish(message, "t2") //transform1 should be called after this executes
+	require.NoError(t, err, "Failed to publish message")
+
+	time.Sleep(3 * time.Second)
+	assert.True(t, transformWasCalled.Value(), "Transform never called")
+}
+
 func TestInitializeAndProcessEventWithOutput(t *testing.T) {
 
 	config := common.ConfigurationStruct{
 		Binding: common.BindingInfo{
-			Type:           "meSsaGebus",
-			PublishTopic:   "PublishTopic",
-			SubscribeTopic: "SubscribeTopic",
+			Type:            "meSsaGebus",
+			PublishTopic:    "PublishTopic",
+			SubscribeTopics: "SubscribeTopic",
 		},
 		MessageBus: types.MessageBusConfig{
 			Type: "zero",
@@ -273,9 +351,9 @@ func TestInitializeAndProcessBackgroundMessage(t *testing.T) {
 
 	config := common.ConfigurationStruct{
 		Binding: common.BindingInfo{
-			Type:           "meSsaGebus",
-			PublishTopic:   "PublishTopic",
-			SubscribeTopic: "SubscribeTopic",
+			Type:            "meSsaGebus",
+			PublishTopic:    "PublishTopic",
+			SubscribeTopics: "SubscribeTopic",
 		},
 		MessageBus: types.MessageBusConfig{
 			Type: "zero",

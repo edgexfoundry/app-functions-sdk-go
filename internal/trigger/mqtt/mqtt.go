@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,7 +65,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 	// Convenience short cuts
 	logger := trigger.edgeXClients.LoggingClient
 	brokerConfig := trigger.configuration.MqttBroker
-	topic := trigger.configuration.Binding.SubscribeTopic
+	topic := trigger.configuration.Binding.SubscribeTopics
 
 	logger.Info("Initializing MQTT Trigger")
 
@@ -129,66 +130,68 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
 	// Convenience short cuts
 	logger := trigger.edgeXClients.LoggingClient
-	topic := trigger.configuration.Binding.SubscribeTopic
 	qos := trigger.configuration.MqttBroker.QoS
 
-	if token := mqttClient.Subscribe(topic, qos, trigger.messageHandler); token.Wait() && token.Error() != nil {
-		mqttClient.Disconnect(0)
-		logger.Error(fmt.Sprintf("could not subscribe to topic '%s' for MQTT trigger: %s",
-			topic, token.Error().Error()))
-		return
+	for _, topic := range strings.Split(trigger.configuration.Binding.SubscribeTopics, ",") {
+		if token := mqttClient.Subscribe(topic, qos, trigger.messageHandler(topic)); token.Wait() && token.Error() != nil {
+			mqttClient.Disconnect(0)
+			logger.Error(fmt.Sprintf("could not subscribe to topic '%s' for MQTT trigger: %s",
+				topic, token.Error().Error()))
+			return
+		}
+		logger.Info(fmt.Sprintf("Subscribed to topic '%s' for MQTT trigger", topic))
 	}
-
-	logger.Info(fmt.Sprintf("Subscribed to topic '%s' for MQTT trigger", topic))
 }
 
-func (trigger *Trigger) messageHandler(client pahoMqtt.Client, message pahoMqtt.Message) {
-	// Convenience short cuts
-	logger := trigger.edgeXClients.LoggingClient
-	brokerConfig := trigger.configuration.MqttBroker
-	topic := trigger.configuration.Binding.PublishTopic
+func (trigger *Trigger) messageHandler(t string) func(pahoMqtt.Client, pahoMqtt.Message) {
+	return func(client pahoMqtt.Client, message pahoMqtt.Message) {
+		// Convenience short cuts
+		logger := trigger.edgeXClients.LoggingClient
+		brokerConfig := trigger.configuration.MqttBroker
+		topic := trigger.configuration.Binding.PublishTopic
 
-	data := message.Payload()
-	contentType := clients.ContentTypeJSON
-	if data[0] != byte('{') {
-		// If not JSON then assume it is CBOR
-		contentType = clients.ContentTypeCBOR
-	}
+		data := message.Payload()
+		contentType := clients.ContentTypeJSON
+		if data[0] != byte('{') {
+			// If not JSON then assume it is CBOR
+			contentType = clients.ContentTypeCBOR
+		}
 
-	correlationID := uuid.New().String()
+		correlationID := uuid.New().String()
 
-	edgexContext := &appcontext.Context{
-		CorrelationID:         correlationID,
-		Configuration:         trigger.configuration,
-		LoggingClient:         trigger.edgeXClients.LoggingClient,
-		EventClient:           trigger.edgeXClients.EventClient,
-		ValueDescriptorClient: trigger.edgeXClients.ValueDescriptorClient,
-		CommandClient:         trigger.edgeXClients.CommandClient,
-		NotificationsClient:   trigger.edgeXClients.NotificationsClient,
-	}
+		edgexContext := &appcontext.Context{
+			CorrelationID:         correlationID,
+			Configuration:         trigger.configuration,
+			LoggingClient:         trigger.edgeXClients.LoggingClient,
+			EventClient:           trigger.edgeXClients.EventClient,
+			ValueDescriptorClient: trigger.edgeXClients.ValueDescriptorClient,
+			CommandClient:         trigger.edgeXClients.CommandClient,
+			NotificationsClient:   trigger.edgeXClients.NotificationsClient,
+		}
 
-	logger.Trace("Received message from MQTT Trigger", clients.CorrelationHeader, correlationID)
-	logger.Debug(fmt.Sprintf("Received message from MQTT Trigger with %d bytes", len(data)), clients.ContentType, contentType)
+		logger.Trace("Received message from MQTT Trigger", clients.CorrelationHeader, correlationID)
+		logger.Debug(fmt.Sprintf("Received message from MQTT Trigger with %d bytes", len(data)), clients.ContentType, contentType)
 
-	envelope := types.MessageEnvelope{
-		CorrelationID: correlationID,
-		ContentType:   contentType,
-		Payload:       data,
-	}
+		envelope := types.MessageEnvelope{
+			CorrelationID: correlationID,
+			ContentType:   contentType,
+			Payload:       data,
+		}
 
-	messageError := trigger.runtime.ProcessMessage(edgexContext, envelope)
-	if messageError != nil {
-		// ProcessMessage logs the error, so no need to log it here.
-		// ToDo: Do we want to publish the error back to the Broker?
-		return
-	}
+		messageError := trigger.runtime.ProcessMessage(edgexContext, envelope)
+		if messageError != nil {
+			// ProcessMessage logs the error, so no need to log it here.
+			// ToDo: Do we want to publish the error back to the Broker?
+			return
+		}
 
-	if len(edgexContext.OutputData) > 0 && len(topic) > 0 {
-		if token := client.Publish(topic, brokerConfig.QoS, brokerConfig.Retain, edgexContext.OutputData); token.Wait() && token.Error() != nil {
-			logger.Error("could not publish to topic '%s' for MQTT trigger: %s", topic, token.Error().Error())
-		} else {
-			logger.Trace("Sent MQTT Trigger response message", clients.CorrelationHeader, correlationID)
-			logger.Debug(fmt.Sprintf("Sent MQTT Trigger response message on topic '%s' with %d bytes", topic, len(edgexContext.OutputData)))
+		if len(edgexContext.OutputData) > 0 && len(topic) > 0 {
+			if token := client.Publish(topic, brokerConfig.QoS, brokerConfig.Retain, edgexContext.OutputData); token.Wait() && token.Error() != nil {
+				logger.Error("could not publish to topic '%s' for MQTT trigger: %s", topic, token.Error().Error())
+			} else {
+				logger.Trace("Sent MQTT Trigger response message", clients.CorrelationHeader, correlationID)
+				logger.Debug(fmt.Sprintf("Sent MQTT Trigger response message on topic '%s' with %d bytes", topic, len(edgexContext.OutputData)))
+			}
 		}
 	}
 }
