@@ -255,6 +255,7 @@ func TestFilterByValueDescriptorNoFilterValues(t *testing.T) {
 	require.True(t, ok, "Expected result to be an Event")
 	require.NotNil(t, actual.Readings, "Expected Reading passed thru")
 	assert.Equal(t, expected.DeviceName, actual.DeviceName, "Expected Event to be same as passed in")
+	require.True(t, len(expected.Readings) == 1)
 	assert.Equal(t, expected.Readings[0].ResourceName, actual.Readings[0].ResourceName, "Expected Reading to be same as passed in")
 	assert.True(t, continuePipeline, "Pipeline shouldn't stop processing")
 }

@@ -99,7 +99,8 @@ func init() {
 }
 
 func TestProcessMessageNoTransforms(t *testing.T) {
-	payload, _ := json.Marshal(testAddEventRequest)
+	payload, err := json.Marshal(testAddEventRequest)
+	require.NoError(t, err)
 	envelope := types.MessageEnvelope{
 		CorrelationID: "123-234-345-456",
 		Payload:       payload,
@@ -116,7 +117,9 @@ func TestProcessMessageNoTransforms(t *testing.T) {
 }
 
 func TestProcessMessageOneCustomTransform(t *testing.T) {
-	payload, _ := json.Marshal(testAddEventRequest)
+	payload, err := json.Marshal(testAddEventRequest)
+	require.NoError(t, err)
+
 	envelope := types.MessageEnvelope{
 		CorrelationID: "123-234-345-456",
 		Payload:       payload,
@@ -144,7 +147,9 @@ func TestProcessMessageOneCustomTransform(t *testing.T) {
 }
 
 func TestProcessMessageTwoCustomTransforms(t *testing.T) {
-	payload, _ := json.Marshal(testAddEventRequest)
+	payload, err := json.Marshal(testAddEventRequest)
+	require.NoError(t, err)
+
 	envelope := types.MessageEnvelope{
 		CorrelationID: "123-234-345-456",
 		Payload:       payload,
@@ -184,7 +189,9 @@ func TestProcessMessageTwoCustomTransforms(t *testing.T) {
 }
 
 func TestProcessMessageThreeCustomTransformsOneFail(t *testing.T) {
-	payload, _ := json.Marshal(testAddEventRequest)
+	payload, err := json.Marshal(testAddEventRequest)
+	require.NoError(t, err)
+
 	envelope := types.MessageEnvelope{
 		CorrelationID: "123-234-345-456",
 		Payload:       payload,
@@ -265,7 +272,9 @@ func TestProcessMessageJSON(t *testing.T) {
 
 	transform1WasCalled := false
 
-	payload, _ := json.Marshal(testAddEventRequest)
+	payload, err := json.Marshal(testAddEventRequest)
+	require.NoError(t, err)
+
 	envelope := types.MessageEnvelope{
 		CorrelationID: expectedCorrelationID,
 		Payload:       payload,
@@ -359,8 +368,11 @@ func (custom CustomType) MarshalJSON() ([]byte, error) {
 }
 
 func TestProcessMessageTargetType(t *testing.T) {
-	jsonPayload, _ := json.Marshal(testAddEventRequest)
-	eventJson, _ := json.Marshal(testEvent)
+	jsonPayload, err := json.Marshal(testAddEventRequest)
+	require.NoError(t, err)
+
+	eventJson, err := json.Marshal(testEvent)
+	require.NoError(t, err)
 
 	// TODO: Change to TestAddEventRequest when V2 has support for CBOR
 	cborPayload, err := cbor.Marshal(testAddEventRequest)

@@ -177,7 +177,8 @@ func TestInitializeAndProcessEventWithNoOutput(t *testing.T) {
 	trigger := Trigger{Configuration: &config, Runtime: goRuntime, EdgeXClients: common.EdgeXClients{LoggingClient: logClient}}
 	_, _ = trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 
-	payload, _ := json.Marshal(addEventRequest)
+	payload, err := json.Marshal(addEventRequest)
+	require.NoError(t, err)
 
 	message := types.MessageEnvelope{
 		CorrelationID: expectedCorrelationID,
@@ -269,9 +270,11 @@ func TestInitializeAndProcessEventWithOutput(t *testing.T) {
 
 	err = testClient.Subscribe(testTopics, testMessageErrors) //subscribe in order to receive transformed output to the bus
 	require.NoError(t, err)
-	_, _ = trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
+	_, err = trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
+	require.NoError(t, err)
 
-	payload, _ := json.Marshal(addEventRequest)
+	payload, err := json.Marshal(addEventRequest)
+	require.NoError(t, err)
 
 	message := types.MessageEnvelope{
 		CorrelationID: expectedCorrelationID,
@@ -362,9 +365,11 @@ func TestInitializeAndProcessEventWithOutput_InferJSON(t *testing.T) {
 
 	err = testClient.Subscribe(testTopics, testMessageErrors) //subscribe in order to receive transformed output to the bus
 	require.NoError(t, err)
-	_, _ = trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
+	_, err = trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
+	require.NoError(t, err)
 
-	payload, _ := json.Marshal(addEventRequest)
+	payload, err := json.Marshal(addEventRequest)
+	require.NoError(t, err)
 
 	message := types.MessageEnvelope{
 		CorrelationID: expectedCorrelationID,

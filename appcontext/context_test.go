@@ -89,6 +89,7 @@ func TestPushToCore(t *testing.T) {
 	assert.NotNil(t, actualEvent)
 	assert.Equal(t, expectedEvent.ApiVersion, actualEvent.ApiVersion)
 	assert.Equal(t, expectedEvent.DeviceName, actualEvent.DeviceName)
+	assert.True(t, len(expectedEvent.Readings) == 1)
 	assert.Equal(t, expectedEvent.Readings[0].DeviceName, actualEvent.Readings[0].DeviceName)
 	assert.Equal(t, expectedEvent.Readings[0].ResourceName, actualEvent.Readings[0].ResourceName)
 	assert.Equal(t, expectedEvent.Readings[0].Value, actualEvent.Readings[0].Value)
