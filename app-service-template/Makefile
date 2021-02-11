@@ -4,6 +4,8 @@ GO=CGO_ENABLED=1 go
 
 # VERSION file is not needed for local development, In the CI/CD pipeline, a temporary VERSION file is written
 # if you need a specific version, just override below
+# TODO: If your service is not being upstreamed to Edgex Foundry, you need to determine the best approach for
+#       setting your service's version for non-development builds.
 APPVERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
 
 # This pulls the version of the SDK from the go.mod file. If the SDK is the only required module,
@@ -11,7 +13,7 @@ APPVERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
 SDKVERSION=$(shell cat ./go.mod | grep 'github.com/edgexfoundry/app-functions-sdk-go v' | sed 's/require//g' | awk '{print $$2}')
 
 MICROSERVICE=new-app-service
-GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)"
+GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/internal.ApplicationVersion=$(APPVERSION)"
 
 # TODO: uncomment and remove default once files are in a Github repository or
 #       remove totally including usage below

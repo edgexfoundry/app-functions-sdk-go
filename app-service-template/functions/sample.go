@@ -25,7 +25,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-// TODO: Change this Sample to be your custom type and function(s)
+// TODO: Create your custom type and function(s) and remove these samples
 
 // TODO: Add parameters that the function(s) will need each time one is executed
 func NewSample() Sample {

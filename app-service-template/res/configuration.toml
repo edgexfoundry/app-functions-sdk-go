@@ -20,7 +20,7 @@ BootTimeout = '30s'
 ClientMonitor = '15s'
 CheckInterval = '10s'
 Host = 'localhost'
-Port = 49600  # TODO: set this port appropriatly
+Port = 49600  # TODO: set this port appropriately
 Protocol = 'http'
 ReadMaxLimit = 100
 StartupMsg = 'new-app-service Application Service has started'
@@ -98,5 +98,6 @@ Type = 'zero'
 [ApplicationSettings]
 # TODO: Add custom settings needed by your app service
 # This can be any Key/Value pair you need.
+# For more details see: https://docs.edgexfoundry.org/1.3/microservices/application/GeneralAppServiceConfig/#application-settings
 # Example that works with devices from the Virtual Device service:
 DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device"
