@@ -246,7 +246,11 @@ func (gr *GolangRuntime) unmarshalV1EventToV2Event(envelope types.MessageEnvelop
 	v1Event := models.Event{}
 
 	err = gr.unmarshalPayload(envelope, &v1Event)
+	if err != nil {
+		return nil, err
+	}
 
+	_, err = v1Event.Validate()
 	if err != nil {
 		return nil, err
 	}

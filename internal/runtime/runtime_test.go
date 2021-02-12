@@ -499,6 +499,13 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 	jsonV1EventPayload, _ := json.Marshal(testV1Event)
 	cborV1EventPayload, _ := cbor.Marshal(testV1Event)
 
+	notAnEvent := dtos.DeviceResource{
+		Description: "Not An Event",
+		Name:        "SomeResource",
+	}
+	jsonInvalidPayload, _ := json.Marshal(notAnEvent)
+	cborInvalidPayload, _ := cbor.Marshal(notAnEvent)
+
 	expectedV2Event := testV2Event
 	expectedV2EventFromV1Event := testV2Event
 	expectedV2EventFromV1Event.ProfileName = "Unknown"
@@ -510,13 +517,16 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 		Payload     []byte
 		ContentType string
 		Expected    *dtos.Event
+		ExpectError bool
 	}{
-		{"JSON V2 Add Event DTO", jsonV2AddEventPayload, clients.ContentTypeJSON, &expectedV2Event},
-		{"CBOR V2 Add Event DTO", cborV2AddEventPayload, clients.ContentTypeCBOR, &expectedV2Event},
-		{"JSON V2 Event DTO", jsonV2EventPayload, clients.ContentTypeJSON, &expectedV2Event},
-		{"CBOR V2 Event DTO", cborV2EventPayload, clients.ContentTypeCBOR, &expectedV2Event},
-		{"JSON V1 Event", jsonV1EventPayload, clients.ContentTypeJSON, &expectedV2EventFromV1Event},
-		{"CBOR V1 Event", cborV1EventPayload, clients.ContentTypeCBOR, &expectedV2EventFromV1Event},
+		{"JSON V2 Add Event DTO", jsonV2AddEventPayload, clients.ContentTypeJSON, &expectedV2Event, false},
+		{"CBOR V2 Add Event DTO", cborV2AddEventPayload, clients.ContentTypeCBOR, &expectedV2Event, false},
+		{"JSON V2 Event DTO", jsonV2EventPayload, clients.ContentTypeJSON, &expectedV2Event, false},
+		{"CBOR V2 Event DTO", cborV2EventPayload, clients.ContentTypeCBOR, &expectedV2Event, false},
+		{"JSON V1 Event", jsonV1EventPayload, clients.ContentTypeJSON, &expectedV2EventFromV1Event, false},
+		{"CBOR V1 Event", cborV1EventPayload, clients.ContentTypeCBOR, &expectedV2EventFromV1Event, false},
+		{"invalid JSON", jsonInvalidPayload, clients.ContentTypeJSON, nil, true},
+		{"invalid CBOR", cborInvalidPayload, clients.ContentTypeCBOR, nil, true},
 	}
 
 	target := GolangRuntime{}
@@ -528,6 +538,11 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 			envelope.ContentType = testCase.ContentType
 
 			actual, err := target.processEventPayload(envelope, lc)
+			if testCase.ExpectError {
+				require.Error(t, err)
+				return
+			}
+
 			require.NoError(t, err)
 			require.Equal(t, testCase.Expected, actual)
 		})
@@ -539,9 +554,10 @@ func TestGolangRuntime_unmarshalV1EventToV2Event(t *testing.T) {
 
 	jsonV1Payload, _ := json.Marshal(testV1Event)
 	cborV1Payload, _ := cbor.Marshal(testV1Event)
-	expected := testV2Event
-	expected.ProfileName = "Unknown"
-	expected.Readings[0].ProfileName = "Unknown"
+
+	expectedEvent := testV2Event
+	expectedEvent.ProfileName = "Unknown"
+	expectedEvent.Readings[0].ProfileName = "Unknown"
 
 	tests := []struct {
 		Name        string
@@ -560,24 +576,40 @@ func TestGolangRuntime_unmarshalV1EventToV2Event(t *testing.T) {
 
 			actual, err := target.unmarshalV1EventToV2Event(envelope, lc)
 			require.NoError(t, err)
-			require.Equal(t, expected, *actual)
+			require.Equal(t, expectedEvent, *actual)
 		})
 	}
 }
 
-func TestGolangRuntime_unmarshalV2Event(t *testing.T) {
+func TestGolangRuntime_unmarshalEventDTO(t *testing.T) {
 	jsonV2EventPayload, _ := json.Marshal(testAddEventRequest.Event)
 	cborV2EventPayload, _ := cbor.Marshal(testAddEventRequest.Event)
 
-	expected := testV2Event
+	invalidEvent := testAddEventRequest.Event
+	invalidEvent.ProfileName = ""
+	jsonInvalidEventPayload, _ := json.Marshal(invalidEvent)
+	cborInvalidEventPayload, _ := cbor.Marshal(invalidEvent)
+
+	invalidEventReading := testAddEventRequest.Event
+	invalidEventReading.Readings = []dtos.BaseReading{testAddEventRequest.Event.Readings[0]}
+	invalidEventReading.Readings[0].ResourceName = ""
+	jsonInvalidReadingPayload, _ := json.Marshal(invalidEventReading)
+	cborInvalidReadingPayload, _ := cbor.Marshal(invalidEventReading)
+
+	expectedEvent := testV2Event
 
 	tests := []struct {
 		Name        string
 		Payload     []byte
 		ContentType string
+		ExpectError bool
 	}{
-		{"JSON V2 Event DTO", jsonV2EventPayload, clients.ContentTypeJSON},
-		{"CBOR V2 Event DTO", cborV2EventPayload, clients.ContentTypeCBOR},
+		{"valid JSON V2 Event DTO", jsonV2EventPayload, clients.ContentTypeJSON, false},
+		{"valid CBOR V2 Event DTO", cborV2EventPayload, clients.ContentTypeCBOR, false},
+		{"invalid JSON V2 Event DTO", jsonInvalidEventPayload, clients.ContentTypeJSON, true},
+		{"invalid CBOR V2 Event DTO", cborInvalidEventPayload, clients.ContentTypeCBOR, true},
+		{"invalid JSON V2 Reading DTO", jsonInvalidReadingPayload, clients.ContentTypeJSON, true},
+		{"invalid CBOR V2 Reading DTO", cborInvalidReadingPayload, clients.ContentTypeCBOR, true},
 	}
 
 	target := GolangRuntime{}
@@ -589,8 +621,12 @@ func TestGolangRuntime_unmarshalV2Event(t *testing.T) {
 			envelope.ContentType = testCase.ContentType
 
 			actual, err := target.unmarshalEventDTO(envelope, lc)
+			if testCase.ExpectError {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
-			require.Equal(t, expected, *actual)
+			require.Equal(t, expectedEvent, *actual)
 		})
 	}
 }
