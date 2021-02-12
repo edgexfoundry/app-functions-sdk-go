@@ -491,22 +491,32 @@ func TestProcessMessageJSONWithV1Event(t *testing.T) {
 	assert.True(t, transform1WasCalled, "transform1 should have been called")
 }
 
-func TestGolangRuntime_getApiVersion(t *testing.T) {
-	jsonV2Payload, _ := json.Marshal(testAddEventRequest)
-	cborV2Payload, _ := cbor.Marshal(testAddEventRequest)
-	jsonV1Payload, _ := json.Marshal(testV1Event)
-	cborV1Payload, _ := cbor.Marshal(testV1Event)
+func TestGolangRuntime_processEventPayload(t *testing.T) {
+	jsonV2AddEventPayload, _ := json.Marshal(testAddEventRequest)
+	cborV2AddEventPayload, _ := cbor.Marshal(testAddEventRequest)
+	jsonV2EventPayload, _ := json.Marshal(testAddEventRequest.Event)
+	cborV2EventPayload, _ := cbor.Marshal(testAddEventRequest.Event)
+	jsonV1EventPayload, _ := json.Marshal(testV1Event)
+	cborV1EventPayload, _ := cbor.Marshal(testV1Event)
+
+	expectedV2Event := testV2Event
+	expectedV2EventFromV1Event := testV2Event
+	expectedV2EventFromV1Event.ProfileName = "Unknown"
+	expectedV2EventFromV1Event.Readings = []dtos.BaseReading{testV2Event.Readings[0]}
+	expectedV2EventFromV1Event.Readings[0].ProfileName = "Unknown"
 
 	tests := []struct {
 		Name        string
 		Payload     []byte
 		ContentType string
-		Expected    string
+		Expected    *dtos.Event
 	}{
-		{"JSON V2 Event", jsonV2Payload, clients.ContentTypeJSON, ApiV2},
-		{"CBOR V2 Event", cborV2Payload, clients.ContentTypeCBOR, ApiV2},
-		{"JSON V1 Event", jsonV1Payload, clients.ContentTypeJSON, ApiV1},
-		{"CBOR V1 Event", cborV1Payload, clients.ContentTypeCBOR, ApiV1},
+		{"JSON V2 Add Event DTO", jsonV2AddEventPayload, clients.ContentTypeJSON, &expectedV2Event},
+		{"CBOR V2 Add Event DTO", cborV2AddEventPayload, clients.ContentTypeCBOR, &expectedV2Event},
+		{"JSON V2 Event DTO", jsonV2EventPayload, clients.ContentTypeJSON, &expectedV2Event},
+		{"CBOR V2 Event DTO", cborV2EventPayload, clients.ContentTypeCBOR, &expectedV2Event},
+		{"JSON V1 Event", jsonV1EventPayload, clients.ContentTypeJSON, &expectedV2EventFromV1Event},
+		{"CBOR V1 Event", cborV1EventPayload, clients.ContentTypeCBOR, &expectedV2EventFromV1Event},
 	}
 
 	target := GolangRuntime{}
@@ -517,7 +527,7 @@ func TestGolangRuntime_getApiVersion(t *testing.T) {
 			envelope.Payload = testCase.Payload
 			envelope.ContentType = testCase.ContentType
 
-			actual, err := target.getApiVersion(envelope)
+			actual, err := target.processEventPayload(envelope, lc)
 			require.NoError(t, err)
 			require.Equal(t, testCase.Expected, actual)
 		})
@@ -556,8 +566,8 @@ func TestGolangRuntime_unmarshalV1EventToV2Event(t *testing.T) {
 }
 
 func TestGolangRuntime_unmarshalV2Event(t *testing.T) {
-	jsonV2Payload, _ := json.Marshal(testAddEventRequest)
-	cborV2Payload, _ := cbor.Marshal(testAddEventRequest)
+	jsonV2EventPayload, _ := json.Marshal(testAddEventRequest.Event)
+	cborV2EventPayload, _ := cbor.Marshal(testAddEventRequest.Event)
 
 	expected := testV2Event
 
@@ -566,8 +576,8 @@ func TestGolangRuntime_unmarshalV2Event(t *testing.T) {
 		Payload     []byte
 		ContentType string
 	}{
-		{"JSON V2 Event", jsonV2Payload, clients.ContentTypeJSON},
-		{"CBOR V2 Event", cborV2Payload, clients.ContentTypeCBOR},
+		{"JSON V2 Event DTO", jsonV2EventPayload, clients.ContentTypeJSON},
+		{"CBOR V2 Event DTO", cborV2EventPayload, clients.ContentTypeCBOR},
 	}
 
 	target := GolangRuntime{}

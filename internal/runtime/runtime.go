@@ -26,11 +26,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
 	"github.com/google/uuid"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/appcontext"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	dbInterfaces "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/interfaces"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
@@ -43,13 +40,11 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/v2/dtos/requests"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
-	"github.com/fxamacker/cbor/v2"
-)
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/appcontext"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	dbInterfaces "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/interfaces"
 
-const (
-	// TODO: Remove once completely switched over to V2 API DTOs
-	ApiV1 = "v1"
-	ApiV2 = "v2"
+	"github.com/fxamacker/cbor/v2"
 )
 
 // GolangRuntime represents the golang runtime environment
@@ -67,17 +62,31 @@ type MessageError struct {
 	ErrorCode int
 }
 
+// Initialize sets the internal reference to the StoreClient for use when Store and Forward is enabled
+func (gr *GolangRuntime) Initialize(storeClient dbInterfaces.StoreClient, secretProvider interfaces.SecretProvider) {
+	gr.storeForward.storeClient = storeClient
+	gr.storeForward.runtime = gr
+	gr.secretProvider = secretProvider
+}
+
+// SetTransforms is thread safe to set transforms
+func (gr *GolangRuntime) SetTransforms(transforms []appcontext.AppFunction) {
+	gr.isBusyCopying.Lock()
+	gr.transforms = transforms
+	gr.storeForward.pipelineHash = gr.storeForward.calculatePipelineHash() // Only need to calculate hash when the pipeline changes.
+	gr.isBusyCopying.Unlock()
+}
+
 // ProcessMessage sends the contents of the message thru the functions pipeline
 func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelope types.MessageEnvelope) *MessageError {
-	var err error
 	lc := edgexcontext.LoggingClient
 	lc.Debug("Processing message: " + strconv.Itoa(len(gr.transforms)) + " Transforms")
 
-	// Default Target Type for the function pipeline is an AddEventRequest DTO
-	// which wraps an Event DTO. The un-wrapped Event DTO will be sent to the function
-	// pipeline.
+	// Default Target Type for the function pipeline is an Event DTO.
+	// The Event DTO can be wrapped in an AddEventRequest DTO or just be the un-wrapped Event DTO,
+	// which is handled dynamically below.
 	if gr.TargetType == nil {
-		gr.TargetType = &requests.AddEventRequest{}
+		gr.TargetType = &dtos.Event{}
 	}
 
 	if reflect.TypeOf(gr.TargetType).Kind() != reflect.Ptr {
@@ -94,58 +103,15 @@ func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelo
 		lc.Debug("Pipeline is expecting raw byte data")
 		target = &envelope.Payload
 
-	case *requests.AddEventRequest:
-		lc.Debug("Pipeline is expecting an AddEventRequest")
+	case *dtos.Event:
+		lc.Debug("Pipeline is expecting an AddEventRequest or Event DTO")
 
-		var event *dtos.Event
-		var apiVersion string
-
-		// TODO: remove once fully switched over to V2 Event DTO
-		apiVersion, err = gr.getApiVersion(envelope)
+		// Dynamically process either AddEventRequest or Event DTO
+		event, err := gr.processEventPayload(envelope, lc)
 		if err != nil {
-			err = fmt.Errorf("unable to determine API Version for Event object received: %s", err.Error())
+			err = fmt.Errorf("unable to process payload %s", err.Error())
 			logError(lc, err, envelope.CorrelationID)
 			return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
-		}
-
-		// TODO: remove once fully switched over to V2 Event DTO and simply call unmarshalEventDTO.
-		switch apiVersion {
-		case ApiV1:
-			event, err = gr.unmarshalV1EventToV2Event(envelope, lc)
-
-		case ApiV2:
-			event, err = gr.unmarshalEventDTO(envelope, lc)
-
-		default:
-			err = fmt.Errorf("unsupported API Version '%s' detected", apiVersion)
-		}
-
-		if err != nil {
-			err = fmt.Errorf("unable to process Event object received: %s", err.Error())
-			logError(lc, err, envelope.CorrelationID)
-			return &MessageError{Err: err, ErrorCode: http.StatusBadRequest}
-		}
-
-		if lc.LogLevel() == models.DebugLog {
-			gr.debugLogEvent(lc, event)
-		}
-
-		target = event
-
-	case *dtos.Event:
-		lc.Debug("Pipeline is expecting an Event DTO")
-
-		event := &dtos.Event{}
-		if err := gr.unmarshalPayload(envelope, event); err != nil {
-			err = fmt.Errorf("unable to process DTO Event received: %s", err.Error())
-			logError(lc, err, envelope.CorrelationID)
-			return &MessageError{Err: err, ErrorCode: http.StatusBadRequest}
-		}
-
-		if err := v2.Validate(event); err != nil {
-			err = fmt.Errorf("validation failed on Event DTO: %s", err.Error())
-			logError(lc, err, envelope.CorrelationID)
-			return &MessageError{Err: err, ErrorCode: http.StatusBadRequest}
 		}
 
 		if lc.LogLevel() == models.DebugLog {
@@ -179,49 +145,6 @@ func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelo
 	gr.isBusyCopying.Unlock()
 
 	return gr.ExecutePipeline(target, envelope.ContentType, edgexcontext, transforms, 0, false)
-}
-
-func (gr *GolangRuntime) debugLogEvent(lc logger.LoggingClient, event *dtos.Event) {
-	lc.Debugf("Event Received with ProfileName=%s, DeviceName=%s and ReadingCount=%d",
-		event.ProfileName,
-		event.DeviceName,
-		len(event.Readings))
-	for index, reading := range event.Readings {
-		switch strings.ToLower(reading.ValueType) {
-		case strings.ToLower(v2.ValueTypeBinary):
-			lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, MediaType=%s and BinaryValue of size=`%d`",
-				index+1,
-				reading.ResourceName,
-				reading.ValueType,
-				reading.MediaType,
-				len(reading.BinaryValue))
-		default:
-			lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, Value=`%s`",
-				index+1,
-				reading.ResourceName,
-				reading.ValueType,
-				reading.Value)
-		}
-	}
-}
-
-func logError(lc logger.LoggingClient, err error, correlationID string) {
-	lc.Errorf("%s. %s=%s", err.Error(), clients.CorrelationHeader, correlationID)
-}
-
-// Initialize sets the internal reference to the StoreClient for use when Store and Forward is enabled
-func (gr *GolangRuntime) Initialize(storeClient dbInterfaces.StoreClient, secretProvider interfaces.SecretProvider) {
-	gr.storeForward.storeClient = storeClient
-	gr.storeForward.runtime = gr
-	gr.secretProvider = secretProvider
-}
-
-// SetTransforms is thread safe to set transforms
-func (gr *GolangRuntime) SetTransforms(transforms []appcontext.AppFunction) {
-	gr.isBusyCopying.Lock()
-	gr.transforms = transforms
-	gr.storeForward.pipelineHash = gr.storeForward.calculatePipelineHash() // Only need to calculate hash when the pipeline changes.
-	gr.isBusyCopying.Unlock()
 }
 
 func (gr *GolangRuntime) ExecutePipeline(target interface{}, contentType string, edgexcontext *appcontext.Context,
@@ -277,35 +200,50 @@ func (gr *GolangRuntime) StartStoreAndForward(
 	gr.storeForward.startStoreAndForwardRetryLoop(appWg, appCtx, enabledWg, enabledCtx, serviceKey, config, edgeXClients)
 }
 
-func (gr *GolangRuntime) getApiVersion(envelope types.MessageEnvelope) (string, error) {
+func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope, lc logger.LoggingClient) (*dtos.Event, error) {
 
-	// Use minimal struct with just the Event API version to find the version
-	type apiVersion struct {
-		commonDTO.Versionable
+	lc.Debug("Attempting to process Payload as an AddEventRequest DTO")
+	requestDto := requests.AddEventRequest{}
+
+	// Note that DTO validation is called during the unmarshaling
+	// which results in a KindContractInvalid error
+	// TODO: Remove Validate() call once the CBOR unmarshalling calls validation like JSON does
+	err := gr.unmarshalPayload(envelope, &requestDto)
+	if err == nil && envelope.ContentType == clients.ContentTypeCBOR {
+		err = requestDto.Validate()
 	}
 
-	version := apiVersion{}
+	if err == nil {
+		lc.Debug("Using Event DTO from AddEventRequest DTO")
 
-	if err := gr.unmarshalPayload(envelope, &version); err != nil {
-		return "", err
+		// Determine that we have an AddEventRequest DTO
+		return &requestDto.Event, nil
 	}
 
-	// If ApiVersion not set then we have to assume it is a V1 Event, rather than a V2 AddEventRequest
-	if len(version.ApiVersion) == 0 {
-		return ApiV1, nil
+	if errors.Kind(err) != errors.KindContractInvalid {
+		return nil, err
 	}
 
-	return version.ApiVersion, nil
+	// KindContractInvalid indicates that we likely don't have an AddEventRequest
+	// so try to process as Event
+
+	// If ApiVersion is set at top level, but not set at Event level then we have to assume we have an
+	// Event DTO (i.e. not wrapped in Add Request DTO)
+	if len(requestDto.ApiVersion) > 0 && len(requestDto.Event.ApiVersion) == 0 {
+		return gr.unmarshalEventDTO(envelope, lc)
+	}
+
+	// TODO: Remove this V1 detection once fully switched over to V2 DTOs.
+	// If ApiVersion is not set then we have to assume it is a V1 Event, rather than a V2 DTO
+	return gr.unmarshalV1EventToV2Event(envelope, lc)
 }
 
 // TODO: Remove when completely switched to V2 Event DTO
 func (gr *GolangRuntime) unmarshalV1EventToV2Event(envelope types.MessageEnvelope, lc logger.LoggingClient) (*dtos.Event, error) {
-	lc.Debug("Payload Does Not contain a V2 DTO, attempting to unmarshal to V1 Event model and then convert to V2 Event DTO")
+	lc.Debug("Processing payload as V1 Event model")
 
 	var err error
 	v1Event := models.Event{}
-
-	lc.Debugf("Unmarshaling V1 Event from content type '%s'", envelope.ContentType)
 
 	err = gr.unmarshalPayload(envelope, &v1Event)
 
@@ -360,26 +298,24 @@ func (gr *GolangRuntime) unmarshalV1EventToV2Event(envelope types.MessageEnvelop
 }
 
 func (gr *GolangRuntime) unmarshalEventDTO(envelope types.MessageEnvelope, lc logger.LoggingClient) (*dtos.Event, error) {
-	lc.Debug("Payload contains a V2 DTO, processing as an AddEventRequest DTO")
+	event := &dtos.Event{}
 
-	// Event DTO is received wrapped in a AddEventRequest DTO
-	// AddEventRequest DTO is validated as part of the JSON unmarshalling
-	addEventRequest := &requests.AddEventRequest{}
+	lc.Debug("Processing payload as an Event DTO")
 
-	lc.Debugf("Unmarshaling AddEventRequest DTO from content type '%s'", envelope.ContentType)
-
-	if err := gr.unmarshalPayload(envelope, &addEventRequest); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal AddEventRequest from content type '%s': %s", envelope.ContentType, err.Error())
+	if err := gr.unmarshalPayload(envelope, event); err != nil {
+		err = fmt.Errorf("unable to process DTO Event received: %s", err.Error())
+		logError(lc, err, envelope.CorrelationID)
+		return nil, err
 	}
 
-	if err := addEventRequest.Validate(); err != nil {
-		return nil, fmt.Errorf("validation failed on AddEventRequest: %s", err.Error())
+	if err := v2.Validate(event); err != nil {
+		err = fmt.Errorf("validation failed on Event DTO: %s", err.Error())
+		return nil, err
 	}
 
-	lc.Debug("Using Event DTO from AddEventRequest DTO")
+	lc.Debug("Using Event DTO received")
 
-	// Content of target must be a pointer
-	return &addEventRequest.Event, nil
+	return event, nil
 }
 
 func (gr *GolangRuntime) unmarshalPayload(envelope types.MessageEnvelope, target interface{}) error {
@@ -397,4 +333,32 @@ func (gr *GolangRuntime) unmarshalPayload(envelope types.MessageEnvelope, target
 	}
 
 	return err
+}
+
+func (gr *GolangRuntime) debugLogEvent(lc logger.LoggingClient, event *dtos.Event) {
+	lc.Debugf("Event Received with ProfileName=%s, DeviceName=%s and ReadingCount=%d",
+		event.ProfileName,
+		event.DeviceName,
+		len(event.Readings))
+	for index, reading := range event.Readings {
+		switch strings.ToLower(reading.ValueType) {
+		case strings.ToLower(v2.ValueTypeBinary):
+			lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, MediaType=%s and BinaryValue of size=`%d`",
+				index+1,
+				reading.ResourceName,
+				reading.ValueType,
+				reading.MediaType,
+				len(reading.BinaryValue))
+		default:
+			lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, Value=`%s`",
+				index+1,
+				reading.ResourceName,
+				reading.ValueType,
+				reading.Value)
+		}
+	}
+}
+
+func logError(lc logger.LoggingClient, err error, correlationID string) {
+	lc.Errorf("%s. %s=%s", err.Error(), clients.CorrelationHeader, correlationID)
 }
