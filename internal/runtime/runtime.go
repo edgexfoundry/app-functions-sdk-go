@@ -208,34 +208,51 @@ func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope, lc 
 	// Note that DTO validation is called during the unmarshaling
 	// which results in a KindContractInvalid error
 	// TODO: Remove Validate() call once the CBOR unmarshalling calls validation like JSON does
-	err := gr.unmarshalPayload(envelope, &requestDto)
-	if err == nil && envelope.ContentType == clients.ContentTypeCBOR {
-		err = requestDto.Validate()
+	requestDtoErr := gr.unmarshalPayload(envelope, &requestDto)
+	if requestDtoErr == nil && envelope.ContentType == clients.ContentTypeCBOR {
+		requestDtoErr = requestDto.Validate()
 	}
 
-	if err == nil {
+	if requestDtoErr == nil {
 		lc.Debug("Using Event DTO from AddEventRequest DTO")
 
 		// Determine that we have an AddEventRequest DTO
 		return &requestDto.Event, nil
 	}
 
-	if errors.Kind(err) != errors.KindContractInvalid {
-		return nil, err
+	// Check for validation error
+	if errors.Kind(requestDtoErr) != errors.KindContractInvalid {
+		return nil, requestDtoErr
 	}
 
 	// KindContractInvalid indicates that we likely don't have an AddEventRequest
 	// so try to process as Event
-
-	// If ApiVersion is set at top level, but not set at Event level then we have to assume we have an
-	// Event DTO (i.e. not wrapped in Add Request DTO)
-	if len(requestDto.ApiVersion) > 0 && len(requestDto.Event.ApiVersion) == 0 {
-		return gr.unmarshalEventDTO(envelope, lc)
+	lc.Debug("Attempting to process Payload as an Event DTO")
+	event := &dtos.Event{}
+	err := gr.unmarshalPayload(envelope, event)
+	if err == nil {
+		err = v2.Validate(event)
+		if err == nil {
+			lc.Debug("Using Event DTO received")
+			return event, nil
+		}
 	}
 
+	// Check for validation error
+	if errors.Kind(err) != errors.KindContractInvalid {
+		return nil, err
+	}
+
+	// KindContractInvalid indicates that we likely don't have an Event DTO
+	// so try to process as V1 Event
 	// TODO: Remove this V1 detection once fully switched over to V2 DTOs.
-	// If ApiVersion is not set then we have to assume it is a V1 Event, rather than a V2 DTO
-	return gr.unmarshalV1EventToV2Event(envelope, lc)
+	event, err = gr.unmarshalV1EventToV2Event(envelope, lc)
+	if err == nil {
+		return event, nil
+	}
+
+	// Still unable to process so assume have invalid AddEventRequest DTO
+	return nil, requestDtoErr
 }
 
 // TODO: Remove when completely switched to V2 Event DTO
@@ -299,27 +316,6 @@ func (gr *GolangRuntime) unmarshalV1EventToV2Event(envelope types.MessageEnvelop
 	lc.Debug("Using Event DTO created from V1 Event Model")
 
 	return &v2Event, nil
-}
-
-func (gr *GolangRuntime) unmarshalEventDTO(envelope types.MessageEnvelope, lc logger.LoggingClient) (*dtos.Event, error) {
-	event := &dtos.Event{}
-
-	lc.Debug("Processing payload as an Event DTO")
-
-	if err := gr.unmarshalPayload(envelope, event); err != nil {
-		err = fmt.Errorf("unable to process DTO Event received: %s", err.Error())
-		logError(lc, err, envelope.CorrelationID)
-		return nil, err
-	}
-
-	if err := v2.Validate(event); err != nil {
-		err = fmt.Errorf("validation failed on Event DTO: %s", err.Error())
-		return nil, err
-	}
-
-	lc.Debug("Using Event DTO received")
-
-	return event, nil
 }
 
 func (gr *GolangRuntime) unmarshalPayload(envelope types.MessageEnvelope, target interface{}) error {
