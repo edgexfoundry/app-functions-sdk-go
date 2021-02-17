@@ -37,7 +37,7 @@ func TestSample_LogEventDetails(t *testing.T) {
 	expectedContinuePipeline := true
 
 	target := NewSample()
-	actualContinuePipeline, actualEvent := target.LogEventDetails(creatTestAppSdkContext(), expectedEvent)
+	actualContinuePipeline, actualEvent := target.LogEventDetails(createTestAppSdkContext(), expectedEvent)
 
 	assert.Equal(t, expectedContinuePipeline, actualContinuePipeline)
 	assert.Equal(t, expectedEvent, actualEvent)
@@ -49,7 +49,7 @@ func TestSample_ConvertEventToXML(t *testing.T) {
 	expectedContinuePipeline := true
 
 	target := NewSample()
-	actualContinuePipeline, actualXml := target.ConvertEventToXML(creatTestAppSdkContext(), event)
+	actualContinuePipeline, actualXml := target.ConvertEventToXML(createTestAppSdkContext(), event)
 
 	assert.Equal(t, expectedContinuePipeline, actualContinuePipeline)
 	assert.Equal(t, expectedXml, actualXml)
@@ -60,7 +60,7 @@ func TestSample_OutputXML(t *testing.T) {
 	testEvent := createTestEvent(t)
 	expectedXml, _ := testEvent.ToXML()
 	expectedContinuePipeline := false
-	appContext := creatTestAppSdkContext()
+	appContext := createTestAppSdkContext()
 
 	target := NewSample()
 	actualContinuePipeline, result := target.OutputXML(appContext, expectedXml)
@@ -87,7 +87,7 @@ func createTestEvent(t *testing.T) dtos.Event {
 	return event
 }
 
-func creatTestAppSdkContext() *appcontext.Context {
+func createTestAppSdkContext() *appcontext.Context {
 	return &appcontext.Context{
 		CorrelationID: uuid.New().String(),
 		LoggingClient: logger.NewMockClient(),
