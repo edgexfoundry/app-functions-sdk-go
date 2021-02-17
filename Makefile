@@ -13,4 +13,4 @@ test: build test-template
 	$(GO) vet ./...
 	gofmt -l .
 	[ "`gofmt -l .`" = "" ]
-	./bin/test-go-mod-tidy.sh
+	./app-service-tempate/bin/test-go-mod-tidy.sh
