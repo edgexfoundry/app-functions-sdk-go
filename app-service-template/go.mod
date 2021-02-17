@@ -11,4 +11,4 @@ require (
 	github.com/stretchr/testify v1.7.0
 )
 
-replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../../app-functions-sdk-go
+replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../
