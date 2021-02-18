@@ -28,7 +28,7 @@ Follow the instructions below to create your new customer application service:
 
    - `make build`
 
-7. Update the `makefile` docker build to adjust image name appropriately 
+7. Update the `Makefile` docker build to adjust image name appropriately 
 
 8. Verify the docker image still builds with your new image name
 
