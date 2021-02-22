@@ -231,18 +231,20 @@ func (dynamic AppFunctionsSDKConfigurable) CompressWithZLIB() appcontext.AppFunc
 // It will return a byte[] of the encrypted data.
 // This function is a configuration function and returns a function pointer.
 func (dynamic AppFunctionsSDKConfigurable) EncryptWithAES(parameters map[string]string) appcontext.AppFunction {
-	// SecretPath & SecretName are optional if EncryptionKey specified
 	secretPath := parameters[SecretPath]
 	secretName := parameters[SecretName]
-
-	// EncryptionKey is optional if SecretPath & SecretName are specified
 	encryptionKey := parameters[EncryptionKey]
 
+	// SecretPath & SecretName are optional if EncryptionKey specified
+	// EncryptionKey is optional if SecretPath & SecretName are specified
+
+	// If EncryptionKey not specified, then SecretPath & SecretName must be specified
 	if len(encryptionKey) == 0 && (len(secretPath) == 0 || len(secretName) == 0) {
 		dynamic.Sdk.LoggingClient.Errorf("Could not find '%s' or '%s' and '%s' in configuration", EncryptionKey, SecretPath, SecretName)
 		return nil
 	}
 
+	// SecretPath & SecretName both must be specified it one of them is.
 	if (len(secretPath) != 0 && len(secretName) == 0) || (len(secretPath) == 0 && len(secretName) != 0) {
 		dynamic.Sdk.LoggingClient.Errorf("'%s' and '%s' both must be set in configuration", SecretPath, SecretName)
 		return nil
