@@ -19,13 +19,14 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
 	"sync"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
+	edgexErrors "github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
 	"github.com/google/uuid"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
@@ -81,7 +82,7 @@ func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelo
 	lc := edgexcontext.LoggingClient
 
 	if len(gr.transforms) == 0 {
-		err := fmt.Errorf("No transforms configured. Please check log for errors loading pipeline")
+		err := errors.New("No transforms configured. Please check log for errors loading pipeline")
 		logError(lc, err, envelope.CorrelationID)
 		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
 	}
@@ -96,7 +97,7 @@ func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelo
 	}
 
 	if reflect.TypeOf(gr.TargetType).Kind() != reflect.Ptr {
-		err := fmt.Errorf("TargetType must be a pointer, not a value of the target type")
+		err := errors.New("TargetType must be a pointer, not a value of the target type")
 		logError(lc, err, envelope.CorrelationID)
 		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
 	}
@@ -116,7 +117,7 @@ func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelo
 		event, err := gr.processEventPayload(envelope, lc)
 		if err != nil {
 			errorCode := http.StatusInternalServerError
-			if errors.Kind(err) == errors.KindContractInvalid {
+			if edgexErrors.Kind(err) == edgexErrors.KindContractInvalid {
 				errorCode = http.StatusBadRequest
 			}
 
@@ -233,7 +234,7 @@ func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope, lc 
 	}
 
 	// Check for validation error
-	if errors.Kind(requestDtoErr) != errors.KindContractInvalid {
+	if edgexErrors.Kind(requestDtoErr) != edgexErrors.KindContractInvalid {
 		return nil, requestDtoErr
 	}
 
@@ -251,7 +252,7 @@ func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope, lc 
 	}
 
 	// Check for validation error
-	if errors.Kind(err) != errors.KindContractInvalid {
+	if edgexErrors.Kind(err) != edgexErrors.KindContractInvalid {
 		return nil, err
 	}
 
