@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -80,7 +79,14 @@ func (gr *GolangRuntime) SetTransforms(transforms []appcontext.AppFunction) {
 // ProcessMessage sends the contents of the message thru the functions pipeline
 func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelope types.MessageEnvelope) *MessageError {
 	lc := edgexcontext.LoggingClient
-	lc.Debug("Processing message: " + strconv.Itoa(len(gr.transforms)) + " Transforms")
+
+	if len(gr.transforms) == 0 {
+		err := fmt.Errorf("No transforms configured. Please check log for errors loading pipeline")
+		logError(lc, err, envelope.CorrelationID)
+		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
+	}
+
+	lc.Debugf("Processing message %d Transforms", len(gr.transforms))
 
 	// Default Target Type for the function pipeline is an Event DTO.
 	// The Event DTO can be wrapped in an AddEventRequest DTO or just be the un-wrapped Event DTO,
@@ -90,7 +96,7 @@ func (gr *GolangRuntime) ProcessMessage(edgexcontext *appcontext.Context, envelo
 	}
 
 	if reflect.TypeOf(gr.TargetType).Kind() != reflect.Ptr {
-		err := fmt.Errorf("TargetType must be a pointer, not a value of the target type.")
+		err := fmt.Errorf("TargetType must be a pointer, not a value of the target type")
 		logError(lc, err, envelope.CorrelationID)
 		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
 	}
