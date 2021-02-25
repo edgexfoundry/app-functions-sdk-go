@@ -56,6 +56,15 @@ const (
 	ResponseContentType = "responsecontenttype"
 )
 
+type postPutParameters struct {
+	url            string
+	mimeType       string
+	persistOnError bool
+	headerName     string
+	secretPath     string
+	secretName     string
+}
+
 // AppFunctionsSDKConfigurable contains the helper functions that return the function pointers for building the configurable function pipeline.
 // They transform the parameters map from the Pipeline configuration in to the actual actual parameters required by the function.
 type AppFunctionsSDKConfigurable struct {
@@ -270,17 +279,23 @@ func (dynamic AppFunctionsSDKConfigurable) EncryptWithAES(parameters map[string]
 // method will default to application/json.
 // This function is a configuration function and returns a function pointer.
 func (dynamic AppFunctionsSDKConfigurable) HTTPPost(parameters map[string]string) appcontext.AppFunction {
-	url, mimeType, persistOnError, headerName, secretPath, secretName, err := dynamic.processPostPutParameters(parameters)
+	params, err := dynamic.processPostPutParameters(parameters)
 	if err != nil {
 		dynamic.Sdk.LoggingClient.Error(err.Error())
 		return nil
 	}
 
 	var transform transforms.HTTPSender
-	if len(secretPath) != 0 {
-		transform = transforms.NewHTTPSenderWithSecretHeader(url, mimeType, persistOnError, headerName, secretPath, secretName)
+	if len(params.secretPath) != 0 {
+		transform = transforms.NewHTTPSenderWithSecretHeader(
+			params.url,
+			params.mimeType,
+			params.persistOnError,
+			params.headerName,
+			params.secretPath,
+			params.secretName)
 	} else {
-		transform = transforms.NewHTTPSender(url, mimeType, persistOnError)
+		transform = transforms.NewHTTPSender(params.url, params.mimeType, params.persistOnError)
 	}
 
 	dynamic.Sdk.LoggingClient.Debugf("HTTPPost Parameters: %v", parameters)
@@ -308,17 +323,23 @@ func (dynamic AppFunctionsSDKConfigurable) HTTPPostXML(parameters map[string]str
 // method will default to application/json.
 // This function is a configuration function and returns a function pointer.
 func (dynamic AppFunctionsSDKConfigurable) HTTPPut(parameters map[string]string) appcontext.AppFunction {
-	url, mimeType, persistOnError, headerName, secretPath, secretName, err := dynamic.processPostPutParameters(parameters)
+	params, err := dynamic.processPostPutParameters(parameters)
 	if err != nil {
 		dynamic.Sdk.LoggingClient.Error(err.Error())
 		return nil
 	}
 
 	var transform transforms.HTTPSender
-	if len(secretPath) != 0 {
-		transform = transforms.NewHTTPSenderWithSecretHeader(url, mimeType, persistOnError, headerName, secretPath, secretName)
+	if len(params.secretPath) != 0 {
+		transform = transforms.NewHTTPSenderWithSecretHeader(
+			params.url,
+			params.mimeType,
+			params.persistOnError,
+			params.headerName,
+			params.secretPath,
+			params.secretName)
 	} else {
-		transform = transforms.NewHTTPSender(url, mimeType, persistOnError)
+		transform = transforms.NewHTTPSender(params.url, params.mimeType, params.persistOnError)
 	}
 
 	dynamic.Sdk.LoggingClient.Debug("HTTPPut Parameters", Url, transform.URL, MimeType, transform.MimeType)
@@ -555,24 +576,29 @@ func (dynamic AppFunctionsSDKConfigurable) AddTags(parameters map[string]string)
 }
 
 func (dynamic AppFunctionsSDKConfigurable) processPostPutParameters(
-	parameters map[string]string) (string, string, bool, string, string, string, error) {
-	url, ok := parameters[Url]
+	parameters map[string]string) (*postPutParameters, error) {
+
+	result := postPutParameters{}
+	var ok bool
+
+	result.url, ok = parameters[Url]
 	if !ok {
-		return "", "", false, "", "", "", fmt.Errorf("HTTPPut Could not find %s", Url)
+		return nil, fmt.Errorf("HTTPPut Could not find %s", Url)
 	}
-	mimeType, ok := parameters[MimeType]
+	result.mimeType, ok = parameters[MimeType]
 	if !ok {
-		return "", "", false, "", "", "", fmt.Errorf("HTTPPut Could not find %s", MimeType)
+		return nil, fmt.Errorf("HTTPPut Could not find %s", MimeType)
 	}
 
 	// PersistOnError is optional and is false by default.
-	persistOnError := false
-	value, ok := parameters[PersistOnError]
+	var value string
+	result.persistOnError = false
+	value, ok = parameters[PersistOnError]
 	if ok {
 		var err error
-		persistOnError, err = strconv.ParseBool(value)
+		result.persistOnError, err = strconv.ParseBool(value)
 		if err != nil {
-			return "", "", false, "", "", "",
+			return nil,
 				fmt.Errorf("HTTPPut Could not parse '%s' to a bool for '%s' parameter: %s",
 					value,
 					PersistOnError,
@@ -580,24 +606,24 @@ func (dynamic AppFunctionsSDKConfigurable) processPostPutParameters(
 		}
 	}
 
-	url = strings.TrimSpace(url)
-	mimeType = strings.TrimSpace(mimeType)
-	headerName := strings.TrimSpace(parameters[HeaderName])
-	secretPath := strings.TrimSpace(parameters[SecretPath])
-	secretName := strings.TrimSpace(parameters[SecretName])
+	result.url = strings.TrimSpace(result.url)
+	result.mimeType = strings.TrimSpace(result.mimeType)
+	result.headerName = strings.TrimSpace(parameters[HeaderName])
+	result.secretPath = strings.TrimSpace(parameters[SecretPath])
+	result.secretName = strings.TrimSpace(parameters[SecretName])
 
-	if len(headerName) == 0 && len(secretPath) != 0 && len(secretName) != 0 {
-		return "", "", false, "", "", "",
+	if len(result.headerName) == 0 && len(result.secretPath) != 0 && len(result.secretName) != 0 {
+		return nil,
 			fmt.Errorf("HTTPPost missing %s since %s & %s are specified", HeaderName, SecretPath, SecretName)
 	}
-	if len(secretPath) == 0 && len(headerName) != 0 && len(secretName) != 0 {
-		return "", "", false, "", "", "",
+	if len(result.secretPath) == 0 && len(result.headerName) != 0 && len(result.secretName) != 0 {
+		return nil,
 			fmt.Errorf("HTTPPost missing %s since %s & %s are specified", SecretPath, HeaderName, SecretName)
 	}
-	if len(secretName) == 0 && len(secretPath) != 0 && len(headerName) != 0 {
-		return "", "", false, "", "", "",
+	if len(result.secretName) == 0 && len(result.secretPath) != 0 && len(result.headerName) != 0 {
+		return nil,
 			fmt.Errorf("HTTPPost missing %s since %s & %s are specified", SecretName, SecretPath, HeaderName)
 	}
 
-	return url, mimeType, persistOnError, headerName, secretPath, secretName, nil
+	return &result, nil
 }
