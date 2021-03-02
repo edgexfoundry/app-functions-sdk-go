@@ -473,7 +473,7 @@ func (dynamic AppFunctionsSDKConfigurable) Batch(parameters map[string]string) a
 		}
 		thresholdValue, err := strconv.Atoi(batchThreshold)
 		if err != nil {
-			dynamic.Sdk.LoggingClient.Error(fmt.Sprintf("Could not parse '%s' to an int for '%s' parameter", batchThreshold, BatchThreshold), "error", err)
+			dynamic.Sdk.LoggingClient.Errorf("Could not parse '%s' to an int for '%s' parameter: %s", batchThreshold, BatchThreshold, err.Error())
 		}
 		transform, err := transforms.NewBatchByTimeAndCount(timeInterval, thresholdValue)
 		if err != nil {
@@ -555,7 +555,7 @@ func (dynamic AppFunctionsSDKConfigurable) processFilterParameters(
 		var err error
 		filterOutBool, err = strconv.ParseBool(filterOut)
 		if err != nil {
-			dynamic.Sdk.LoggingClient.Errorf("Could not convert filterOut value `%s` to bool for $s", filterOut, funcName)
+			dynamic.Sdk.LoggingClient.Errorf("Could not convert filterOut value `%s` to bool for %s", filterOut, funcName)
 			return nil, false
 		}
 	}

@@ -275,7 +275,7 @@ func TestBatchByTime(t *testing.T) {
 
 	params := make(map[string]string)
 	params[Mode] = BatchByTime
-	params[TimeInterval] = "10"
+	params[TimeInterval] = "10s"
 	transform := configurable.Batch(params)
 	assert.NotNil(t, transform, "return result for BatchByTime should not be nil")
 }

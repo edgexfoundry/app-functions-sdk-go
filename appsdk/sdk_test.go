@@ -41,7 +41,7 @@ var lc logger.LoggingClient
 
 func TestMain(m *testing.M) {
 	// No remote and no file results in STDOUT logging only
-	lc = logger.NewClient("cc", "DEBUG")
+	lc = logger.NewMockClient()
 	m.Run()
 }
 
@@ -241,7 +241,7 @@ func TestLoadConfigurablePipelineFunctionNotFound(t *testing.T) {
 
 	appFunctions, err := sdk.LoadConfigurablePipeline()
 	require.Error(t, err, "expected error for function not found in config")
-	assert.Equal(t, "function Bogus configuration not found in Pipeline.Functions section", err.Error())
+	assert.Equal(t, "function 'Bogus' configuration not found in Pipeline.Functions section", err.Error())
 	assert.Nil(t, appFunctions, "expected app functions list to be nil")
 }
 
