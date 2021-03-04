@@ -111,10 +111,10 @@ func listenAndServe(webserver *WebServer, serviceTimeout time.Duration, errChann
 	addr := fmt.Sprintf("%v:%d", webserver.Config.Service.ServerBindAddr, webserver.Config.Service.Port)
 
 	if webserver.Config.Service.Protocol == "https" {
-		webserver.lc.Info(fmt.Sprintf("Starting HTTPS Web Server on address %v", addr))
+		webserver.lc.Infof("Starting HTTPS Web Server on address %v", addr)
 		errChannel <- http.ListenAndServeTLS(addr, webserver.Config.Service.HTTPSCert, webserver.Config.Service.HTTPSKey, http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"))
 	} else {
-		webserver.lc.Info(fmt.Sprintf("Starting HTTP Web Server on address %v", addr))
+		webserver.lc.Infof("Starting HTTP Web Server on address %v", addr)
 		errChannel <- http.ListenAndServe(addr, http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"))
 	}
 }
