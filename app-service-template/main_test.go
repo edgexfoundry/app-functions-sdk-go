@@ -31,7 +31,7 @@ import (
 
 // This is an example of how to test the code that would typically be in the main() function use mocks
 // Not to helpful for a simple main() , but can be if the main() has more complexity that should be unit tested
-// TODO: add/update tests for your customized CreateAndRunService or remove for simple main()
+// TODO: add/update tests for your customized CreateAndRunAppService or remove if your main code doesn't require unit testing.
 
 func TestCreateAndRunService_Success(t *testing.T) {
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
@@ -41,13 +41,18 @@ func TestCreateAndRunService_Success(t *testing.T) {
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
+		mockAppService.On("LoadCustomConfig", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
+		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("MakeItRun").Return(nil)
 
 		return mockAppService, true
 	}
 
+	app := myApp{}
 	expected := 0
-	actual := CreateAndRunService("TestKey", mockFactory)
+	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
 
@@ -55,8 +60,9 @@ func TestCreateAndRunService_NewService_Failed(t *testing.T) {
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		return nil, false
 	}
+	app := myApp{}
 	expected := -1
-	actual := CreateAndRunService("TestKey", mockFactory)
+	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
 
@@ -70,8 +76,9 @@ func TestCreateAndRunService_GetAppSettingStrings_Failed(t *testing.T) {
 		return mockAppService, true
 	}
 
+	app := myApp{}
 	expected := -1
-	actual := CreateAndRunService("TestKey", mockFactory)
+	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
 
@@ -81,14 +88,19 @@ func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
+		mockAppService.On("LoadCustomConfig", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
+		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(fmt.Errorf("Failed"))
 
 		return mockAppService, true
 	}
 
+	app := myApp{}
 	expected := -1
-	actual := CreateAndRunService("TestKey", mockFactory)
+	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
 
@@ -98,6 +110,10 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
+		mockAppService.On("LoadCustomConfig", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
+		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("MakeItRun").Return(fmt.Errorf("Failed"))
@@ -105,7 +121,8 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 		return mockAppService, true
 	}
 
+	app := myApp{}
 	expected := -1
-	actual := CreateAndRunService("TestKey", mockFactory)
+	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
