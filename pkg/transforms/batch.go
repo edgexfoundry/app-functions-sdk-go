@@ -142,14 +142,11 @@ func (batch *BatchConfig) Batch(ctx interfaces.AppFunctionContext, data interfac
 	if batch.batchMode != BatchByCountOnly {
 		if !batch.timerActive.Value() {
 			batch.timerActive.Set(true)
-			for {
-				select {
-				case <-batch.done:
-					ctx.LoggingClient().Debug("Batch count has been reached")
-				case <-time.After(batch.parsedDuration):
-					ctx.LoggingClient().Debug("Timer has elapsed")
-				}
-				break
+			select {
+			case <-batch.done:
+				ctx.LoggingClient().Debug("Batch count has been reached")
+			case <-time.After(batch.parsedDuration):
+				ctx.LoggingClient().Debug("Timer has elapsed")
 			}
 			batch.timerActive.Set(false)
 		} else {

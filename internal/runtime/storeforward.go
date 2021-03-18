@@ -144,7 +144,7 @@ func (sf *storeForwardInfo) retryStoredData(serviceKey string) {
 		return
 	}
 
-	lc.Debug(fmt.Sprintf(" %d stored data items found for retrying", len(items)))
+	lc.Debugf(" %d stored data items found for retrying", len(items))
 
 	if len(items) > 0 {
 		itemsToRemove, itemsToUpdate := sf.processRetryItems(items)

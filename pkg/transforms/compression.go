@@ -63,12 +63,12 @@ func (compression *Compression) CompressWithGZIP(ctx interfaces.AppFunctionConte
 
 	_, err = compression.gzipWriter.Write(rawData)
 	if err != nil {
-		return false, fmt.Errorf("unable to write GZIP data")
+		return false, fmt.Errorf("unable to write GZIP data: %s", err.Error())
 	}
 
 	err = compression.gzipWriter.Close()
 	if err != nil {
-		return false, fmt.Errorf("unable to close GZIP data")
+		return false, fmt.Errorf("unable to close GZIP data: %s", err.Error())
 	}
 
 	// Set response "content-type" header to "text/plain"
@@ -100,12 +100,12 @@ func (compression *Compression) CompressWithZLIB(ctx interfaces.AppFunctionConte
 
 	_, err = compression.zlibWriter.Write(byteData)
 	if err != nil {
-		return false, fmt.Errorf("unable to write ZLIB data")
+		return false, fmt.Errorf("unable to write ZLIB data: %s", err.Error())
 	}
 
 	err = compression.zlibWriter.Close()
 	if err != nil {
-		return false, fmt.Errorf("unable to close ZLIB data")
+		return false, fmt.Errorf("unable to close ZLIB data: %s", err.Error())
 	}
 
 	// Set response "content-type" header to "text/plain"

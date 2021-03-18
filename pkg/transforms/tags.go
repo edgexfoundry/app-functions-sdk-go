@@ -18,7 +18,6 @@ package transforms
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/v2/dtos"
 
@@ -58,7 +57,7 @@ func (t *Tags) AddTags(ctx interfaces.AppFunctionContext, data interface{}) (boo
 		for tag, value := range t.tags {
 			event.Tags[tag] = value
 		}
-		ctx.LoggingClient().Debug(fmt.Sprintf("Tags added to Event. Event tags=%v", event.Tags))
+		ctx.LoggingClient().Debugf("Tags added to Event. Event tags=%v", event.Tags)
 	} else {
 		ctx.LoggingClient().Debug("No tags added to Event. Add tags list is empty.")
 	}

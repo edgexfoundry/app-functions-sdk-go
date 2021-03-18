@@ -202,7 +202,7 @@ func (app *Configurable) PushToCore(parameters map[string]string) interfaces.App
 	}
 	readingName, ok := parameters[ReadingName]
 	if !ok {
-		app.lc.Error("Could not find " + readingName)
+		app.lc.Error("Could not find " + ReadingName)
 		return nil
 	}
 	deviceName = strings.TrimSpace(deviceName)
@@ -399,7 +399,7 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 	if ok {
 		skipCertVerify, err = strconv.ParseBool(skipVerifyVal)
 		if err != nil {
-			app.lc.Error(fmt.Sprintf("Could not parse '%s' to a bool for '%s' parameter", skipVerifyVal, SkipVerify), "error", err)
+			app.lc.Errorf("Could not parse '%s' to a bool for '%s' parameter: %s", skipVerifyVal, SkipVerify, err.Error())
 			return nil
 		}
 	}
@@ -420,7 +420,7 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 	if ok {
 		persistOnError, err = strconv.ParseBool(value)
 		if err != nil {
-			app.lc.Error(fmt.Sprintf("Could not parse '%s' to a bool for '%s' parameter", value, PersistOnError), "error", err)
+			app.lc.Errorf("Could not parse '%s' to a bool for '%s' parameter: %s", value, PersistOnError, err.Error())
 			return nil
 		}
 	}
@@ -547,16 +547,16 @@ func (app *Configurable) AddTags(parameters map[string]string) interfaces.AppFun
 	for _, tag := range tagKeyValues {
 		keyValue := util.DeleteEmptyAndTrim(strings.FieldsFunc(tag, util.SplitColon))
 		if len(keyValue) != 2 {
-			app.lc.Error(fmt.Sprintf("Bad Tags specification format. Expect comma separated list of 'key:value'. Got `%s`", tagsSpec))
+			app.lc.Errorf("Bad Tags specification format. Expect comma separated list of 'key:value'. Got `%s`", tagsSpec)
 			return nil
 		}
 
 		if len(keyValue[0]) == 0 {
-			app.lc.Error(fmt.Sprintf("Tag key missing. Got '%s'", tag))
+			app.lc.Errorf("Tag key missing. Got '%s'", tag)
 			return nil
 		}
 		if len(keyValue[1]) == 0 {
-			app.lc.Error(fmt.Sprintf("Tag value missing. Got '%s'", tag))
+			app.lc.Errorf("Tag value missing. Got '%s'", tag)
 			return nil
 		}
 

@@ -166,7 +166,7 @@ func (gr *GolangRuntime) ExecutePipeline(
 	isRetry bool) *MessageError {
 
 	var result interface{}
-	var continuePipeline = true
+	var continuePipeline bool
 
 	for functionIndex, trxFunc := range transforms {
 		if functionIndex < startPosition {

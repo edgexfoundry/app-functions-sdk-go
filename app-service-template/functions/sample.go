@@ -18,7 +18,6 @@ package functions
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
@@ -129,7 +128,7 @@ func (s *Sample) OutputXML(ctx interfaces.AppFunctionContext, data interface{}) 
 		return false, errors.New("type received is not an string")
 	}
 
-	lc.Debug(fmt.Sprintf("Outputting the following XML: %s", xml))
+	lc.Debugf("Outputting the following XML: %s", xml)
 
 	// This sends the XML as a response. i.e. publish for MessageBus/MQTT triggers as configured or
 	// HTTP response to for the HTTP Trigger

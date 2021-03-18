@@ -35,7 +35,7 @@ func NewAppService(serviceKey string) (interfaces.ApplicationService, bool) {
 	return NewAppServiceWithTargetType(serviceKey, nil)
 }
 
-// NewAppService creates and returns a new ApplicationService with the specified TargetType
+// NewAppServiceWithTargetType creates and returns a new ApplicationService with the specified TargetType
 func NewAppServiceWithTargetType(serviceKey string, targetType interface{}) (interfaces.ApplicationService, bool) {
 	service := app.NewService(serviceKey, targetType, interfaces.ProfileSuffixPlaceholder)
 	if err := service.Initialize(); err != nil {

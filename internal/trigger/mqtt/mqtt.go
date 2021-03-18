@@ -109,7 +109,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 		return nil, fmt.Errorf("unable to create secure MQTT Client: %s", err.Error())
 	}
 
-	lc.Info(fmt.Sprintf("Connecting to mqtt broker for MQTT trigger at: %s", brokerUrl))
+	lc.Infof("Connecting to mqtt broker for MQTT trigger at: %s", brokerUrl)
 
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		return nil, fmt.Errorf("could not connect to broker for MQTT trigger: %s", token.Error().Error())
@@ -137,8 +137,8 @@ func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
 	for _, topic := range topics {
 		if token := mqttClient.Subscribe(topic, qos, trigger.messageHandler); token.Wait() && token.Error() != nil {
 			mqttClient.Disconnect(0)
-			lc.Error(fmt.Sprintf("could not subscribe to topic '%s' for MQTT trigger: %s",
-				topic, token.Error().Error()))
+			lc.Errorf("could not subscribe to topic '%s' for MQTT trigger: %s",
+				topic, token.Error().Error())
 			return
 		}
 	}
@@ -182,10 +182,10 @@ func (trigger *Trigger) messageHandler(client pahoMqtt.Client, message pahoMqtt.
 
 	if len(appContext.ResponseData()) > 0 && len(topic) > 0 {
 		if token := client.Publish(topic, brokerConfig.QoS, brokerConfig.Retain, appContext.ResponseData); token.Wait() && token.Error() != nil {
-			lc.Error("could not publish to topic '%s' for MQTT trigger: %s", topic, token.Error().Error())
+			lc.Errorf("could not publish to topic '%s' for MQTT trigger: %s", topic, token.Error().Error())
 		} else {
 			lc.Trace("Sent MQTT Trigger response message", clients.CorrelationHeader, correlationID)
-			lc.Debug(fmt.Sprintf("Sent MQTT Trigger response message on topic '%s' with %d bytes", topic, len(appContext.ResponseData())))
+			lc.Debugf("Sent MQTT Trigger response message on topic '%s' with %d bytes", topic, len(appContext.ResponseData()))
 		}
 	}
 }

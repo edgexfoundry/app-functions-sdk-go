@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020 Technocrats
+// Copyright (c) 2020 Technotects
 // Copyright (c) 2021 Intel Corporation
 
 //
@@ -49,7 +49,7 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 	if nu == TriggerTypeMessageBus ||
 		nu == TriggerTypeHTTP ||
 		nu == TriggerTypeMQTT {
-		return errors.New(fmt.Sprintf("cannot register custom trigger for builtin type (%s)", name))
+		return fmt.Errorf("cannot register custom trigger for builtin type (%s)", name)
 	}
 
 	if svc.customTriggerFactories == nil {
@@ -71,7 +71,7 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 func (svc *Service) defaultTriggerMessageProcessor(appContext interfaces.AppFunctionContext, envelope types.MessageEnvelope) error {
 	context, ok := appContext.(*appfunction.Context)
 	if !ok {
-		return fmt.Errorf("App Context must be an istance of internal appfunction.Context. Use NewAppContext to create instance.")
+		return errors.New("App Context must be an instance of internal appfunction.Context. Use NewAppContext to create instance.")
 	}
 
 	messageError := svc.runtime.ProcessMessage(context, envelope)
@@ -109,11 +109,11 @@ func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct, runt
 			var err error
 			t, err = factory(svc)
 			if err != nil {
-				svc.LoggingClient().Error(fmt.Sprintf("failed to initialize custom trigger [%s]: %s", triggerType, err.Error()))
+				svc.LoggingClient().Errorf("failed to initialize custom trigger [%s]: %s", triggerType, err.Error())
 				return nil
 			}
 		} else {
-			svc.LoggingClient().Error(fmt.Sprintf("Invalid Trigger type of '%s' specified", configuration.Trigger.Type))
+			svc.LoggingClient().Errorf("Invalid Trigger type of '%s' specified", configuration.Trigger.Type)
 		}
 	}
 

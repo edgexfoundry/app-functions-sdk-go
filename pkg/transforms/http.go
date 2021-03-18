@@ -125,8 +125,8 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 		return false, err
 	}
 	defer func() { _ = response.Body.Close() }()
-	ctx.LoggingClient().Debug(fmt.Sprintf("Response: %s", response.Status))
-	ctx.LoggingClient().Debug(fmt.Sprintf("Sent data: %s", string(exportData)))
+	ctx.LoggingClient().Debugf("Response: %s", response.Status)
+	ctx.LoggingClient().Debugf("Sent data: %s", string(exportData))
 	bodyBytes, errReadingBody := ioutil.ReadAll(response.Body)
 	if errReadingBody != nil {
 		sender.setRetryData(ctx, exportData)
