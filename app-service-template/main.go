@@ -92,12 +92,12 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	// For more details see https://docs.edgexfoundry.org/2.0/microservices/application/GeneralAppServiceConfig/#writable-custom-configuration
 	// TODO: Remove if not using writable custom configuration
 	configChanged := make(chan bool)
-	err = app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", configChanged)
+	ctx, wg, err := app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", configChanged)
 	if err != nil {
 		app.lc.Errorf("unable to watch custom writable configuration: %s", err.Error())
 		return -1
 	}
-	app.serviceConfig.AppCustom.WaitForCustomConfigChanges(configChanged, app.lc)
+	app.serviceConfig.AppCustom.WaitForCustomConfigChanges(configChanged, ctx, wg, app.lc)
 
 	// TODO: Replace below functions with built in and/or your custom functions for your use case.
 	//       See https://docs.edgexfoundry.org/2.0/microservices/application/BuiltIn/ for list of built-in functions

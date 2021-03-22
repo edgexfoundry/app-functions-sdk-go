@@ -24,8 +24,10 @@ package config
 //       or remove this file if not using custom configuration.
 
 import (
+	"context"
 	"errors"
 	"reflect"
+	"sync"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 )
@@ -85,12 +87,20 @@ func (ac *AppCustomConfig) UpdateWritableFromRaw(rawWritableConfig interface{}) 
 // the changes as needed
 // TODO: Update to use your custom configuration section that you want to be writable (i.e. runtime changes from Consul)
 //       or remove if not using custom configuration section or writable custom configuration.
-func (ac *AppCustomConfig) WaitForCustomConfigChanges(configChanged chan bool, lc logger.LoggingClient) {
+func (ac *AppCustomConfig) WaitForCustomConfigChanges(configChanged chan bool, ctx context.Context, wg *sync.WaitGroup, lc logger.LoggingClient) {
 	previous := *ac // Copy for change detection
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+		lc.Infof("Waiting for changes to custom configuration")
+
 		for {
 			select {
+			case <-ctx.Done():
+				lc.Infof("Exiting from waiting for changes to custom configuration")
+				return
+
 			case <-configChanged:
 				// TODO: Process the changed configuration.
 				//       Must keep a previous copy of the configuration to determine what has changed.

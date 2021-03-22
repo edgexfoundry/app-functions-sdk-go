@@ -449,14 +449,16 @@ func (svc *Service) LoadCustomConfig(customConfig interfaces.UpdatableConfig, se
 func (svc *Service) ListenForCustomConfigChanges(
 	configToWatch interfaces.WritableConfig,
 	sectionName string,
-	writableChanged chan bool) error {
+	writableChanged chan bool) (context.Context, *sync.WaitGroup, error) {
 	if svc.configProcessor == nil {
-		return fmt.Errorf(
+		return nil, nil, fmt.Errorf(
 			"custom configuration must be loaded before '%s' section can be watched for changes",
 			sectionName)
 	}
 
-	return svc.configProcessor.ListenForCustomConfigChanges(configToWatch, sectionName, writableChanged)
+	return svc.ctx.appCtx,
+		svc.ctx.appWg,
+		svc.configProcessor.ListenForCustomConfigChanges(configToWatch, sectionName, writableChanged)
 }
 
 // GetSecret retrieves secret data from the secret store at the specified path.
