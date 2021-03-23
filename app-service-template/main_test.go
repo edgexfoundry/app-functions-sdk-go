@@ -18,12 +18,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
@@ -34,6 +37,8 @@ import (
 // TODO: add/update tests for your customized CreateAndRunAppService or remove if your main code doesn't require unit testing.
 
 func TestCreateAndRunService_Success(t *testing.T) {
+	app := myApp{}
+
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
@@ -42,87 +47,118 @@ func TestCreateAndRunService_Success(t *testing.T) {
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("LoadCustomConfig", mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
+			Return(nil).Run(func(args mock.Arguments) {
+			// set the required configuration so validation passes
+			app.serviceConfig.AppCustom.SomeValue = 987
+			app.serviceConfig.AppCustom.SomeService.Host = "SomeHost"
+		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
+			Return(context.Background(), &sync.WaitGroup{}, nil)
 		mockAppService.On("MakeItRun").Return(nil)
 
 		return mockAppService, true
 	}
 
-	app := myApp{}
 	expected := 0
 	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
 
 func TestCreateAndRunService_NewService_Failed(t *testing.T) {
+	app := myApp{}
+
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		return nil, false
 	}
-	app := myApp{}
 	expected := -1
 	actual := app.CreateAndRunAppService("TestKey", mockFactory)
 	assert.Equal(t, expected, actual)
 }
 
 func TestCreateAndRunService_GetAppSettingStrings_Failed(t *testing.T) {
+	app := myApp{}
+
+	getAppSettingStringsCalled := false
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
-			Return(nil, fmt.Errorf("Failed"))
+			Return(nil, fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
+			getAppSettingStringsCalled = true
+		})
 
 		return mockAppService, true
 	}
 
-	app := myApp{}
 	expected := -1
 	actual := app.CreateAndRunAppService("TestKey", mockFactory)
+	require.True(t, getAppSettingStringsCalled, "GetAppSettingStrings never called")
 	assert.Equal(t, expected, actual)
 }
 
 func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
+	app := myApp{}
+
+	// ensure failure is from SetFunctionsPipeline
+	setFunctionsPipelineCalled := false
+
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
 		mockAppService.On("LoadCustomConfig", mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
+			Return(nil).Run(func(args mock.Arguments) {
+			// set the required configuration so validation passes
+			app.serviceConfig.AppCustom.SomeValue = 987
+			app.serviceConfig.AppCustom.SomeService.Host = "SomeHost"
+		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
+			Return(context.Background(), &sync.WaitGroup{}, nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(fmt.Errorf("Failed"))
+			Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
+			setFunctionsPipelineCalled = true
+		})
 
 		return mockAppService, true
 	}
 
-	app := myApp{}
 	expected := -1
 	actual := app.CreateAndRunAppService("TestKey", mockFactory)
+	require.True(t, setFunctionsPipelineCalled, "SetFunctionsPipeline never called")
 	assert.Equal(t, expected, actual)
 }
 
 func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
+	app := myApp{}
+
+	// ensure failure is from MakeItRun
+	makeItRunCalled := false
+
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
 		mockAppService.On("LoadCustomConfig", mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
+			Return(nil).Run(func(args mock.Arguments) {
+			// set the required configuration so validation passes
+			app.serviceConfig.AppCustom.SomeValue = 987
+			app.serviceConfig.AppCustom.SomeService.Host = "SomeHost"
+		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
+			Return(context.Background(), &sync.WaitGroup{}, nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("MakeItRun").Return(fmt.Errorf("Failed"))
+		mockAppService.On("MakeItRun").Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
+			makeItRunCalled = true
+		})
 
 		return mockAppService, true
 	}
 
-	app := myApp{}
 	expected := -1
 	actual := app.CreateAndRunAppService("TestKey", mockFactory)
+	require.True(t, makeItRunCalled, "MakeItRun never called")
 	assert.Equal(t, expected, actual)
 }
