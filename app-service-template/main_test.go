@@ -18,9 +18,7 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"sync"
 	"testing"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
@@ -52,8 +50,8 @@ func TestCreateAndRunService_Success(t *testing.T) {
 			app.serviceConfig.AppCustom.SomeValue = 987
 			app.serviceConfig.AppCustom.SomeService.Host = "SomeHost"
 		})
-		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(context.Background(), &sync.WaitGroup{}, nil)
+		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("MakeItRun").Return(nil)
 
 		return mockAppService, true
@@ -113,8 +111,8 @@ func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
 			app.serviceConfig.AppCustom.SomeValue = 987
 			app.serviceConfig.AppCustom.SomeService.Host = "SomeHost"
 		})
-		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(context.Background(), &sync.WaitGroup{}, nil)
+		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
 			setFunctionsPipelineCalled = true
@@ -146,8 +144,8 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 			app.serviceConfig.AppCustom.SomeValue = 987
 			app.serviceConfig.AppCustom.SomeService.Host = "SomeHost"
 		})
-		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(context.Background(), &sync.WaitGroup{}, nil)
+		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("SetFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("MakeItRun").Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
