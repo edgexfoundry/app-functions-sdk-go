@@ -24,12 +24,8 @@ package config
 //       or remove this file if not using custom configuration.
 
 import (
-	"context"
 	"errors"
 	"reflect"
-	"sync"
-
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 )
 
 // TODO: Define your structured custom configuration types. Must be wrapped with an outer struct with
@@ -67,59 +63,6 @@ func (c *ServiceConfig) UpdateFromRaw(rawConfig interface{}) bool {
 	*c = *configuration
 
 	return true
-}
-
-// TODO: Update using your Custom configuration 'writeable' type or remove if not using ListenForCustomConfigChanges
-// UpdateWritableFromRaw updates the service's writable configuration from raw data received from
-// the Service Provider. Must implement if using ListenForCustomConfigChanges, otherwise this can be removed.
-func (ac *AppCustomConfig) UpdateWritableFromRaw(rawWritableConfig interface{}) bool {
-	appCustom, ok := rawWritableConfig.(*AppCustomConfig)
-	if !ok {
-		return false //errors.New("unable to cast raw writeable config to type 'AppCustomConfig'")
-	}
-
-	*ac = *appCustom
-
-	return true
-}
-
-// WaitForCustomConfigChanges waits for indication that the custom configuration section has been updated and then process
-// the changes as needed
-// TODO: Update to use your custom configuration section that you want to be writable (i.e. runtime changes from Consul)
-//       or remove if not using custom configuration section or writable custom configuration.
-func (ac *AppCustomConfig) WaitForCustomConfigChanges(configChanged chan bool, ctx context.Context, wg *sync.WaitGroup, lc logger.LoggingClient) {
-	previous := *ac // Copy for change detection
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		lc.Infof("Waiting for changes to custom configuration")
-
-		for {
-			select {
-			case <-ctx.Done():
-				lc.Infof("Exiting from waiting for changes to custom configuration")
-				return
-
-			case <-configChanged:
-				// TODO: Process the changed configuration.
-				//       Must keep a previous copy of the configuration to determine what has changed.
-				//		 Replace the examples below with your appropriate processing logic.
-				switch {
-				case previous.SomeValue != ac.SomeValue:
-					lc.Infof("AppCustom.SomeValue changed to: %d", ac.SomeValue)
-				case previous.ResourceNames != ac.ResourceNames:
-					lc.Infof("AppCustom.ResourceNames changed to: %s", ac.ResourceNames)
-				case !reflect.DeepEqual(previous.SomeService, ac.SomeService):
-					lc.Infof("AppCustom.SomeService changed to: %v", ac.SomeService)
-				default:
-					lc.Info("No changes detected")
-				}
-
-				previous = *ac
-			}
-		}
-	}()
 }
 
 // Validate ensures your custom configuration has proper values.

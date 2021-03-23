@@ -19,6 +19,7 @@ package main
 
 import (
 	"os"
+	"reflect"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 
@@ -91,13 +92,10 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	// the Configuration Provider, aka Consul.
 	// For more details see https://docs.edgexfoundry.org/2.0/microservices/application/GeneralAppServiceConfig/#writable-custom-configuration
 	// TODO: Remove if not using writable custom configuration
-	configChanged := make(chan bool)
-	ctx, wg, err := app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", configChanged)
-	if err != nil {
+	if err := app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", app.ProcessConfigUpdates); err != nil {
 		app.lc.Errorf("unable to watch custom writable configuration: %s", err.Error())
 		return -1
 	}
-	app.serviceConfig.AppCustom.WaitForCustomConfigChanges(configChanged, ctx, wg, app.lc)
 
 	// TODO: Replace below functions with built in and/or your custom functions for your use case.
 	//       See https://docs.edgexfoundry.org/2.0/microservices/application/BuiltIn/ for list of built-in functions
@@ -120,4 +118,34 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	// TODO: Do any required cleanup here, if needed
 
 	return 0
+}
+
+// TODO: Update using your Custom configuration 'writeable' type or remove if not using ListenForCustomConfigChanges
+// ProcessConfigUpdates processes the updated configuration for the service's writable configuration.
+// At a minimum it must copy the updated configuration into the service's current configuration. Then it can
+// do any special processing for changes that require more.
+func (app *myApp) ProcessConfigUpdates(rawWritableConfig interface{}) {
+	updated, ok := rawWritableConfig.(*config.AppCustomConfig)
+	if !ok {
+		app.lc.Error("unable to process config updates: Can not cast raw config to type 'AppCustomConfig'")
+		return
+	}
+
+	previous := app.serviceConfig.AppCustom
+	app.serviceConfig.AppCustom = *updated
+
+	if reflect.DeepEqual(previous, updated) {
+		app.lc.Info("No changes detected")
+		return
+	}
+
+	if previous.SomeValue != updated.SomeValue {
+		app.lc.Infof("AppCustom.SomeValue changed to: %d", updated.SomeValue)
+	}
+	if previous.ResourceNames != updated.ResourceNames {
+		app.lc.Infof("AppCustom.ResourceNames changed to: %s", updated.ResourceNames)
+	}
+	if !reflect.DeepEqual(previous.SomeService, updated.SomeService) {
+		app.lc.Infof("AppCustom.SomeService changed to: %v", updated.SomeService)
+	}
 }

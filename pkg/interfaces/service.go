@@ -16,16 +16,15 @@
 package interfaces
 
 import (
-	"context"
 	"net/http"
-	"sync"
 
-	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/command"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/coredata"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/notifications"
 	"github.com/edgexfoundry/go-mod-registry/v2/registry"
+
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 )
 
 const (
@@ -51,14 +50,6 @@ const (
 // direct import of go-mod-bootstrap.
 type UpdatableConfig interface {
 	bootstrapInterfaces.UpdatableConfig
-}
-
-// WritableConfig interface allows a service to listen for changes to a section of its custom configuration.
-// Services not using this feature don't have to implement this interface on their custom configuration.
-// This wraps the actual interface from go-mod-bootstrap so app service code doesn't have to have the additional
-// direct import of go-mod-bootstrap.
-type WritableConfig interface {
-	bootstrapInterfaces.WritableConfig
 }
 
 // ApplicationService defines the interface for an edgex Application Service
@@ -129,5 +120,5 @@ type ApplicationService interface {
 	// section of the custom configuration. When changes are received from the Configuration Provider the
 	// UpdateWritableFromRaw interface will be called on the custom configuration to apply the updates and then signal
 	// that the changes occurred via writableChanged.
-	ListenForCustomConfigChanges(configToWatch WritableConfig, sectionName string, writableChanged chan bool) (context.Context, *sync.WaitGroup, error)
+	ListenForCustomConfigChanges(configToWatch interface{}, sectionName string, changedCallback func(interface{})) error
 }

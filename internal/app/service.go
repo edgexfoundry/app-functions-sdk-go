@@ -446,19 +446,15 @@ func (svc *Service) LoadCustomConfig(customConfig interfaces.UpdatableConfig, se
 // ListenForCustomConfigChanges uses the Config Processor from go-mod-bootstrap to attempt to listen for
 // changes to the specified custom configuration section. LoadCustomConfig must be called previously so that
 // the instance of svc.configProcessor has already been set.
-func (svc *Service) ListenForCustomConfigChanges(
-	configToWatch interfaces.WritableConfig,
-	sectionName string,
-	writableChanged chan bool) (context.Context, *sync.WaitGroup, error) {
+func (svc *Service) ListenForCustomConfigChanges(configToWatch interface{}, sectionName string, changedCallback func(interface{})) error {
 	if svc.configProcessor == nil {
-		return nil, nil, fmt.Errorf(
+		return fmt.Errorf(
 			"custom configuration must be loaded before '%s' section can be watched for changes",
 			sectionName)
 	}
 
-	return svc.ctx.appCtx,
-		svc.ctx.appWg,
-		svc.configProcessor.ListenForCustomConfigChanges(configToWatch, sectionName, writableChanged)
+	svc.configProcessor.ListenForCustomConfigChanges(configToWatch, sectionName, changedCallback)
+	return nil
 }
 
 // GetSecret retrieves secret data from the secret store at the specified path.
