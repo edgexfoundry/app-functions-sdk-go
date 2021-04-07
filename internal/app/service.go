@@ -429,7 +429,7 @@ func (svc *Service) Initialize() error {
 		secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)
 		credentials, err := secretProvider.GetSecrets(svc.config.Database.Type)
 		if err != nil {
-			return fmt.Errorf("unable to set RedisStreams password from DB credentials: %s", err.Error())
+			return fmt.Errorf("unable to set RedisStreams password from DB credentials: %w", err)
 		}
 		svc.config.Trigger.EdgexMessageBus.Optional[optionalPasswordKey] = credentials[secret.PasswordKey]
 	}
