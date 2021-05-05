@@ -16,5 +16,3 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/stretchr/testify v1.7.0
 )
-
-replace github.com/edgexfoundry/go-mod-bootstrap/v2 => ../MODS/go-mod-bootstrap
