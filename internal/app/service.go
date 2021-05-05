@@ -427,7 +427,7 @@ func (svc *Service) Initialize() error {
 		svc.config.Trigger.EdgexMessageBus.Type == messaging.RedisStreams {
 
 		secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)
-		credentials, err := secretProvider.GetSecrets(svc.config.Database.Type)
+		credentials, err := secretProvider.GetSecret(svc.config.Database.Type)
 		if err != nil {
 			return fmt.Errorf("unable to set RedisStreams password from DB credentials: %w", err)
 		}
@@ -473,13 +473,13 @@ func (svc *Service) ListenForCustomConfigChanges(configToWatch interface{}, sect
 // GetSecret retrieves secret data from the secret store at the specified path.
 func (svc *Service) GetSecret(path string, keys ...string) (map[string]string, error) {
 	secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)
-	return secretProvider.GetSecrets(path, keys...)
+	return secretProvider.GetSecret(path, keys...)
 }
 
 // StoreSecret stores the secret data to a secret store at the specified path.
 func (svc *Service) StoreSecret(path string, secretData map[string]string) error {
 	secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)
-	return secretProvider.StoreSecrets(path, secretData)
+	return secretProvider.StoreSecret(path, secretData)
 }
 
 // LoggingClient returns the Logging client from the dependency injection container
