@@ -101,7 +101,7 @@ func (factory MqttFactory) configureMQTTClientForAuth(secretData *messaging.Secr
 		}
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	case messaging.AuthModeCA:
-		break
+		// Nothing needed here for this option
 	case messaging.AuthModeNone:
 		return nil
 	}
