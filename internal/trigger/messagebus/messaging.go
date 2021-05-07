@@ -243,7 +243,6 @@ func (trigger *Trigger) setOptionalAuthData(messageBusConfig *types.MessageBusCo
 		messageBusConfig.Optional[bootstrapMessaging.OptionsKeyPEMBlockKey] = string(secretData.KeyPemBlock)
 	case bootstrapMessaging.AuthModeCA:
 		messageBusConfig.Optional[bootstrapMessaging.OptionsCaPEMBlockKey] = string(secretData.CaPemBlock)
-		break
 	}
 
 	return nil
