@@ -54,19 +54,19 @@ func TestClientsBootstrapHandler(t *testing.T) {
 
 	coreDataClientInfo := config.ClientInfo{
 		Host:     "localhost",
-		Port:     58880,
+		Port:     59880,
 		Protocol: "http",
 	}
 
 	commandClientInfo := config.ClientInfo{
 		Host:     "localhost",
-		Port:     58882,
+		Port:     59882,
 		Protocol: "http",
 	}
 
 	notificationsClientInfo := config.ClientInfo{
 		Host:     "localhost",
-		Port:     58860,
+		Port:     59860,
 		Protocol: "http",
 	}
 

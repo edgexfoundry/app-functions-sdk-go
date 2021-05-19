@@ -61,7 +61,7 @@ RetryWaitPeriod = "1s"
   [Clients.core-data]
   Protocol = 'http'
   Host = 'localhost'
-  Port = 58880
+  Port = 59880
 
 [Trigger]
 Type="edgex-messagebus"
