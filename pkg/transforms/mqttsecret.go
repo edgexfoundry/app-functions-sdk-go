@@ -108,8 +108,6 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 		}
 
 		sender.opts.SetKeepAlive(keepAlive)
-
-		fmt.Printf("KeepAlive set to '%d'", sender.opts.KeepAlive)
 	}
 
 	if len(sender.mqttConfig.ConnectTimeout) > 0 {
@@ -119,8 +117,6 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 		}
 
 		sender.opts.SetConnectTimeout(timeout)
-
-		fmt.Printf("ConnectTimeout set to '%d'", sender.opts.ConnectTimeout)
 	}
 
 	client, err := mqttFactory.Create(sender.opts)
