@@ -56,23 +56,23 @@ func (_ *Clients) BootstrapHandler(
 
 	// Use of these client interfaces is optional, so they are not required to be configured. For instance if not
 	// sending commands, then don't need to have the Command client in the configuration.
-	if _, ok := config.Clients[clients.CoreDataServiceKey]; ok {
-		eventClient = v2clients.NewEventClient(config.Clients[clients.CoreDataServiceKey].Url())
+	if val, ok := config.Clients[clients.CoreDataServiceKey]; ok {
+		eventClient = v2clients.NewEventClient(val.Url())
 	}
 
-	if _, ok := config.Clients[clients.CoreCommandServiceKey]; ok {
-		commandClient = v2clients.NewCommandClient(config.Clients[clients.CoreCommandServiceKey].Url())
+	if val, ok := config.Clients[clients.CoreCommandServiceKey]; ok {
+		commandClient = v2clients.NewCommandClient(val.Url())
 	}
 
-	if _, ok := config.Clients[clients.CoreMetaDataServiceKey]; ok {
-		deviceServiceClient = v2clients.NewDeviceServiceClient(config.Clients[clients.CoreMetaDataServiceKey].Url())
-		deviceProfileClient = v2clients.NewDeviceProfileClient(config.Clients[clients.CoreMetaDataServiceKey].Url())
-		deviceClient = v2clients.NewDeviceClient(config.Clients[clients.CoreMetaDataServiceKey].Url())
+	if val, ok := config.Clients[clients.CoreMetaDataServiceKey]; ok {
+		deviceServiceClient = v2clients.NewDeviceServiceClient(val.Url())
+		deviceProfileClient = v2clients.NewDeviceProfileClient(val.Url())
+		deviceClient = v2clients.NewDeviceClient(val.Url())
 	}
 
-	if _, ok := config.Clients[clients.SupportNotificationsServiceKey]; ok {
-		notificationClient = v2clients.NewNotificationClient(config.Clients[clients.SupportNotificationsServiceKey].Url())
-		subscriptionClient = v2clients.NewSubscriptionClient(config.Clients[clients.SupportNotificationsServiceKey].Url())
+	if val, ok := config.Clients[clients.SupportNotificationsServiceKey]; ok {
+		notificationClient = v2clients.NewNotificationClient(val.Url())
+		subscriptionClient = v2clients.NewSubscriptionClient(val.Url())
 	}
 
 	// Note that all the clients are optional so some or all these clients may be nil

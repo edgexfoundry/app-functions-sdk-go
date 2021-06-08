@@ -200,17 +200,17 @@ func (app *Configurable) PushToCore(parameters map[string]string) interfaces.App
 	}
 	deviceName, ok := parameters[DeviceName]
 	if !ok {
-		app.lc.Error("Could not find %s", DeviceName)
+		app.lc.Errorf("Could not find %s", DeviceName)
 		return nil
 	}
 	resourceName, ok := parameters[ResourceName]
 	if !ok {
-		app.lc.Error("Could not find %s", ResourceName)
+		app.lc.Errorf("Could not find %s", ResourceName)
 		return nil
 	}
 	valueType, ok := parameters[ValueType]
 	if !ok {
-		app.lc.Error("Could not find %s", ValueType)
+		app.lc.Errorf("Could not find %s", ValueType)
 		return nil
 	}
 
