@@ -19,16 +19,13 @@ import (
 	"context"
 	"sync"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
+
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/coredata"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/notifications"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/urlclient/local"
 	v2clients "github.com/edgexfoundry/go-mod-core-contracts/v2/v2/clients/http"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/v2/clients/interfaces"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 )
 
 // Clients contains references to dependencies required by the Clients bootstrap implementation.
@@ -49,28 +46,33 @@ func (_ *Clients) BootstrapHandler(
 
 	config := container.ConfigurationFrom(dic.Get)
 
-	var eventClient coredata.EventClient
-	var valueDescriptorClient coredata.ValueDescriptorClient
+	var eventClient interfaces.EventClient
 	var commandClient interfaces.CommandClient
-	var notificationsClient notifications.NotificationsClient
+	var notificationClient interfaces.NotificationClient
+	var subscriptionClient interfaces.SubscriptionClient
+	var deviceServiceClient interfaces.DeviceServiceClient
+	var deviceProfileClient interfaces.DeviceProfileClient
+	var deviceClient interfaces.DeviceClient
 
 	// Use of these client interfaces is optional, so they are not required to be configured. For instance if not
 	// sending commands, then don't need to have the Command client in the configuration.
 	if _, ok := config.Clients[clients.CoreDataServiceKey]; ok {
-		eventClient = coredata.NewEventClient(
-			local.New(config.Clients[clients.CoreDataServiceKey].Url() + clients.ApiEventRoute))
-
-		valueDescriptorClient = coredata.NewValueDescriptorClient(
-			local.New(config.Clients[clients.CoreDataServiceKey].Url() + clients.ApiValueDescriptorRoute))
+		eventClient = v2clients.NewEventClient(config.Clients[clients.CoreDataServiceKey].Url())
 	}
 
 	if _, ok := config.Clients[clients.CoreCommandServiceKey]; ok {
 		commandClient = v2clients.NewCommandClient(config.Clients[clients.CoreCommandServiceKey].Url())
 	}
 
+	if _, ok := config.Clients[clients.CoreMetaDataServiceKey]; ok {
+		deviceServiceClient = v2clients.NewDeviceServiceClient(config.Clients[clients.CoreMetaDataServiceKey].Url())
+		deviceProfileClient = v2clients.NewDeviceProfileClient(config.Clients[clients.CoreMetaDataServiceKey].Url())
+		deviceClient = v2clients.NewDeviceClient(config.Clients[clients.CoreMetaDataServiceKey].Url())
+	}
+
 	if _, ok := config.Clients[clients.SupportNotificationsServiceKey]; ok {
-		notificationsClient = notifications.NewNotificationsClient(
-			local.New(config.Clients[clients.SupportNotificationsServiceKey].Url() + clients.ApiNotificationRoute))
+		notificationClient = v2clients.NewNotificationClient(config.Clients[clients.SupportNotificationsServiceKey].Url())
+		subscriptionClient = v2clients.NewSubscriptionClient(config.Clients[clients.SupportNotificationsServiceKey].Url())
 	}
 
 	// Note that all the clients are optional so some or all these clients may be nil
@@ -80,14 +82,23 @@ func (_ *Clients) BootstrapHandler(
 		container.EventClientName: func(get di.Get) interface{} {
 			return eventClient
 		},
-		container.ValueDescriptorClientName: func(get di.Get) interface{} {
-			return valueDescriptorClient
-		},
 		container.CommandClientName: func(get di.Get) interface{} {
 			return commandClient
 		},
-		container.NotificationsClientName: func(get di.Get) interface{} {
-			return notificationsClient
+		container.DeviceServiceClientName: func(get di.Get) interface{} {
+			return deviceServiceClient
+		},
+		container.DeviceProfileClientName: func(get di.Get) interface{} {
+			return deviceProfileClient
+		},
+		container.DeviceClientName: func(get di.Get) interface{} {
+			return deviceClient
+		},
+		container.NotificationClientName: func(get di.Get) interface{} {
+			return notificationClient
+		},
+		container.SubscriptionClientName: func(get di.Get) interface{} {
+			return subscriptionClient
 		},
 	})
 
