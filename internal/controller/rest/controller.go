@@ -24,6 +24,7 @@ import (
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
@@ -31,12 +32,9 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/telemetry"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
-
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
-	contracts "github.com/edgexfoundry/go-mod-core-contracts/v2/v2"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/v2/dtos/common"
 
 	"github.com/gorilla/mux"
 )
@@ -62,29 +60,29 @@ func NewController(router *mux.Router, dic *di.Container) *Controller {
 // Ping handles the request to /ping endpoint. Is used to test if the service is working
 // It returns a response as specified by the V2 API swagger in openapi/v2
 func (v2c *Controller) Ping(writer http.ResponseWriter, request *http.Request) {
-	response := common.NewPingResponse()
-	v2c.sendResponse(writer, request, contracts.ApiPingRoute, response, http.StatusOK)
+	response := commonDtos.NewPingResponse()
+	v2c.sendResponse(writer, request, common.ApiPingRoute, response, http.StatusOK)
 }
 
 // Version handles the request to /version endpoint. Is used to request the service's versions
 // It returns a response as specified by the V2 API swagger in openapi/v2
 func (v2c *Controller) Version(writer http.ResponseWriter, request *http.Request) {
-	response := common.NewVersionSdkResponse(internal.ApplicationVersion, internal.SDKVersion)
-	v2c.sendResponse(writer, request, contracts.ApiVersionRoute, response, http.StatusOK)
+	response := commonDtos.NewVersionSdkResponse(internal.ApplicationVersion, internal.SDKVersion)
+	v2c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
 }
 
 // Config handles the request to /config endpoint. Is used to request the service's configuration
 // It returns a response as specified by the V2 API swagger in openapi/v2
 func (v2c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
-	response := common.NewConfigResponse(*v2c.config)
-	v2c.sendResponse(writer, request, contracts.ApiVersionRoute, response, http.StatusOK)
+	response := commonDtos.NewConfigResponse(*v2c.config)
+	v2c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
 }
 
 // Metrics handles the request to the /metrics endpoint, memory and cpu utilization stats
 // It returns a response as specified by the V2 API swagger in openapi/v2
 func (v2c *Controller) Metrics(writer http.ResponseWriter, request *http.Request) {
 	t := telemetry.NewSystemUsage()
-	metrics := common.Metrics{
+	metrics := commonDtos.Metrics{
 		MemAlloc:       t.Memory.Alloc,
 		MemFrees:       t.Memory.Frees,
 		MemLiveObjects: t.Memory.LiveObjects,
@@ -94,8 +92,8 @@ func (v2c *Controller) Metrics(writer http.ResponseWriter, request *http.Request
 		CpuBusyAvg:     uint8(t.CpuBusyAvg),
 	}
 
-	response := common.NewMetricsResponse(metrics)
-	v2c.sendResponse(writer, request, contracts.ApiMetricsRoute, response, http.StatusOK)
+	response := commonDtos.NewMetricsResponse(metrics)
+	v2c.sendResponse(writer, request, common.ApiMetricsRoute, response, http.StatusOK)
 }
 
 // AddSecret handles the request to add App Service exclusive secret to the Secret Store
@@ -105,7 +103,7 @@ func (v2c *Controller) AddSecret(writer http.ResponseWriter, request *http.Reque
 		_ = request.Body.Close()
 	}()
 
-	secretRequest := common.SecretRequest{}
+	secretRequest := commonDtos.SecretRequest{}
 	err := json.NewDecoder(request.Body).Decode(&secretRequest)
 	if err != nil {
 		v2c.sendError(writer, request, errors.KindContractInvalid, "JSON decode failed", err, "")
@@ -119,7 +117,7 @@ func (v2c *Controller) AddSecret(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	response := common.NewBaseResponse(secretRequest.RequestId, "", http.StatusCreated)
+	response := commonDtos.NewBaseResponse(secretRequest.RequestId, "", http.StatusCreated)
 	v2c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, http.StatusCreated)
 }
 
@@ -133,7 +131,7 @@ func (v2c *Controller) sendError(
 	edgexErr := errors.NewCommonEdgeX(errKind, message, err)
 	v2c.lc.Error(edgexErr.Error())
 	v2c.lc.Debug(edgexErr.DebugMessages())
-	response := common.NewBaseResponse(requestID, edgexErr.Message(), edgexErr.Code())
+	response := commonDtos.NewBaseResponse(requestID, edgexErr.Message(), edgexErr.Code())
 	v2c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, edgexErr.Code())
 }
 
@@ -145,28 +143,28 @@ func (v2c *Controller) sendResponse(
 	response interface{},
 	statusCode int) {
 
-	correlationID := request.Header.Get(internal.CorrelationHeaderKey)
+	correlationID := request.Header.Get(common.CorrelationHeader)
 
 	writer.WriteHeader(statusCode)
-	writer.Header().Set(internal.CorrelationHeaderKey, correlationID)
-	writer.Header().Set(clients.ContentType, clients.ContentTypeJSON)
+	writer.Header().Set(common.CorrelationHeader, correlationID)
+	writer.Header().Set(common.ContentType, common.ContentTypeJSON)
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		v2c.lc.Error(fmt.Sprintf("Unable to marshal %s response", api), "error", err.Error(), clients.CorrelationHeader, correlationID)
+		v2c.lc.Error(fmt.Sprintf("Unable to marshal %s response", api), "error", err.Error(), common.CorrelationHeader, correlationID)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	_, err = writer.Write(data)
 	if err != nil {
-		v2c.lc.Error(fmt.Sprintf("Unable to write %s response", api), "error", err.Error(), clients.CorrelationHeader, correlationID)
+		v2c.lc.Error(fmt.Sprintf("Unable to write %s response", api), "error", err.Error(), common.CorrelationHeader, correlationID)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (v2c *Controller) prepareSecret(request common.SecretRequest) (string, map[string]string) {
+func (v2c *Controller) prepareSecret(request commonDtos.SecretRequest) (string, map[string]string) {
 	var secretsKV = make(map[string]string)
 	for _, secret := range request.SecretData {
 		secretsKV[secret.Key] = secret.Value
