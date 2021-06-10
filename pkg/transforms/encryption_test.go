@@ -38,8 +38,8 @@ const (
 )
 
 type encryptionDetails struct {
-	Algo string
-	Key string
+	Algo       string
+	Key        string
 	InitVector string
 }
 
