@@ -18,7 +18,6 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -59,28 +58,28 @@ func NewController(router *mux.Router, dic *di.Container) *Controller {
 
 // Ping handles the request to /ping endpoint. Is used to test if the service is working
 // It returns a response as specified by the V2 API swagger in openapi/v2
-func (v2c *Controller) Ping(writer http.ResponseWriter, request *http.Request) {
+func (c *Controller) Ping(writer http.ResponseWriter, request *http.Request) {
 	response := commonDtos.NewPingResponse()
-	v2c.sendResponse(writer, request, common.ApiPingRoute, response, http.StatusOK)
+	c.sendResponse(writer, request, common.ApiPingRoute, response, http.StatusOK)
 }
 
 // Version handles the request to /version endpoint. Is used to request the service's versions
 // It returns a response as specified by the V2 API swagger in openapi/v2
-func (v2c *Controller) Version(writer http.ResponseWriter, request *http.Request) {
+func (c *Controller) Version(writer http.ResponseWriter, request *http.Request) {
 	response := commonDtos.NewVersionSdkResponse(internal.ApplicationVersion, internal.SDKVersion)
-	v2c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
+	c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
 }
 
 // Config handles the request to /config endpoint. Is used to request the service's configuration
 // It returns a response as specified by the V2 API swagger in openapi/v2
-func (v2c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
-	response := commonDtos.NewConfigResponse(*v2c.config)
-	v2c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
+func (c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
+	response := commonDtos.NewConfigResponse(*c.config)
+	c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
 }
 
 // Metrics handles the request to the /metrics endpoint, memory and cpu utilization stats
 // It returns a response as specified by the V2 API swagger in openapi/v2
-func (v2c *Controller) Metrics(writer http.ResponseWriter, request *http.Request) {
+func (c *Controller) Metrics(writer http.ResponseWriter, request *http.Request) {
 	t := telemetry.NewSystemUsage()
 	metrics := commonDtos.Metrics{
 		MemAlloc:       t.Memory.Alloc,
@@ -93,12 +92,12 @@ func (v2c *Controller) Metrics(writer http.ResponseWriter, request *http.Request
 	}
 
 	response := commonDtos.NewMetricsResponse(metrics)
-	v2c.sendResponse(writer, request, common.ApiMetricsRoute, response, http.StatusOK)
+	c.sendResponse(writer, request, common.ApiMetricsRoute, response, http.StatusOK)
 }
 
 // AddSecret handles the request to add App Service exclusive secret to the Secret Store
 // It returns a response as specified by the V2 API swagger in openapi/v2
-func (v2c *Controller) AddSecret(writer http.ResponseWriter, request *http.Request) {
+func (c *Controller) AddSecret(writer http.ResponseWriter, request *http.Request) {
 	defer func() {
 		_ = request.Body.Close()
 	}()
@@ -106,22 +105,22 @@ func (v2c *Controller) AddSecret(writer http.ResponseWriter, request *http.Reque
 	secretRequest := commonDtos.SecretRequest{}
 	err := json.NewDecoder(request.Body).Decode(&secretRequest)
 	if err != nil {
-		v2c.sendError(writer, request, errors.KindContractInvalid, "JSON decode failed", err, "")
+		c.sendError(writer, request, errors.KindContractInvalid, "JSON decode failed", err, "")
 		return
 	}
 
-	path, secret := v2c.prepareSecret(secretRequest)
+	path, secret := c.prepareSecret(secretRequest)
 
-	if err := v2c.secretProvider.StoreSecret(path, secret); err != nil {
-		v2c.sendError(writer, request, errors.KindServerError, "Storing secret failed", err, secretRequest.RequestId)
+	if err := c.secretProvider.StoreSecret(path, secret); err != nil {
+		c.sendError(writer, request, errors.KindServerError, "Storing secret failed", err, secretRequest.RequestId)
 		return
 	}
 
 	response := commonDtos.NewBaseResponse(secretRequest.RequestId, "", http.StatusCreated)
-	v2c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, http.StatusCreated)
+	c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, http.StatusCreated)
 }
 
-func (v2c *Controller) sendError(
+func (c *Controller) sendError(
 	writer http.ResponseWriter,
 	request *http.Request,
 	errKind errors.ErrKind,
@@ -129,14 +128,14 @@ func (v2c *Controller) sendError(
 	err error,
 	requestID string) {
 	edgexErr := errors.NewCommonEdgeX(errKind, message, err)
-	v2c.lc.Error(edgexErr.Error())
-	v2c.lc.Debug(edgexErr.DebugMessages())
+	c.lc.Error(edgexErr.Error())
+	c.lc.Debug(edgexErr.DebugMessages())
 	response := commonDtos.NewBaseResponse(requestID, edgexErr.Message(), edgexErr.Code())
-	v2c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, edgexErr.Code())
+	c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, edgexErr.Code())
 }
 
 // sendResponse puts together the response packet for the V2 API
-func (v2c *Controller) sendResponse(
+func (c *Controller) sendResponse(
 	writer http.ResponseWriter,
 	request *http.Request,
 	api string,
@@ -151,20 +150,20 @@ func (v2c *Controller) sendResponse(
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		v2c.lc.Error(fmt.Sprintf("Unable to marshal %s response", api), "error", err.Error(), common.CorrelationHeader, correlationID)
+		c.lc.Errorf("Unable to marshal %s response: %w, %s=%s", api, err, common.CorrelationHeader, correlationID)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	_, err = writer.Write(data)
 	if err != nil {
-		v2c.lc.Error(fmt.Sprintf("Unable to write %s response", api), "error", err.Error(), common.CorrelationHeader, correlationID)
+		c.lc.Errorf("Unable to write %s response: %w, %s=%s", api, err, common.CorrelationHeader, correlationID)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (v2c *Controller) prepareSecret(request commonDtos.SecretRequest) (string, map[string]string) {
+func (c *Controller) prepareSecret(request commonDtos.SecretRequest) (string, map[string]string) {
 	var secretsKV = make(map[string]string)
 	for _, secret := range request.SecretData {
 		secretsKV[secret.Key] = secret.Value

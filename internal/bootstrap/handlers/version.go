@@ -97,7 +97,7 @@ func (vv *VersionValidator) BootstrapHandler(
 	var err error
 	for startupTimer.HasNotElapsed() {
 		if response, err = client.Version(context.Background()); err != nil {
-			logger.Warn("Unable to get version of Core Data", "error", err)
+			logger.Warnf("Unable to get version of Core Data: %w", err)
 			startupTimer.SleepForInterval()
 			continue
 		}
