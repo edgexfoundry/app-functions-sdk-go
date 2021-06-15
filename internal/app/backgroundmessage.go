@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2021 Technotects
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,22 +14,21 @@
 // limitations under the License.
 //
 
-package internal
+package app
 
 import (
-	contracts "github.com/edgexfoundry/go-mod-core-contracts/v2/v2"
+	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 )
 
-const (
-	ConfigRegistryStem   = "edgex/appservices/"
-	CorrelationHeaderKey = "X-Correlation-ID"
+type BackgroundMessage struct {
+	PublishTopic string
+	Payload      types.MessageEnvelope
+}
 
-	ApiTriggerRoute   = contracts.ApiBase + "/trigger"
-	ApiAddSecretRoute = contracts.ApiBase + "/secret"
-)
+func (bg BackgroundMessage) Topic() string {
+	return bg.PublishTopic
+}
 
-// SDKVersion indicates the version of the SDK - will be overwritten by build
-var SDKVersion = "0.0.0"
-
-// ApplicationVersion indicates the version of the application itself, not the SDK - will be overwritten by build
-var ApplicationVersion = "0.0.0"
+func (bg BackgroundMessage) Message() types.MessageEnvelope {
+	return bg.Payload
+}

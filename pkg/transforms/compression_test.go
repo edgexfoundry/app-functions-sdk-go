@@ -22,13 +22,13 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/base64"
-	"io/ioutil"
+	"io"
 	"testing"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
-	"github.com/stretchr/testify/require"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -50,14 +50,14 @@ func TestGzip(t *testing.T) {
 	zr, err := gzip.NewReader(&buf)
 	require.NoError(t, err)
 
-	decoded, err := ioutil.ReadAll(zr)
+	decoded, err := io.ReadAll(zr)
 	require.NoError(t, err)
 	require.Equal(t, clearString, string(decoded))
 
 	continuePipeline2, result2 := comp.CompressWithGZIP(ctx, []byte(clearString))
 	assert.True(t, continuePipeline2)
 	assert.Equal(t, result.([]byte), result2.([]byte))
-	assert.Equal(t, ctx.ResponseContentType(), clients.ContentTypeText)
+	assert.Equal(t, ctx.ResponseContentType(), common.ContentTypeText)
 }
 
 func TestZlib(t *testing.T) {
@@ -76,14 +76,14 @@ func TestZlib(t *testing.T) {
 	zr, err := zlib.NewReader(&buf)
 	require.NoError(t, err)
 
-	decoded, err := ioutil.ReadAll(zr)
+	decoded, err := io.ReadAll(zr)
 	require.NoError(t, err)
 	require.Equal(t, clearString, string(decoded))
 
 	continuePipeline2, result2 := comp.CompressWithZLIB(ctx, []byte(clearString))
 	assert.True(t, continuePipeline2)
 	assert.Equal(t, result.([]byte), result2.([]byte))
-	assert.Equal(t, ctx.ResponseContentType(), clients.ContentTypeText)
+	assert.Equal(t, ctx.ResponseContentType(), common.ContentTypeText)
 }
 
 var result []byte

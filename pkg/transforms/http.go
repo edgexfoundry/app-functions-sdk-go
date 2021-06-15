@@ -20,13 +20,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
+
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 )
 
 // HTTPSender ...
@@ -209,7 +210,7 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 	}
 
 	ctx.LoggingClient().Debugf("Sent %s bytes of data. Response status is %s", len(exportData), response.Status)
-	ctx.LoggingClient().Trace("Data exported", "Transport", "HTTP", clients.CorrelationHeader, ctx.CorrelationID)
+	ctx.LoggingClient().Trace("Data exported", "Transport", "HTTP", common.CorrelationHeader, ctx.CorrelationID)
 
 	// This allows multiple HTTP Exports to be chained in the pipeline to send the same data to different destinations
 	// Don't need to read the response data since not going to return it so just return now.
@@ -218,7 +219,7 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 	}
 
 	defer func() { _ = response.Body.Close() }()
-	responseData, errReadingBody := ioutil.ReadAll(response.Body)
+	responseData, errReadingBody := io.ReadAll(response.Body)
 	if errReadingBody != nil {
 		// Can't have continueOnSendError=true when returnInputData=false, so no need to check for it here
 		sender.setRetryData(ctx, exportData)

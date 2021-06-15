@@ -18,6 +18,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"os"
 	"reflect"
@@ -30,10 +31,10 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	v2clients "github.com/edgexfoundry/go-mod-core-contracts/v2/v2/clients/http"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 
 	"github.com/gorilla/mux"
@@ -89,9 +90,35 @@ func TestAddRoute(t *testing.T) {
 
 }
 
-func TestAddBackgroundPublisher(t *testing.T) {
-	sdk := Service{}
-	pub, ok := sdk.AddBackgroundPublisher(1).(*backgroundPublisher)
+func TestAddBackgroundPublisherNoTopic(t *testing.T) {
+	sdk := Service{
+		config: &common.ConfigurationStruct{},
+	}
+
+	p, err := sdk.AddBackgroundPublisher(1)
+
+	require.Error(t, err)
+	require.Nil(t, p)
+}
+
+func TestAddBackgroundPublisherMessageBus(t *testing.T) {
+	sdk := Service{
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMessageBus,
+				EdgexMessageBus: common.MessageBusConfig{
+					PublishHost: common.PublishHostInfo{
+						PublishTopic: "topic",
+					},
+				},
+			},
+		}}
+
+	p, err := sdk.AddBackgroundPublisher(1)
+
+	require.NoError(t, err)
+
+	pub, ok := p.(*backgroundPublisher)
 
 	if !ok {
 		assert.Fail(t, fmt.Sprintf("Unexpected BackgroundPublisher implementation encountered: %T", pub))
@@ -99,10 +126,105 @@ func TestAddBackgroundPublisher(t *testing.T) {
 
 	require.NotNil(t, pub.output, "publisher should have an output channel set")
 	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
+	require.Equal(t, sdk.config.Trigger.EdgexMessageBus.PublishHost.PublishTopic, pub.topic)
 
 	// compare addresses since types will not match
 	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
 		"same channel should be referenced by the BackgroundPublisher and the SDK.")
+}
+
+func TestAddBackgroundPublisher_Arbitrary(t *testing.T) {
+	sdk := Service{
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: "NOT MQTT OR HTTP",
+				EdgexMessageBus: common.MessageBusConfig{
+					PublishHost: common.PublishHostInfo{
+						PublishTopic: "topic",
+					},
+				},
+			},
+		}}
+
+	p, err := sdk.AddBackgroundPublisher(1)
+
+	require.NoError(t, err)
+
+	pub, ok := p.(*backgroundPublisher)
+
+	if !ok {
+		assert.Fail(t, fmt.Sprintf("Unexpected BackgroundPublisher implementation encountered: %T", pub))
+	}
+
+	require.NotNil(t, pub.output, "publisher should have an output channel set")
+	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
+	require.Equal(t, sdk.config.Trigger.EdgexMessageBus.PublishHost.PublishTopic, pub.topic)
+
+	// compare addresses since types will not match
+	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
+		"same channel should be referenced by the BackgroundPublisher and the SDK.")
+}
+
+func TestAddBackgroundPublisher_Custom_Topic(t *testing.T) {
+	sdk := Service{config: &common.ConfigurationStruct{}}
+
+	topic := uuid.NewString()
+
+	p, err := sdk.AddBackgroundPublisherWithTopic(1, topic)
+
+	require.NoError(t, err)
+
+	pub, ok := p.(*backgroundPublisher)
+
+	if !ok {
+		assert.Fail(t, fmt.Sprintf("Unexpected BackgroundPublisher implementation encountered: %T", pub))
+	}
+
+	require.NotNil(t, pub.output, "publisher should have an output channel set")
+	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
+	require.Equal(t, topic, pub.topic)
+
+	// compare addresses since types will not match
+	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
+		"same channel should be referenced by the BackgroundPublisher and the SDK.")
+}
+
+func TestAddBackgroundPublisher_MQTT(t *testing.T) {
+	sdk := Service{
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMQTT,
+				EdgexMessageBus: common.MessageBusConfig{
+					PublishHost: common.PublishHostInfo{
+						PublishTopic: "topic",
+					},
+				},
+			},
+		}}
+
+	pub, err := sdk.AddBackgroundPublisher(1)
+
+	require.Error(t, err)
+	require.Nil(t, pub)
+}
+
+func TestAddBackgroundPublisher_HTTP(t *testing.T) {
+	sdk := Service{
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeHTTP,
+				EdgexMessageBus: common.MessageBusConfig{
+					PublishHost: common.PublishHostInfo{
+						PublishTopic: "topic",
+					},
+				},
+			},
+		}}
+
+	pub, err := sdk.AddBackgroundPublisher(1)
+
+	require.Error(t, err)
+	require.Nil(t, pub)
 }
 
 func TestSetupHTTPTrigger(t *testing.T) {
@@ -566,7 +688,7 @@ func TestService_EventClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.EventClientName: func(get di.Get) interface{} {
-			return v2clients.NewEventClient(baseUrl + "59880")
+			return clients.NewEventClient(baseUrl + "59880")
 		},
 	})
 
@@ -580,7 +702,7 @@ func TestService_CommandClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.CommandClientName: func(get di.Get) interface{} {
-			return v2clients.NewCommandClient(baseUrl + "59882")
+			return clients.NewCommandClient(baseUrl + "59882")
 		},
 	})
 
@@ -594,7 +716,7 @@ func TestService_DeviceServiceClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.DeviceServiceClientName: func(get di.Get) interface{} {
-			return v2clients.NewDeviceServiceClient(baseUrl + "59881")
+			return clients.NewDeviceServiceClient(baseUrl + "59881")
 		},
 	})
 
@@ -609,7 +731,7 @@ func TestService_DeviceProfileClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.DeviceProfileClientName: func(get di.Get) interface{} {
-			return v2clients.NewDeviceProfileClient(baseUrl + "59881")
+			return clients.NewDeviceProfileClient(baseUrl + "59881")
 		},
 	})
 
@@ -623,7 +745,7 @@ func TestService_DeviceClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.DeviceClientName: func(get di.Get) interface{} {
-			return v2clients.NewDeviceClient(baseUrl + "59881")
+			return clients.NewDeviceClient(baseUrl + "59881")
 		},
 	})
 
@@ -638,7 +760,7 @@ func TestService_NotificationClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.NotificationClientName: func(get di.Get) interface{} {
-			return v2clients.NewNotificationClient(baseUrl + "59860")
+			return clients.NewNotificationClient(baseUrl + "59860")
 		},
 	})
 
@@ -653,7 +775,7 @@ func TestService_SubscriptionClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		container.SubscriptionClientName: func(get di.Get) interface{} {
-			return v2clients.NewSubscriptionClient(baseUrl + "59860")
+			return clients.NewSubscriptionClient(baseUrl + "59860")
 		},
 	})
 

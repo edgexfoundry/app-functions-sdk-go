@@ -20,20 +20,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"io"
 	"net/http"
 	"sync"
-
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients"
-	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 )
 
 // Trigger implements Trigger to support Triggers
@@ -53,7 +54,7 @@ func NewTrigger(dic *di.Container, runtime *runtime.GolangRuntime, webserver *we
 }
 
 // Initialize initializes the Trigger for logging and REST route
-func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, background <-chan types.MessageEnvelope) (bootstrap.Deferred, error) {
+func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
 	lc := bootstrapContainer.LoggingClientFrom(trigger.dic.Get)
 
 	if background != nil {
@@ -71,9 +72,9 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	lc := bootstrapContainer.LoggingClientFrom(trigger.dic.Get)
 	defer func() { _ = r.Body.Close() }()
 
-	contentType := r.Header.Get(clients.ContentType)
+	contentType := r.Header.Get(common.ContentType)
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		lc.Error("Error reading HTTP Body", "error", err)
 		writer.WriteHeader(http.StatusBadRequest)
@@ -83,12 +84,12 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 
 	lc.Debug("Request Body read", "byte count", len(data))
 
-	correlationID := r.Header.Get(internal.CorrelationHeaderKey)
+	correlationID := r.Header.Get(common.CorrelationHeader)
 
 	appContext := appfunction.NewContext(correlationID, trigger.dic, contentType)
 
-	lc.Trace("Received message from http", clients.CorrelationHeader, correlationID)
-	lc.Debug("Received message from http", clients.ContentType, contentType)
+	lc.Trace("Received message from http", common.CorrelationHeader, correlationID)
+	lc.Debug("Received message from http", common.ContentType, contentType)
 
 	envelope := types.MessageEnvelope{
 		CorrelationID: correlationID,
@@ -105,7 +106,7 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	}
 
 	if len(appContext.ResponseContentType()) > 0 {
-		writer.Header().Set(clients.ContentType, appContext.ResponseContentType())
+		writer.Header().Set(common.ContentType, appContext.ResponseContentType())
 	}
 
 	_, err = writer.Write(appContext.ResponseData())
@@ -115,7 +116,7 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	}
 
 	if appContext.ResponseData() != nil {
-		lc.Trace("Sent http response message", clients.CorrelationHeader, correlationID)
+		lc.Trace("Sent http response message", common.CorrelationHeader, correlationID)
 	}
 
 	trigger.outputData = nil
