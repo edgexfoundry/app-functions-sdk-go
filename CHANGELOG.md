@@ -1,7 +1,8 @@
-<a name="v2.0.0"></a>
+<a name="App Functions SDK ChangeLog"></a>
+## App Functions SDK (in Go)
+[Github repository](https://github.com/edgexfoundry/app-functions-sdk-go)
 
 ## [v2.0.0] Ireland - 2021-06-30 (Not Compatible with 1.x releases)
-[Github repository](https://github.com/edgexfoundry/app-functions-sdk-go)
 
 ### Change Logs for EdgeX Dependencies
 
