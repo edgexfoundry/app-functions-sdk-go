@@ -362,14 +362,19 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 	return transforms, nil
 }
 
-// SetFunctionsPipeline sets the function pipeline to the list of specified functions in the order provided.
+// SetFunctionsPipeline has been deprecated and replaced by SetDefaultFunctionsPipeline.
 func (svc *Service) SetFunctionsPipeline(transforms ...interfaces.AppFunction) error {
+	return svc.SetDefaultFunctionsPipeline(transforms...)
+}
+
+// SetDefaultFunctionsPipeline sets the default functions pipeline to the list of specified functions in the order provided.
+func (svc *Service) SetDefaultFunctionsPipeline(transforms ...interfaces.AppFunction) error {
 	if len(transforms) == 0 {
 		return errors.New("no transforms provided to pipeline")
 	}
 
 	svc.runtime.TargetType = svc.targetType
-	err := svc.runtime.SetFunctionsPipeline(transforms)
+	err := svc.runtime.SetDefaultFunctionsPipeline(transforms)
 	if err != nil {
 		return err
 	}
@@ -379,7 +384,7 @@ func (svc *Service) SetFunctionsPipeline(transforms ...interfaces.AppFunction) e
 	return nil
 }
 
-// AddFunctionsPipelineByTopic adds a functions pipeline for the specified for the specified id and topic
+// AddFunctionsPipelineForTopic adds a functions pipeline for the specified for the specified id and topic
 func (svc *Service) AddFunctionsPipelineForTopic(id string, topic string, transforms ...interfaces.AppFunction) error {
 	switch strings.ToUpper(svc.config.Trigger.Type) {
 	case TriggerTypeMessageBus:

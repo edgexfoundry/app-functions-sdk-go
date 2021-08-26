@@ -349,7 +349,7 @@ func TestInitializeAndProcessEventWithNoOutput(t *testing.T) {
 
 	goRuntime := runtime.NewGolangRuntime("", nil, dic)
 
-	err := goRuntime.SetFunctionsPipeline([]interfaces.AppFunction{transform1})
+	err := goRuntime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 	require.NoError(t, err)
 	trigger := NewTrigger(dic, goRuntime)
 	_, err = trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
@@ -433,7 +433,7 @@ func TestInitializeAndProcessEventWithOutput(t *testing.T) {
 
 	goRuntime := runtime.NewGolangRuntime("", nil, dic)
 
-	err := goRuntime.SetFunctionsPipeline([]interfaces.AppFunction{transform1})
+	err := goRuntime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 	require.NoError(t, err)
 	trigger := NewTrigger(dic, goRuntime)
 
@@ -537,7 +537,7 @@ func TestInitializeAndProcessEventWithOutput_InferJSON(t *testing.T) {
 
 	goRuntime := runtime.NewGolangRuntime("", nil, dic)
 
-	err := goRuntime.SetFunctionsPipeline([]interfaces.AppFunction{transform1})
+	err := goRuntime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 	require.NoError(t, err)
 
 	trigger := NewTrigger(dic, goRuntime)
@@ -642,7 +642,7 @@ func TestInitializeAndProcessEventWithOutput_AssumeCBOR(t *testing.T) {
 
 	goRuntime := runtime.NewGolangRuntime("", nil, dic)
 
-	err := goRuntime.SetFunctionsPipeline([]interfaces.AppFunction{transform1})
+	err := goRuntime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 	require.NoError(t, err)
 
 	trigger := NewTrigger(dic, goRuntime)
@@ -831,7 +831,7 @@ func TestInitializeAndProcessEventMultipleTopics(t *testing.T) {
 
 	goRuntime := runtime.NewGolangRuntime("", nil, dic)
 
-	err := goRuntime.SetFunctionsPipeline([]interfaces.AppFunction{transform1})
+	err := goRuntime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 	require.NoError(t, err)
 
 	trigger := NewTrigger(dic, goRuntime)

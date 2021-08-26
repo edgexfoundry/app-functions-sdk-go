@@ -148,7 +148,7 @@ func (processor *ConfigUpdateProcessor) processConfigChangedPipeline() {
 		if err != nil {
 			sdk.LoggingClient().Error("unable to reload Configurable Pipeline from new configuration: " + err.Error())
 			// Reset the default pipeline transforms to nil so error occurs when attempting to execute the pipeline.
-			_ = sdk.runtime.SetFunctionsPipeline(nil)
+			_ = sdk.runtime.SetDefaultFunctionsPipeline(nil)
 			return
 		}
 

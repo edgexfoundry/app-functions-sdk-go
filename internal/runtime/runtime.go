@@ -88,8 +88,8 @@ func NewGolangRuntime(serviceKey string, targetType interface{}, dic *di.Contain
 	return gr
 }
 
-// SetFunctionsPipeline sets the default function pipeline
-func (gr *GolangRuntime) SetFunctionsPipeline(transforms []interfaces.AppFunction) error {
+// SetDefaultFunctionsPipeline sets the default function pipeline
+func (gr *GolangRuntime) SetDefaultFunctionsPipeline(transforms []interfaces.AppFunction) error {
 	pipeline := gr.GetDefaultPipeline()
 	if pipeline.Transforms != nil {
 		gr.isBusyCopying.Lock()

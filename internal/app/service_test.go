@@ -242,7 +242,7 @@ func TestSetupHTTPTrigger(t *testing.T) {
 	}
 
 	testRuntime := runtime.NewGolangRuntime("", nil, dic)
-	err := testRuntime.SetFunctionsPipeline(nil)
+	err := testRuntime.SetDefaultFunctionsPipeline(nil)
 	require.NoError(t, err)
 	trigger := sdk.setupTrigger(sdk.config, testRuntime)
 	result := IsInstanceOf(trigger, (*triggerHttp.Trigger)(nil))
@@ -259,14 +259,14 @@ func TestSetupMessageBusTrigger(t *testing.T) {
 		},
 	}
 	testRuntime := runtime.NewGolangRuntime("", nil, dic)
-	err := testRuntime.SetFunctionsPipeline(nil)
+	err := testRuntime.SetDefaultFunctionsPipeline(nil)
 	require.NoError(t, err)
 	trigger := sdk.setupTrigger(sdk.config, testRuntime)
 	result := IsInstanceOf(trigger, (*messagebus.Trigger)(nil))
 	assert.True(t, result, "Expected Instance of Message Bus Trigger")
 }
 
-func TestSetFunctionsPipelineNoTransforms(t *testing.T) {
+func TestSetDefaultFunctionsPipelineNoTransforms(t *testing.T) {
 	sdk := Service{
 		lc: lc,
 		config: &common.ConfigurationStruct{
@@ -275,12 +275,12 @@ func TestSetFunctionsPipelineNoTransforms(t *testing.T) {
 			},
 		},
 	}
-	err := sdk.SetFunctionsPipeline()
+	err := sdk.SetDefaultFunctionsPipeline()
 	require.Error(t, err, "There should be an error")
 	assert.Equal(t, "no transforms provided to pipeline", err.Error())
 }
 
-func TestSetFunctionsPipelineOneTransform(t *testing.T) {
+func TestSetDefaultFunctionsPipelineOneTransform(t *testing.T) {
 	service := Service{
 		lc:      lc,
 		runtime: runtime.NewGolangRuntime("", nil, dic),
@@ -294,7 +294,7 @@ func TestSetFunctionsPipelineOneTransform(t *testing.T) {
 		return true, nil
 	}
 
-	err := service.SetFunctionsPipeline(function)
+	err := service.SetDefaultFunctionsPipeline(function)
 	require.NoError(t, err)
 }
 
@@ -314,7 +314,7 @@ func TestService_AddFunctionsPipelineForTopic(t *testing.T) {
 	transforms := []interfaces.AppFunction{tags.AddTags}
 
 	// This sets the Default Pipeline allowing to test for duplicate iD.
-	err := service.SetFunctionsPipeline(transforms...)
+	err := service.SetDefaultFunctionsPipeline(transforms...)
 	require.NoError(t, err)
 
 	tests := []struct {
