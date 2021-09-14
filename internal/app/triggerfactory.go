@@ -21,7 +21,9 @@ package app
 import (
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-multierror"
 	"strings"
+	"sync"
 
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
@@ -58,33 +60,63 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 
 	svc.customTriggerFactories[nu] = func(sdk *Service) (interfaces.Trigger, error) {
 		return factory(interfaces.TriggerConfig{
-			Logger:           sdk.lc,
-			ContextBuilder:   sdk.defaultTriggerContextBuilder,
-			MessageProcessor: sdk.defaultTriggerMessageProcessor,
-			ConfigLoader:     sdk.defaultConfigLoader,
+			Logger: sdk.lc,
+			ContextBuilder: func(env types.MessageEnvelope) interfaces.AppFunctionContext {
+				return appfunction.NewContext(env.CorrelationID, sdk.dic, env.ContentType)
+			},
+			MessageProcessor: func(appContext interfaces.AppFunctionContext, envelope types.MessageEnvelope) error {
+				context, ok := appContext.(*appfunction.Context)
+				if !ok {
+					return errors.New("App Context must be an instance of internal appfunction.Context. Use NewAppContext to create instance.")
+				}
+
+				defaultPipeline := sdk.runtime.GetDefaultPipeline()
+				messageError := sdk.runtime.ProcessMessage(context, envelope, defaultPipeline)
+				if messageError != nil {
+					// ProcessMessage logs the error, so no need to log it here.
+					return messageError.Err
+				}
+
+				return nil
+			},
+			ProcessMessage: sdk.processMessageOnRuntime,
+			ConfigLoader:   sdk.defaultConfigLoader,
 		})
 	}
 
 	return nil
 }
 
-func (svc *Service) defaultTriggerMessageProcessor(appContext interfaces.AppFunctionContext, envelope types.MessageEnvelope) error {
-	context, ok := appContext.(*appfunction.Context)
-	if !ok {
-		return errors.New("App Context must be an instance of internal appfunction.Context. Use NewAppContext to create instance.")
+func (svc *Service) processMessageOnRuntime(envelope types.MessageEnvelope) error {
+	svc.LoggingClient().Debugf("custom trigger attempting to find pipeline(s) for topic %s", envelope.ReceivedTopic)
+
+	pipelines := svc.runtime.GetMatchingPipelines(envelope.ReceivedTopic)
+
+	svc.LoggingClient().Debugf("custom trigger found %d pipeline(s) that match the incoming topic '%s'", len(pipelines), envelope.ReceivedTopic)
+
+	var finalErr error
+
+	pipelinesWaitGroup := sync.WaitGroup{}
+
+	for _, pipeline := range pipelines {
+		go func(p *interfaces.FunctionPipeline, e error, wg *sync.WaitGroup) {
+			wg.Add(1)
+			ctx := appfunction.NewContext(envelope.CorrelationID, svc.dic, envelope.ContentType)
+
+			svc.LoggingClient().Tracef("custom trigger sending message to pipeline %s (%s)", p.Id, envelope.CorrelationID)
+
+			if msgErr := svc.runtime.ProcessMessage(ctx, envelope, p); msgErr != nil {
+				svc.LoggingClient().Tracef("custom trigger message error in pipeline %s (%s) %s", p.Id, envelope.CorrelationID, msgErr.Err.Error())
+				e = multierror.Append(e, msgErr.Err)
+			}
+
+			wg.Done()
+		}(pipeline, finalErr, &pipelinesWaitGroup)
 	}
 
-	messageError := svc.runtime.ProcessMessage(context, envelope)
-	if messageError != nil {
-		// ProcessMessage logs the error, so no need to log it here.
-		return messageError.Err
-	}
+	pipelinesWaitGroup.Wait()
 
-	return nil
-}
-
-func (svc *Service) defaultTriggerContextBuilder(env types.MessageEnvelope) interfaces.AppFunctionContext {
-	return appfunction.NewContext(env.CorrelationID, svc.dic, env.ContentType)
+	return finalErr
 }
 
 func (svc *Service) defaultConfigLoader(updatableConfig interfaces.UpdatableConfig, name string) error {

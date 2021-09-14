@@ -36,8 +36,11 @@ GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SD
 #GIT_SHA=$(shell git rev-parse HEAD)
 GIT_SHA=no-sha
 
-build:
+build: tidy
 	$(GO) build $(GOFLAGS) -o $(MICROSERVICE)
+
+tidy:
+	go mod tidy
 
 # TODO: Change the registries (edgexfoundry, nexus3.edgexfoundry.org:10004) below as needed.
 #       Leave them as is if service is to be upstreamed to EdgeX Foundry

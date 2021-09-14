@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,10 +28,18 @@ import (
 
 // TriggerConfig provides a container to pass context needed for user defined triggers
 type TriggerConfig struct {
-	Logger           logger.LoggingClient
-	ContextBuilder   TriggerContextBuilder
+	// Logger exposes the logging client passed from the service
+	Logger logger.LoggingClient
+	// ContextBuilder contructs a context the trigger can specify for processing the received message
+	// Deprecated: only needed when using MessageProcessor
+	ContextBuilder TriggerContextBuilder
+	// MessageProcessor processes a message on the services default pipeline
+	// Deprecated: use ProcessMessage so that custom triggers can feed data to services configured with multiple pipelines
 	MessageProcessor TriggerMessageProcessor
-	ConfigLoader     TriggerConfigLoader
+	// ProcessMessage is a function of type MessageProcessor that is used to deliver messages to the runtime.
+	ProcessMessage MessageProcessor
+	// ConfigLoader is a function of type TriggerConfigLoader that can be used to load custom configuration sections for the trigger.s
+	ConfigLoader TriggerConfigLoader
 }
 
 // Trigger provides an abstract means to pass messages to the function pipeline
@@ -40,9 +49,15 @@ type Trigger interface {
 }
 
 // TriggerMessageProcessor provides an interface that can be used by custom triggers to invoke the runtime
+// Deprecated: use MessageProcessor instead
 type TriggerMessageProcessor func(ctx AppFunctionContext, envelope types.MessageEnvelope) error
 
 // TriggerContextBuilder provides an interface to construct an AppFunctionContext for message
+// Deprecated: only used with legacy TriggerMessageProcessor
 type TriggerContextBuilder func(env types.MessageEnvelope) AppFunctionContext
 
+// MessageProcessor provides an interface that can be used by custom triggers to invoke the runtime
+type MessageProcessor func(envelope types.MessageEnvelope) error
+
+// TriggerConfigLoader provides an interface that can be used by custom triggers to load custom configuration elements
 type TriggerConfigLoader func(config UpdatableConfig, sectionName string) error
