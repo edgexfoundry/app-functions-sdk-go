@@ -1,10 +1,8 @@
-## PR Description 
 <!-- Expected Commit Message Description (imported automatically by GitHub) -->
 <!-- Must conform to [conventional commits guidelines](https://github.com/edgexfoundry/app-functions-sdk-go/blob/master/.github/CONTRIBUTING.md) -->
+<!-- Expected Commit message must contain Closes/Fixes #IssueNumber statement when there is a related issue -->
 
-Closes/Fixes #IssueNumber 
-
-<!-- Detailed description of change if no related issue -->
+<!-- Add additional detailed description of need for change if no related issue -->
 
 <!-- If your build fails due to your commit message not passing the build checks, please review the guidelines here: https://github.com/edgexfoundry/app-functions-sdk-go/blob/master/.github/CONTRIBUTING.md -->
 
