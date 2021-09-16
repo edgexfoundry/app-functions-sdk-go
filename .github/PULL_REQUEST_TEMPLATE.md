@@ -12,7 +12,7 @@ Please check if your PR fulfills the following requirements:
 - [ ] I am not introducing a breaking change (if you are, flag in conventional commit message with `BREAKING CHANGE:` describing the break)
 - [ ] I am not introducing a new dependency (add notes below if you are)
 - [ ] I have added unit tests for the new feature or bug fix (if not, why?)
-- [ ] I have fully integration tested this the new feature or bug fix (if not, why?)
+- [ ] I have fully tested (add details below) this the new feature or bug fix (if not, why?)
 - [ ] I have opened a PR for the related docs change (if not, why?)
       <link to docs PR>
 
