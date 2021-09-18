@@ -20,6 +20,12 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
+	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+	"github.com/hashicorp/go-multierror"
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"sync"
 	"testing"
@@ -155,7 +161,7 @@ func (*mockCustomTrigger) Initialize(_ *sync.WaitGroup, _ context.Context, _ <-c
 	return nil, nil
 }
 
-func TestSetupTrigger_CustomType(t *testing.T) {
+func Test_Service_setupTrigger_CustomType(t *testing.T) {
 	triggerName := uuid.New().String()
 
 	sdk := Service{
@@ -178,7 +184,7 @@ func TestSetupTrigger_CustomType(t *testing.T) {
 	require.IsType(t, &mockCustomTrigger{}, trigger, "should be a custom trigger")
 }
 
-func TestSetupTrigger_CustomType_Error(t *testing.T) {
+func Test_Service_SetupTrigger_CustomTypeError(t *testing.T) {
 	triggerName := uuid.New().String()
 
 	sdk := Service{
@@ -200,7 +206,7 @@ func TestSetupTrigger_CustomType_Error(t *testing.T) {
 	require.Nil(t, trigger, "should be nil")
 }
 
-func TestSetupTrigger_CustomType_NotFound(t *testing.T) {
+func Test_Service_SetupTrigger_CustomTypeNotFound(t *testing.T) {
 	triggerName := uuid.New().String()
 
 	sdk := Service{
@@ -215,4 +221,148 @@ func TestSetupTrigger_CustomType_NotFound(t *testing.T) {
 	trigger := sdk.setupTrigger(sdk.config, sdk.runtime)
 
 	require.Nil(t, trigger, "should be nil")
+}
+
+func Test_customTriggerBinding_buildContext(t *testing.T) {
+	container := &di.Container{}
+	correlationId := uuid.NewString()
+	contentType := uuid.NewString()
+
+	bnd := &customTriggerBinding{
+		dic: container,
+	}
+	if got := bnd.buildContext(types.MessageEnvelope{CorrelationID: correlationId, ContentType: contentType}); got == nil {
+		t.Errorf("Got nil from buildContext")
+	} else {
+		require.Equal(t, correlationId, got.CorrelationID())
+		require.Equal(t, contentType, got.InputContentType())
+
+		ctx, ok := got.(*appfunction.Context)
+		require.True(t, ok)
+		require.Equal(t, container, ctx.Dic)
+	}
+}
+
+func Test_customTriggerBinding_processMessage(t *testing.T) {
+	type fields struct {
+		runtimeProcessor func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError
+		pipelineMatcher  func(incomingTopic string) []*interfaces.FunctionPipeline
+		configLoader     interfaces.TriggerConfigLoader
+		log              logger.LoggingClient
+
+		dic       *di.Container
+		pipelines []*interfaces.FunctionPipeline
+	}
+	type args struct {
+		ctx      interfaces.AppFunctionContext
+		envelope types.MessageEnvelope
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr int
+	}{
+		{
+			name: "no pipelines",
+			fields: fields{
+				pipelineMatcher: func(incomingTopic string) []*interfaces.FunctionPipeline {
+					return nil
+				},
+			},
+			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
+			wantErr: 0,
+		},
+		{
+			name: "single pipeline",
+			fields: fields{
+				pipelineMatcher: func(incomingTopic string) []*interfaces.FunctionPipeline {
+					return []*interfaces.FunctionPipeline{{}}
+				},
+				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
+					return nil
+				},
+			},
+			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
+			wantErr: 0,
+		},
+		{
+			name: "single pipeline error",
+			fields: fields{
+				pipelineMatcher: func(incomingTopic string) []*interfaces.FunctionPipeline {
+					return []*interfaces.FunctionPipeline{{}}
+				},
+				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
+					return &runtime.MessageError{Err: fmt.Errorf("some error")}
+				},
+			},
+			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
+			wantErr: 1,
+		},
+		{
+			name: "multi pipeline",
+			fields: fields{
+				pipelineMatcher: func(incomingTopic string) []*interfaces.FunctionPipeline {
+					return []*interfaces.FunctionPipeline{{}, {}, {}}
+				},
+				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
+					return nil
+				},
+			},
+			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
+			wantErr: 0,
+		},
+		{
+			name: "multi pipeline single err",
+			fields: fields{
+				pipelineMatcher: func(incomingTopic string) []*interfaces.FunctionPipeline {
+					return []*interfaces.FunctionPipeline{{}, {Id: "errorid"}, {}}
+				},
+				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
+					if pipeline.Id == "errorid" {
+						return &runtime.MessageError{Err: fmt.Errorf("new error")}
+					}
+					return nil
+				},
+			},
+			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
+			wantErr: 1,
+		},
+		{
+			name: "multi pipeline multi err",
+			fields: fields{
+				pipelineMatcher: func(incomingTopic string) []*interfaces.FunctionPipeline {
+					return []*interfaces.FunctionPipeline{{}, {}, {}}
+				},
+				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
+					return &runtime.MessageError{Err: fmt.Errorf("new error")}
+				},
+			},
+			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
+			wantErr: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bnd := &customTriggerBinding{
+				runtimeProcessor: tt.fields.runtimeProcessor,
+				pipelineMatcher:  tt.fields.pipelineMatcher,
+				log:              logger.NewMockClient(),
+				dic:              tt.fields.dic,
+			}
+
+			err := bnd.processMessage(tt.args.ctx, tt.args.envelope)
+
+			require.Equal(t, err == nil, tt.wantErr == 0)
+
+			if err != nil {
+				merr, ok := err.(*multierror.Error)
+
+				require.True(t, ok)
+
+				assert.Equal(t, tt.wantErr, merr.Len())
+			}
+		})
+	}
 }
