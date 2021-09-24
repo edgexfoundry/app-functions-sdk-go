@@ -45,20 +45,19 @@ const (
 )
 
 type customTriggerBinding struct {
-	runtimeProcessor func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError
-	pipelineMatcher  func(incomingTopic string) []*interfaces.FunctionPipeline
-	configLoader     interfaces.TriggerConfigLoader
-	dic              *di.Container
-	log              logger.LoggingClient
+	TriggerServiceBinding
+	dic *di.Container
+	log logger.LoggingClient
 }
 
 func newCustomTriggerBinding(svc *Service) *customTriggerBinding {
 	return &customTriggerBinding{
-		log:              svc.LoggingClient(),
-		runtimeProcessor: svc.runtime.ProcessMessage,
-		pipelineMatcher:  svc.runtime.GetMatchingPipelines,
-		configLoader:     svc.LoadCustomConfig,
-		dic:              svc.dic,
+		TriggerServiceBinding: simpleTriggerServiceBinding{
+			svc,
+			svc.runtime,
+		},
+		log: svc.LoggingClient(),
+		dic: svc.dic,
 	}
 }
 
@@ -75,7 +74,7 @@ func (bnd *customTriggerBinding) processMessage(ctx interfaces.AppFunctionContex
 		ctx = bnd.buildContext(envelope)
 	}
 
-	pipelines := bnd.pipelineMatcher(envelope.ReceivedTopic)
+	pipelines := bnd.GetMatchingPipelines(envelope.ReceivedTopic)
 
 	bnd.log.Debugf("custom trigger found %d pipeline(s) that match the incoming topic '%s'", len(pipelines), envelope.ReceivedTopic)
 
@@ -90,7 +89,7 @@ func (bnd *customTriggerBinding) processMessage(ctx interfaces.AppFunctionContex
 
 			bnd.log.Tracef("custom trigger sending message to pipeline %s (%s)", p.Id, envelope.CorrelationID)
 
-			if msgErr := bnd.runtimeProcessor(ctx.Clone().(*appfunction.Context), envelope, p); msgErr != nil {
+			if msgErr := bnd.ProcessMessage(ctx.Clone().(*appfunction.Context), envelope, p); msgErr != nil {
 				bnd.log.Tracef("custom trigger message error in pipeline %s (%s) %s", p.Id, envelope.CorrelationID, msgErr.Err.Error())
 				errCollector(msgErr.Err)
 			}
@@ -157,7 +156,7 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 			Logger:           sdk.lc,
 			ContextBuilder:   binding.buildContext,
 			MessageProcessor: binding.processMessage,
-			ConfigLoader:     binding.configLoader,
+			ConfigLoader:     binding.LoadCustomConfig,
 		}
 
 		return factory(cfg)
