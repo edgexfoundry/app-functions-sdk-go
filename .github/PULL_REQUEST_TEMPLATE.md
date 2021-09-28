@@ -1,5 +1,5 @@
 <!-- Expected Commit Message Description (imported automatically by GitHub) -->
-<!-- Must conform to [conventional commits guidelines](https://github.com/edgexfoundry/app-functions-sdk-go/blob/master/.github/CONTRIBUTING.md) -->
+<!-- Must conform to [conventional commits guidelines](https://github.com/edgexfoundry/app-functions-sdk-go/blob/main/.github/CONTRIBUTING.md) -->
 <!-- Expected Commit message must contain Closes/Fixes #IssueNumber statement when there is a related issue -->
 
 <!-- Add additional detailed description of need for change if no related issue -->
