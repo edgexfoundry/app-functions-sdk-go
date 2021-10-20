@@ -73,7 +73,7 @@ func (d *atomicBatchData) length() int {
 
 // BatchConfig ...
 type BatchConfig struct {
-	IsEventData                 bool
+	IsEventData    bool
 	timeInterval   string
 	parsedDuration time.Duration
 	batchThreshold int

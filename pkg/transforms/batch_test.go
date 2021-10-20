@@ -186,9 +186,9 @@ func TestBatchInTimeMode(t *testing.T) {
 
 func TestBatchIsEventData(t *testing.T) {
 	events := []dtos.Event{
-		dtos.NewEvent("p1","d1", "s1"),
-		dtos.NewEvent("p1","d1", "s1"),
-		dtos.NewEvent("p1","d1", "s1"),
+		dtos.NewEvent("p1", "d1", "s1"),
+		dtos.NewEvent("p1", "d1", "s1"),
+		dtos.NewEvent("p1", "d1", "s1"),
 	}
 	err := events[0].AddSimpleReading("r1", common.ValueTypeString, "Hello")
 	require.NoError(t, err)
@@ -197,8 +197,8 @@ func TestBatchIsEventData(t *testing.T) {
 	err = events[2].AddSimpleReading("r3", common.ValueTypeFloat64, 89.90)
 	require.NoError(t, err)
 
-	tests := []struct{
-		name string
+	tests := []struct {
+		name        string
 		isEventData bool
 	}{
 		{"Is Events", true},
