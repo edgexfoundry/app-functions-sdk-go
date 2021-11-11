@@ -11,7 +11,7 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
-## [v2.1.0] Jakarta - 2021-11-17 (Not Compatible with 1.x releases)
+## [v2.1.0] Jakarta - 2021-11-17 (Only compatible with the 2.x releases)
 
 ### Features ✨
 
