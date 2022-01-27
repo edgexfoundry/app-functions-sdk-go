@@ -52,12 +52,18 @@ components:
         config:
           description: "An object containing the service's configuration. Please refer to Core Data's configuration documentation for more details at [EdgeX Foundry Documentation](https://docs.edgexfoundry.org)."
           type: object
+        serviceName:
+          description: "Outputs the name of the service the response is from"
+          type: string
     MetricsResponse:
       description: "A response from the /metrics endpoint providing memory and cpu utilization stats."
       type: object
       properties:
         apiVersion:
           description: "A version number shows the API version in DTOs."
+          type: string
+        serviceName:
+          description: "Outputs the name of the service the response is from"
           type: string
         metrics:
           type: object
@@ -92,6 +98,9 @@ components:
           type: string
         timestamp:
           description: "Outputs the current server timestamp in Unix Time format"
+          type: string
+        serviceName:
+          description: "Outputs the name of the service the response is from"
           type: string
     SecretRequest:
       allOf:
@@ -134,6 +143,9 @@ components:
           type: string
         version:
           description: "The latest version supported by the service."
+          type: string
+        serviceName:
+          description: "Outputs the name of the service the response is from"
           type: string
     VersionSdkResponse:
       description: "A response returned from the /version endpoint whose purpose is to report out the latest version supported by the service, as well as the latest SDK version supported."
