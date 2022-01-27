@@ -160,6 +160,7 @@ func TestTriggerRequestHandler(t *testing.T) {
 		assert.Equal(t, afc, ctx)
 		assert.Equal(t, data, env.Payload)
 		assert.Equal(t, contentType, env.ContentType)
+		ctx.SetResponseData(data)
 		return nil
 	})
 
@@ -169,6 +170,8 @@ func TestTriggerRequestHandler(t *testing.T) {
 	}
 
 	writer := &mocks.TriggerResponseWriter{}
+
+	writer.On("Write", data).Return(0, nil)
 
 	req, err := http.NewRequest("", "", bytes.NewBuffer(data))
 	req.Header = http.Header{}
