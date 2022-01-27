@@ -36,9 +36,6 @@ https://github.com/edgexfoundry/go-mod-configuration/blob/main/LICENSE
 BurntSushi/toml (MIT) https://github.com/BurntSushi/toml
 https://github.com/BurntSushi/toml/blob/master/COPYING
 
-go-kit/kit (MIT) github.com/go-kit/kit
-https://github.com/go-kit/kit/blob/master/LICENSE
-
 go-logfmt/logfmt (MIT) https://github.com/go-logfmt/logfmt
 https://github.com/go-logfmt/logfmt/blob/master/LICENSE
 
