@@ -118,6 +118,21 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	if messageError != nil {
 		writer.WriteHeader(messageError.ErrorCode)
 		_, _ = writer.Write([]byte(messageError.Err.Error()))
+		return
+	}
+
+	if len(appContext.ResponseContentType()) > 0 {
+		writer.Header().Set(common.ContentType, appContext.ResponseContentType())
+	}
+
+	_, err = writer.Write(appContext.ResponseData())
+	if err != nil {
+		lc.Errorf("unable to write ResponseData as HTTP response: %s", err.Error())
+		return
+	}
+
+	if appContext.ResponseData() != nil {
+		lc.Trace("Sent http response message", common.CorrelationHeader, correlationID)
 	}
 }
 
