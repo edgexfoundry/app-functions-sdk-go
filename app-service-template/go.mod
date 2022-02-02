@@ -64,3 +64,5 @@ require (
 )
 
 replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../
+
+replace github.com/edgexfoundry/go-mod-bootstrap/v2 => ../../MODS/go-mod-bootstrap

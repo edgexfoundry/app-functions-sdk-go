@@ -18,6 +18,10 @@ require (
 	github.com/stretchr/testify v1.7.0
 )
 
+replace (
+	github.com/edgexfoundry/go-mod-bootstrap/v2 => ../MODS/go-mod-bootstrap
+)
+
 require (
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
