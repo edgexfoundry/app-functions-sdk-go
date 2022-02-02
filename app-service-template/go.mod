@@ -20,7 +20,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.1.0 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v2 v2.1.0 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.0-dev.6 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.0-dev.7 // indirect
 	github.com/edgexfoundry/go-mod-registry/v2 v2.1.0 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v2 v2.1.0 // indirect
 	github.com/fatih/color v1.9.0 // indirect

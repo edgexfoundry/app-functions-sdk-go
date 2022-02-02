@@ -17,6 +17,7 @@ package interfaces
 
 import (
 	"net/http"
+	"time"
 
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
@@ -71,6 +72,8 @@ type ApplicationService interface {
 	// A reference to this ApplicationService is add the the context that is passed to the handler, which
 	// can be retrieved using the `AppService` key
 	AddRoute(route string, handler func(http.ResponseWriter, *http.Request), methods ...string) error
+	// RequestTimeout returns the configured request timeout value from [Service] section.
+	RequestTimeout() time.Duration
 	// ApplicationSettings returns the key/value map of custom settings
 	ApplicationSettings() map[string]string
 	// GetAppSetting is a convenience function return a setting from the ApplicationSetting
