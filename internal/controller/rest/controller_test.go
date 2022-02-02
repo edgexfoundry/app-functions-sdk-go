@@ -49,11 +49,20 @@ var expectedCorrelationId = uuid.New().String()
 var dic *di.Container
 
 func TestMain(m *testing.M) {
+	//secretProviderMock.on
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return logger.NewMockClient()
 		},
+		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
+			return &mocks.SecretProvider{}
+		},
+		container.ConfigurationName: func(get di.Get) interface{} {
+			return &sdkCommon.ConfigurationStruct{}
+		},
 	})
+
+	os.Exit(m.Run())
 }
 
 func TestPingRequest(t *testing.T) {
@@ -166,15 +175,19 @@ func TestConfigRequest(t *testing.T) {
 func TestAddSecretRequest(t *testing.T) {
 	expectedRequestId := "82eb2e26-0f24-48aa-ae4c-de9dac3fb9bc"
 
+	mockProvider := &mocks.SecretProvider{}
+	mockProvider.On("StoreSecret", "/mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
+	mockProvider.On("StoreSecret", "mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
+	mockProvider.On("StoreSecret", "/no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("invalid w/o Vault"))
+
 	dic.Update(di.ServiceConstructorMap{
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return &sdkCommon.ConfigurationStruct{}
 		},
+		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
+			return mockProvider
+		},
 	})
-
-	mockProvider := &mocks.SecretProvider{}
-	mockProvider.On("StoreSecrets", "/mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
-	mockProvider.On("StoreSecrets", "/no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("Invalid w/o Vault"))
 
 	target := NewController(nil, dic, uuid.NewString())
 	assert.NotNil(t, target)
@@ -207,7 +220,7 @@ func TestAddSecretRequest(t *testing.T) {
 		{Key: "username", Value: ""},
 	}
 	noSecretStore := validRequest
-	noSecretStore.Path = "no"
+	noSecretStore.Path = "/no"
 
 	tests := []struct {
 		Name               string
