@@ -27,6 +27,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
@@ -88,6 +89,7 @@ type Service struct {
 	commandLine               commandLineFlags
 	flags                     *flags.Default
 	configProcessor           *config.Processor
+	requestTimeout            time.Duration
 }
 
 type commandLineFlags struct {
@@ -405,6 +407,11 @@ func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, tr
 	return nil
 }
 
+// RequestTimeout returns the Request Timeout duration that was parsed from the Service.RequestTimeout configuration
+func (svc *Service) RequestTimeout() time.Duration {
+	return svc.requestTimeout
+}
+
 // ApplicationSettings returns the values specified in the custom configuration section.
 func (svc *Service) ApplicationSettings() map[string]string {
 	return svc.config.ApplicationSettings
@@ -503,6 +510,14 @@ func (svc *Service) Initialize() error {
 
 	if !successful {
 		return fmt.Errorf("boostrapping failed")
+	}
+
+	configuration := container.ConfigurationFrom(svc.dic.Get)
+	var err error
+
+	svc.requestTimeout, err = time.ParseDuration(configuration.Service.RequestTimeout)
+	if err != nil {
+		return fmt.Errorf("unable to parse Service.RequestTimeout configuration as a time duration: %s", err.Error())
 	}
 
 	svc.runtime = runtime.NewGolangRuntime(svc.serviceKey, svc.targetType, svc.dic)
