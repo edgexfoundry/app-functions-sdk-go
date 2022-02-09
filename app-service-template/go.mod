@@ -18,7 +18,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/diegoholiveira/jsonlogic v1.0.1-0.20200220175622-ab7989be08b9 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.5 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.1.0 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.0.1-dev.28 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v2 v2.1.0 // indirect
 	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.0-dev.7 // indirect
 	github.com/edgexfoundry/go-mod-registry/v2 v2.1.0 // indirect
@@ -64,5 +64,3 @@ require (
 )
 
 replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../
-
-replace github.com/edgexfoundry/go-mod-bootstrap/v2 => ../../MODS/go-mod-bootstrap
