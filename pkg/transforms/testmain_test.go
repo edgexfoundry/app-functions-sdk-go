@@ -28,9 +28,10 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 )
 
 var lc logger.LoggingClient
@@ -48,7 +49,7 @@ func TestMain(m *testing.M) {
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return &common.ConfigurationStruct{}
 		},
-		container.EventClientName: func(get di.Get) interface{} {
+		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
 			return mockEventClient
 		},
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {

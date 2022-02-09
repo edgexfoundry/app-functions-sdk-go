@@ -38,6 +38,13 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
+	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/handlers"
+
+	clientInterfaces "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	commonConstants "github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
+	"github.com/edgexfoundry/go-mod-registry/v2/registry"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/config"
@@ -46,11 +53,6 @@ import (
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	clientInterfaces "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
-	commonConstants "github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
-	"github.com/edgexfoundry/go-mod-registry/v2/registry"
 
 	"github.com/gorilla/mux"
 )
@@ -499,7 +501,7 @@ func (svc *Service) Initialize() error {
 		true,
 		[]bootstrapInterfaces.BootstrapHandler{
 			handlers.NewDatabase().BootstrapHandler,
-			handlers.NewClients().BootstrapHandler,
+			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
 			handlers.NewTelemetry().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,
 		},
@@ -585,37 +587,37 @@ func (svc *Service) RegistryClient() registry.Client {
 
 // EventClient returns the Event client, which may be nil, from the dependency injection container
 func (svc *Service) EventClient() clientInterfaces.EventClient {
-	return container.EventClientFrom(svc.dic.Get)
+	return bootstrapContainer.EventClientFrom(svc.dic.Get)
 }
 
 // CommandClient returns the Command client, which may be nil, from the dependency injection container
 func (svc *Service) CommandClient() clientInterfaces.CommandClient {
-	return container.CommandClientFrom(svc.dic.Get)
+	return bootstrapContainer.CommandClientFrom(svc.dic.Get)
 }
 
 // DeviceServiceClient returns the DeviceService client, which may be nil, from the dependency injection container
 func (svc *Service) DeviceServiceClient() clientInterfaces.DeviceServiceClient {
-	return container.DeviceServiceClientFrom(svc.dic.Get)
+	return bootstrapContainer.DeviceServiceClientFrom(svc.dic.Get)
 }
 
 // DeviceProfileClient returns the DeviceProfile client, which may be nil, from the dependency injection container
 func (svc *Service) DeviceProfileClient() clientInterfaces.DeviceProfileClient {
-	return container.DeviceProfileClientFrom(svc.dic.Get)
+	return bootstrapContainer.DeviceProfileClientFrom(svc.dic.Get)
 }
 
 // DeviceClient returns the Device client, which may be nil, from the dependency injection container
 func (svc *Service) DeviceClient() clientInterfaces.DeviceClient {
-	return container.DeviceClientFrom(svc.dic.Get)
+	return bootstrapContainer.DeviceClientFrom(svc.dic.Get)
 }
 
 // NotificationClient returns the Notifications client, which may be nil, from the dependency injection container
 func (svc *Service) NotificationClient() clientInterfaces.NotificationClient {
-	return container.NotificationClientFrom(svc.dic.Get)
+	return bootstrapContainer.NotificationClientFrom(svc.dic.Get)
 }
 
 // SubscriptionClient returns the Subscription client, which may be nil, from the dependency injection container
 func (svc *Service) SubscriptionClient() clientInterfaces.SubscriptionClient {
-	return container.SubscriptionClientFrom(svc.dic.Get)
+	return bootstrapContainer.SubscriptionClientFrom(svc.dic.Get)
 }
 
 func listParameters(parameters map[string]string) string {

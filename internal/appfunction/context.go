@@ -25,17 +25,17 @@ import (
 	"strings"
 	"time"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/requests"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 )
 
 // NewContext creates, initializes and return a new Context with implements the interfaces.AppFunctionContext interface
@@ -141,19 +141,19 @@ func (appContext *Context) RetryData() []byte {
 
 // GetSecret returns the secret data from the secret store (secure or insecure) for the specified path.
 func (appContext *Context) GetSecret(path string, keys ...string) (map[string]string, error) {
-	secretProvider := bootstrapContainer.SecretProviderFrom(appContext.Dic.Get)
+	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)
 	return secretProvider.GetSecret(path, keys...)
 }
 
 // SecretsLastUpdated returns that timestamp for when the secrets in the SecretStore where last updated.
 func (appContext *Context) SecretsLastUpdated() time.Time {
-	secretProvider := bootstrapContainer.SecretProviderFrom(appContext.Dic.Get)
+	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)
 	return secretProvider.SecretsLastUpdated()
 }
 
 // LoggingClient returns the Logging client from the dependency injection container
 func (appContext *Context) LoggingClient() logger.LoggingClient {
-	return bootstrapContainer.LoggingClientFrom(appContext.Dic.Get)
+	return container.LoggingClientFrom(appContext.Dic.Get)
 }
 
 // EventClient returns the Event client, which may be nil, from the dependency injection container

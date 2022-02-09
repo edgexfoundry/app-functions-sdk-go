@@ -25,11 +25,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	v2clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
 	clientMocks "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
@@ -37,6 +34,9 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/responses"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -64,7 +64,7 @@ func TestContext_EventClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.EventClientName: func(get di.Get) interface{} {
+		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
 			return v2clients.NewEventClient(baseUrl + "59880")
 		},
 	})
@@ -78,7 +78,7 @@ func TestContext_CommandClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.CommandClientName: func(get di.Get) interface{} {
+		bootstrapContainer.CommandClientName: func(get di.Get) interface{} {
 			return v2clients.NewCommandClient(baseUrl + "59882")
 		},
 	})
@@ -92,7 +92,7 @@ func TestContext_DeviceServiceClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.DeviceServiceClientName: func(get di.Get) interface{} {
+		bootstrapContainer.DeviceServiceClientName: func(get di.Get) interface{} {
 			return v2clients.NewDeviceServiceClient(baseUrl + "59881")
 		},
 	})
@@ -107,7 +107,7 @@ func TestContext_DeviceProfileClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.DeviceProfileClientName: func(get di.Get) interface{} {
+		bootstrapContainer.DeviceProfileClientName: func(get di.Get) interface{} {
 			return v2clients.NewDeviceProfileClient(baseUrl + "59881")
 		},
 	})
@@ -121,7 +121,7 @@ func TestContext_DeviceClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.DeviceClientName: func(get di.Get) interface{} {
+		bootstrapContainer.DeviceClientName: func(get di.Get) interface{} {
 			return v2clients.NewDeviceClient(baseUrl + "59881")
 		},
 	})
@@ -136,7 +136,7 @@ func TestContext_NotificationClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.NotificationClientName: func(get di.Get) interface{} {
+		bootstrapContainer.NotificationClientName: func(get di.Get) interface{} {
 			return v2clients.NewNotificationClient(baseUrl + "59860")
 		},
 	})
@@ -151,7 +151,7 @@ func TestContext_SubscriptionClient(t *testing.T) {
 	assert.Nil(t, actual)
 
 	dic.Update(di.ServiceConstructorMap{
-		container.SubscriptionClientName: func(get di.Get) interface{} {
+		bootstrapContainer.SubscriptionClientName: func(get di.Get) interface{} {
 			return v2clients.NewSubscriptionClient(baseUrl + "59860")
 		},
 	})
@@ -418,7 +418,7 @@ func TestContext_PushToCore(t *testing.T) {
 	mockClient := clientMocks.EventClient{}
 	mockClient.On("Add", mock.Anything, mock.Anything).Return(commonDtos.BaseWithIdResponse{}, nil)
 	dic.Update(di.ServiceConstructorMap{
-		container.EventClientName: func(get di.Get) interface{} {
+		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
 			return &mockClient
 		},
 	})
@@ -433,7 +433,7 @@ func TestContext_PushToCore(t *testing.T) {
 
 func TestContext_PushToCore_error(t *testing.T) {
 	dic.Update(di.ServiceConstructorMap{
-		container.EventClientName: func(get di.Get) interface{} {
+		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
 			return nil
 		},
 	})
@@ -446,7 +446,7 @@ func TestContext_GetDeviceResource(t *testing.T) {
 	mockClient := clientMocks.DeviceProfileClient{}
 	mockClient.On("DeviceResourceByProfileNameAndResourceName", mock.Anything, mock.Anything, mock.Anything).Return(responses.DeviceResourceResponse{}, nil)
 	dic.Update(di.ServiceConstructorMap{
-		container.DeviceProfileClientName: func(get di.Get) interface{} {
+		bootstrapContainer.DeviceProfileClientName: func(get di.Get) interface{} {
 			return &mockClient
 		},
 	})
@@ -457,7 +457,7 @@ func TestContext_GetDeviceResource(t *testing.T) {
 
 func TestContext_GetDeviceResource_Error(t *testing.T) {
 	dic.Update(di.ServiceConstructorMap{
-		container.DeviceProfileClientName: func(get di.Get) interface{} {
+		bootstrapContainer.DeviceProfileClientName: func(get di.Get) interface{} {
 			return nil
 		},
 	})
