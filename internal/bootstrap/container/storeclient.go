@@ -16,7 +16,7 @@
 package container
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 )

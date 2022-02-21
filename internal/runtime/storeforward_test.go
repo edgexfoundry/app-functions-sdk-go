@@ -18,6 +18,7 @@ package runtime
 
 import (
 	"errors"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
 	"os"
 	"testing"
 
@@ -32,8 +33,6 @@ import (
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/interfaces/mocks"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
 )
@@ -131,10 +130,10 @@ func TestProcessRetryItems(t *testing.T) {
 			if test.BadVersion {
 				version = "some bad version"
 			}
-			storedObject := contracts.NewStoredObject("dummy", []byte(test.ExpectedPayload), pipeline.Id, 2, version, contextData)
+			storedObject := interfaces.NewStoredObject("dummy", []byte(test.ExpectedPayload), pipeline.Id, 2, version, contextData)
 			storedObject.RetryCount = test.RetryCount
 
-			removes, updates := runtime.storeForward.processRetryItems([]contracts.StoredObject{storedObject})
+			removes, updates := runtime.storeForward.processRetryItems([]interfaces.StoredObject{storedObject})
 			assert.Equal(t, test.TargetTransformWasCalled, targetTransformWasCalled, "Target transform not called")
 			if test.RetryCount != test.ExpectedRetryCount {
 				if assert.True(t, len(updates) > 0, "Remove count not as expected") {
@@ -190,7 +189,7 @@ func TestDoStoreAndForwardRetry(t *testing.T) {
 				require.NotNil(t, pipeline)
 			}
 
-			object := contracts.NewStoredObject(serviceKey, payload, pipeline.Id, 1, pipeline.Hash, nil)
+			object := interfaces.NewStoredObject(serviceKey, payload, pipeline.Id, 1, pipeline.Hash, nil)
 			object.CorrelationID = "CorrelationID"
 			object.RetryCount = test.RetryCount
 
@@ -209,10 +208,10 @@ func TestDoStoreAndForwardRetry(t *testing.T) {
 	}
 }
 
-var mockObjectStore map[string]contracts.StoredObject
+var mockObjectStore map[string]interfaces.StoredObject
 
 func updateDicWithMockStoreClient() *di.Container {
-	mockObjectStore = make(map[string]contracts.StoredObject)
+	mockObjectStore = make(map[string]interfaces.StoredObject)
 	storeClient := &mocks.StoreClient{}
 	storeClient.Mock.On("Store", mock.Anything).Return(mockStoreObject)
 	storeClient.Mock.On("RemoveFromStore", mock.Anything).Return(mockRemoveObject)
@@ -228,7 +227,7 @@ func updateDicWithMockStoreClient() *di.Container {
 	return dic
 }
 
-func mockStoreObject(object contracts.StoredObject) (string, error) {
+func mockStoreObject(object interfaces.StoredObject) (string, error) {
 	if err := validateContract(false, object); err != nil {
 		return "", err
 	}
@@ -242,7 +241,7 @@ func mockStoreObject(object contracts.StoredObject) (string, error) {
 	return object.ID, nil
 }
 
-func mockUpdateObject(object contracts.StoredObject) error {
+func mockUpdateObject(object interfaces.StoredObject) error {
 
 	if err := validateContract(true, object); err != nil {
 		return err
@@ -252,7 +251,7 @@ func mockUpdateObject(object contracts.StoredObject) error {
 	return nil
 }
 
-func mockRemoveObject(object contracts.StoredObject) error {
+func mockRemoveObject(object interfaces.StoredObject) error {
 	if err := validateContract(true, object); err != nil {
 		return err
 	}
@@ -261,8 +260,8 @@ func mockRemoveObject(object contracts.StoredObject) error {
 	return nil
 }
 
-func mockRetrieveObjects(serviceKey string) []contracts.StoredObject {
-	var objects []contracts.StoredObject
+func mockRetrieveObjects(serviceKey string) []interfaces.StoredObject {
+	var objects []interfaces.StoredObject
 	for _, item := range mockObjectStore {
 		if item.AppServiceKey == serviceKey {
 			objects = append(objects, item)
@@ -273,7 +272,7 @@ func mockRetrieveObjects(serviceKey string) []contracts.StoredObject {
 }
 
 // TODO remove this and use verify func on StoredObject when it is available
-func validateContract(IDRequired bool, o contracts.StoredObject) error {
+func validateContract(IDRequired bool, o interfaces.StoredObject) error {
 	if IDRequired {
 		if o.ID == "" {
 			return errors.New("invalid contract, ID cannot be empty")

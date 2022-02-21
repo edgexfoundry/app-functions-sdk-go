@@ -22,12 +22,12 @@
 package redis
 
 import (
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"testing"
 
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 	"github.com/stretchr/testify/require"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db"
 
 	"github.com/google/uuid"
@@ -58,7 +58,7 @@ var TestValidNoAuthConfig = db.DatabaseInfo{
 	BatchSize: TestBatchSize,
 }
 
-var TestContractBase = contracts.StoredObject{
+var TestContractBase = interfaces.StoredObject{
 	Payload:          TestPayload,
 	RetryCount:       TestRetryCount,
 	PipelineId:       TestPipelineId,
@@ -67,7 +67,7 @@ var TestContractBase = contracts.StoredObject{
 	CorrelationID:    TestCorrelationID,
 }
 
-var TestContractBadID = contracts.StoredObject{
+var TestContractBadID = interfaces.StoredObject{
 	ID:               "brandon!",
 	AppServiceKey:    "brandon!",
 	Payload:          TestPayload,
@@ -78,7 +78,7 @@ var TestContractBadID = contracts.StoredObject{
 	CorrelationID:    TestCorrelationID,
 }
 
-var TestContractNoAppServiceKey = contracts.StoredObject{
+var TestContractNoAppServiceKey = interfaces.StoredObject{
 	ID:               uuid.New().String(),
 	Payload:          TestPayload,
 	RetryCount:       TestRetryCount,
@@ -88,7 +88,7 @@ var TestContractNoAppServiceKey = contracts.StoredObject{
 	CorrelationID:    TestCorrelationID,
 }
 
-var TestContractNoPayload = contracts.StoredObject{
+var TestContractNoPayload = interfaces.StoredObject{
 	AppServiceKey:    uuid.New().String(),
 	RetryCount:       TestRetryCount,
 	PipelineId:       TestPipelineId,
@@ -97,7 +97,7 @@ var TestContractNoPayload = contracts.StoredObject{
 	CorrelationID:    TestCorrelationID,
 }
 
-var TestContractNoVersion = contracts.StoredObject{
+var TestContractNoVersion = interfaces.StoredObject{
 	AppServiceKey:    uuid.New().String(),
 	Payload:          TestPayload,
 	RetryCount:       TestRetryCount,
@@ -142,7 +142,7 @@ func TestClient_Store(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		toStore       contracts.StoredObject
+		toStore       interfaces.StoredObject
 		expectedError bool
 	}{
 		{
@@ -222,25 +222,25 @@ func TestClient_RetrieveFromStore(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		toStore       []contracts.StoredObject
+		toStore       []interfaces.StoredObject
 		key           string
 		expectedError bool
 	}{
 		{
 			"Success, single object",
-			[]contracts.StoredObject{UUIDContract0},
+			[]interfaces.StoredObject{UUIDContract0},
 			UUIDAppServiceKey,
 			false,
 		},
 		{
 			"Success, multiple object",
-			[]contracts.StoredObject{UUIDContract0, UUIDContract1},
+			[]interfaces.StoredObject{UUIDContract0, UUIDContract1},
 			UUIDAppServiceKey,
 			false,
 		},
 		{
 			"Failure, no app service key",
-			[]contracts.StoredObject{},
+			[]interfaces.StoredObject{},
 			"",
 			true,
 		},
@@ -277,7 +277,7 @@ func TestClient_Update(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		expectedVal   contracts.StoredObject
+		expectedVal   interfaces.StoredObject
 		expectedError bool
 	}{
 		{
@@ -336,7 +336,7 @@ func TestClient_RemoveFromStore(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		testObject    contracts.StoredObject
+		testObject    interfaces.StoredObject
 		expectedError bool
 	}{
 		{

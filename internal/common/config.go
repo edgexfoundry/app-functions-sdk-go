@@ -17,9 +17,8 @@
 package common
 
 import (
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db"
 )
 
 // WritableInfo is used to hold configuration information that is considered "live" or can be changed on the fly without a restart of the service.
@@ -53,7 +52,7 @@ type ConfigurationStruct struct {
 	// Clients contains the configuration for connecting to the dependent Edgex clients
 	Clients map[string]bootstrapConfig.ClientInfo
 	// Database contains the configuration for connection to the Database
-	Database db.DatabaseInfo
+	Database interfaces.DatabaseInfo
 	// SecretStore contains the configuration for connection to the Secret Store when in secure mode
 	SecretStore bootstrapConfig.SecretStoreInfo
 }
