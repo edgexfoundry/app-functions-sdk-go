@@ -107,7 +107,8 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 	}
 
 	config := sender.mqttConfig
-	mqttFactory := secure.NewMqttFactory(ctx, ctx.LoggingClient(), config.AuthMode, config.SecretPath, config.SkipCertVerify)
+	// Do not use secertAddedSignal in MQTTSecretSender. Otherwise, when secrets are not ready and messages keep coming will cause the memory usage to keep rising.
+	mqttFactory := secure.NewMqttFactory(ctx, ctx.LoggingClient(), config.AuthMode, config.SecretPath, config.SkipCertVerify, nil)
 
 	if len(sender.mqttConfig.KeepAlive) > 0 {
 		keepAlive, err := time.ParseDuration(sender.mqttConfig.KeepAlive)
