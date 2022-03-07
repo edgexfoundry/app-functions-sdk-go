@@ -20,11 +20,15 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 )
 
+type contextKey int
+
 const (
 	ConfigRegistryStem = "edgex/appservices/"
 
 	ApiTriggerRoute   = common.ApiBase + "/trigger"
 	ApiAddSecretRoute = common.ApiBase + "/secret"
+
+	ContextKeySecretAddedSignal contextKey = iota
 )
 
 // SDKVersion indicates the version of the SDK - will be overwritten by build

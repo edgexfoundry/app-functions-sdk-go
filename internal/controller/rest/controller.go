@@ -40,21 +40,23 @@ import (
 
 // Controller controller for V2 REST APIs
 type Controller struct {
-	router         *mux.Router
-	secretProvider interfaces.SecretProvider
-	lc             logger.LoggingClient
-	config         *sdkCommon.ConfigurationStruct
-	serviceName    string
+	router            *mux.Router
+	secretProvider    interfaces.SecretProvider
+	lc                logger.LoggingClient
+	config            *sdkCommon.ConfigurationStruct
+	serviceName       string
+	secretAddedSignal chan struct{}
 }
 
 // NewController creates and initializes an Controller
-func NewController(router *mux.Router, dic *di.Container, serviceName string) *Controller {
+func NewController(router *mux.Router, dic *di.Container, serviceName string, secretAddedSignal chan struct{}) *Controller {
 	return &Controller{
-		router:         router,
-		secretProvider: bootstrapContainer.SecretProviderFrom(dic.Get),
-		lc:             bootstrapContainer.LoggingClientFrom(dic.Get),
-		config:         container.ConfigurationFrom(dic.Get),
-		serviceName:    serviceName,
+		router:            router,
+		secretProvider:    bootstrapContainer.SecretProviderFrom(dic.Get),
+		lc:                bootstrapContainer.LoggingClientFrom(dic.Get),
+		config:            container.ConfigurationFrom(dic.Get),
+		serviceName:       serviceName,
+		secretAddedSignal: secretAddedSignal,
 	}
 }
 
@@ -120,6 +122,10 @@ func (c *Controller) AddSecret(writer http.ResponseWriter, request *http.Request
 
 	response := commonDtos.NewBaseResponse(secretRequest.RequestId, "", http.StatusCreated)
 	c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, http.StatusCreated)
+
+	if c.secretAddedSignal != nil {
+		c.secretAddedSignal <- struct{}{}
+	}
 }
 
 func (c *Controller) sendError(

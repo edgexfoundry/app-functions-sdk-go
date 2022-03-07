@@ -21,17 +21,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/secure"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/secret"
 	commonContracts "github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
@@ -59,7 +61,7 @@ func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigge
 }
 
 // Initialize initializes the Trigger for an external MQTT broker
-func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
+func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
 	// Convenience short cuts
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
@@ -100,12 +102,21 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 	opts.KeepAlive = brokerConfig.KeepAlive
 	opts.Servers = []*url.URL{brokerUrl}
 
+	var secretAddedSignal chan struct{}
+	var ok bool
+	if secret.IsSecurityEnabled() {
+		if secretAddedSignal, ok = ctx.Value(internal.ContextKeySecretAddedSignal).(chan struct{}); !ok {
+			return nil, errors.New("the SecretAddedSignal channel cannot be found in the context")
+		}
+	}
+
 	mqttFactory := secure.NewMqttFactory(
 		trigger.serviceBinding.SecretProvider(),
 		trigger.serviceBinding.LoggingClient(),
 		brokerConfig.AuthMode,
 		brokerConfig.SecretPath,
 		brokerConfig.SkipCertVerify,
+		secretAddedSignal,
 	)
 
 	mqttClient, err := mqttFactory.Create(opts)
