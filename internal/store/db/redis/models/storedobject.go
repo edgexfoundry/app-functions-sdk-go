@@ -17,8 +17,7 @@ package models
 
 import (
 	"encoding/json"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 )
 
 // StoredObject is the atomic and most abstract description of what is collected by the export store system.
@@ -44,8 +43,8 @@ type StoredObject struct {
 }
 
 // ToContract builds a contract out of the supplied model.
-func (o StoredObject) ToContract() contracts.StoredObject {
-	return contracts.StoredObject{
+func (o StoredObject) ToContract() interfaces.StoredObject {
+	return interfaces.StoredObject{
 		ID:               o.ID,
 		AppServiceKey:    o.AppServiceKey,
 		Payload:          o.Payload,
@@ -59,7 +58,7 @@ func (o StoredObject) ToContract() contracts.StoredObject {
 }
 
 // FromContract builds a model out of the supplied contract.
-func (o *StoredObject) FromContract(c contracts.StoredObject) {
+func (o *StoredObject) FromContract(c interfaces.StoredObject) {
 	o.ID = c.ID
 	o.AppServiceKey = c.AppServiceKey
 	o.Payload = c.Payload

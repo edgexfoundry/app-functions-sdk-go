@@ -25,7 +25,6 @@ import (
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
@@ -108,7 +107,7 @@ func (sf *storeForwardInfo) storeForLaterRetry(
 	pipeline *interfaces.FunctionPipeline,
 	pipelinePosition int) {
 
-	item := contracts.NewStoredObject(sf.runtime.ServiceKey, payload, pipeline.Id, pipelinePosition, pipeline.Hash, appContext.GetAllValues())
+	item := interfaces.NewStoredObject(sf.runtime.ServiceKey, payload, pipeline.Id, pipelinePosition, pipeline.Hash, appContext.GetAllValues())
 	item.CorrelationID = appContext.CorrelationID()
 
 	appContext.LoggingClient().Tracef("Storing data for later retry for pipeline '%s' (%s=%s)",
@@ -168,12 +167,12 @@ func (sf *storeForwardInfo) retryStoredData(serviceKey string) {
 	}
 }
 
-func (sf *storeForwardInfo) processRetryItems(items []contracts.StoredObject) ([]contracts.StoredObject, []contracts.StoredObject) {
+func (sf *storeForwardInfo) processRetryItems(items []interfaces.StoredObject) ([]interfaces.StoredObject, []interfaces.StoredObject) {
 	lc := bootstrapContainer.LoggingClientFrom(sf.dic.Get)
 	config := container.ConfigurationFrom(sf.dic.Get)
 
-	var itemsToRemove []contracts.StoredObject
-	var itemsToUpdate []contracts.StoredObject
+	var itemsToRemove []interfaces.StoredObject
+	var itemsToUpdate []interfaces.StoredObject
 
 	// Item will be removed from store if:
 	//    - successfully retried
@@ -228,7 +227,7 @@ func (sf *storeForwardInfo) processRetryItems(items []contracts.StoredObject) ([
 	return itemsToRemove, itemsToUpdate
 }
 
-func (sf *storeForwardInfo) retryExportFunction(item contracts.StoredObject, pipeline *interfaces.FunctionPipeline) bool {
+func (sf *storeForwardInfo) retryExportFunction(item interfaces.StoredObject, pipeline *interfaces.FunctionPipeline) bool {
 	appContext := appfunction.NewContext(item.CorrelationID, sf.dic, "")
 
 	for k, v := range item.ContextData {

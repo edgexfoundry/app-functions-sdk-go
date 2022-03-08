@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -76,23 +77,24 @@ func NewService(serviceKey string, targetType interface{}, profileSuffixPlacehol
 // Service provides the necessary struct and functions to create an instance of the
 // interfaces.ApplicationService interface.
 type Service struct {
-	dic                       *di.Container
-	serviceKey                string
-	targetType                interface{}
-	config                    *common.ConfigurationStruct
-	lc                        logger.LoggingClient
-	usingConfigurablePipeline bool
-	runtime                   *runtime.GolangRuntime
-	webserver                 *webserver.WebServer
-	ctx                       contextGroup
-	deferredFunctions         []bootstrap.Deferred
-	backgroundPublishChannel  <-chan interfaces.BackgroundMessage
-	customTriggerFactories    map[string]func(sdk *Service) (interfaces.Trigger, error)
-	profileSuffixPlaceholder  string
-	commandLine               commandLineFlags
-	flags                     *flags.Default
-	configProcessor           *config.Processor
-	requestTimeout            time.Duration
+	dic                        *di.Container
+	serviceKey                 string
+	targetType                 interface{}
+	config                     *common.ConfigurationStruct
+	lc                         logger.LoggingClient
+	usingConfigurablePipeline  bool
+	runtime                    *runtime.GolangRuntime
+	webserver                  *webserver.WebServer
+	ctx                        contextGroup
+	deferredFunctions          []bootstrap.Deferred
+	backgroundPublishChannel   <-chan interfaces.BackgroundMessage
+	customTriggerFactories     map[string]func(sdk *Service) (interfaces.Trigger, error)
+	customStoreClientFactories map[string]func(db interfaces.DatabaseInfo, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)
+	profileSuffixPlaceholder   string
+	commandLine                commandLineFlags
+	flags                      *flags.Default
+	configProcessor            *config.Processor
+	requestTimeout             time.Duration
 }
 
 type commandLineFlags struct {
@@ -160,6 +162,14 @@ func (svc *Service) MakeItStop() {
 // configuration. It will also configure the webserver and start listening on
 // the specified port.
 func (svc *Service) MakeItRun() error {
+
+	config := container.ConfigurationFrom(svc.dic.Get)
+
+	err := initializeStoreClient(config, svc)
+	if err != nil {
+		return err
+	}
+
 	runCtx, stop := context.WithCancel(context.Background())
 
 	svc.ctx.stop = stop
@@ -485,6 +495,7 @@ func (svc *Service) Initialize() error {
 	svc.lc.Info(fmt.Sprintf("Starting %s %s ", svc.serviceKey, internal.ApplicationVersion))
 
 	svc.config = &common.ConfigurationStruct{}
+
 	svc.dic = di.NewContainer(di.ServiceConstructorMap{
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return svc.config
@@ -516,7 +527,6 @@ func (svc *Service) Initialize() error {
 		svc.dic,
 		true,
 		[]bootstrapInterfaces.BootstrapHandler{
-			handlers.NewDatabase().BootstrapHandler,
 			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
 			handlers.NewTelemetry().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,

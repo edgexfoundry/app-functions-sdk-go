@@ -26,14 +26,3 @@ const (
 var (
 	ErrUnsupportedDatabase = errors.New("unsupported database type")
 )
-
-type DatabaseInfo struct {
-	Type    string
-	Host    string
-	Port    int
-	Timeout string
-
-	// Redis specific configuration items
-	MaxIdle   int
-	BatchSize int
-}

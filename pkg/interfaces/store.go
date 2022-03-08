@@ -15,23 +15,31 @@
 // interfaces establishes the contract required for any implementation of the export store functionality in a database provider.
 package interfaces
 
-import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
-)
+type DatabaseInfo struct {
+	Type    string
+	Host    string
+	Port    int
+	Timeout string
+
+	// TODO: refactor specifics
+	// Redis specific configuration items
+	MaxIdle   int
+	BatchSize int
+}
 
 // StoreClient establishes the contracts required to persist exported data before being forwarded.
 type StoreClient interface {
 	// Store persists a stored object to the data store and returns the assigned UUID.
-	Store(o contracts.StoredObject) (id string, err error)
+	Store(o StoredObject) (id string, err error)
 
 	// RetrieveFromStore gets an object from the data store.
-	RetrieveFromStore(appServiceKey string) (objects []contracts.StoredObject, err error)
+	RetrieveFromStore(appServiceKey string) (objects []StoredObject, err error)
 
 	// Update replaces the data currently in the store with the provided data.
-	Update(o contracts.StoredObject) error
+	Update(o StoredObject) error
 
 	// RemoveFromStore removes an object from the data store.
-	RemoveFromStore(o contracts.StoredObject) error
+	RemoveFromStore(o StoredObject) error
 
 	// Disconnect ends the connection.
 	Disconnect() error

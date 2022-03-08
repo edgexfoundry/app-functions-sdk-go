@@ -16,10 +16,9 @@ package models
 
 import (
 	"bytes"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"reflect"
 	"testing"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
 )
 
 var TestUUIDValid = "fb49a277-9edf-4489-a89c-235b365107f7"
@@ -34,7 +33,7 @@ const (
 	TestCorrelationID    = "test"
 )
 
-var TestContractValid = contracts.StoredObject{
+var TestContractValid = interfaces.StoredObject{
 	ID:               TestUUIDValid,
 	AppServiceKey:    TestAppServiceKey,
 	Payload:          TestPayload,
@@ -61,7 +60,7 @@ var TestModelEmpty = StoredObject{}
 func TestStoredObject_FromContract(t *testing.T) {
 	tests := []struct {
 		testName       string
-		fromContract   contracts.StoredObject
+		fromContract   interfaces.StoredObject
 		expectedResult StoredObject
 	}{
 		{
@@ -87,7 +86,7 @@ func TestStoredObject_ToContract(t *testing.T) {
 	tests := []struct {
 		testName       string
 		fromModel      StoredObject
-		expectedResult contracts.StoredObject
+		expectedResult interfaces.StoredObject
 	}{
 		{
 			"Success, UUID",

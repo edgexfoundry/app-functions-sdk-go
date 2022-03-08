@@ -16,20 +16,13 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/config"
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/handlers"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/config"
 )
 
 // ConfigUpdateProcessor contains the data need to process configuration updates
@@ -117,21 +110,12 @@ func (processor *ConfigUpdateProcessor) processConfigChangedStoreForwardEnabled(
 		storeClient := container.StoreClientFrom(sdk.dic.Get)
 		// StoreClient must be set up for StoreAndForward
 		if storeClient == nil {
-			var err error
-			startupTimer := startup.NewStartUpTimer(sdk.serviceKey)
-			secretProvider := bootstrapContainer.SecretProviderFrom(sdk.dic.Get)
-			storeClient, err = handlers.InitializeStoreClient(secretProvider, sdk.config, startupTimer, sdk.LoggingClient())
+			err := initializeStoreClient(sdk.config, sdk)
 			if err != nil {
 				// Error already logged
 				sdk.config.Writable.StoreAndForward.Enabled = false
 				return
 			}
-
-			sdk.dic.Update(di.ServiceConstructorMap{
-				container.StoreClientName: func(get di.Get) interface{} {
-					return storeClient
-				},
-			})
 		}
 
 		sdk.startStoreForward()
@@ -161,19 +145,6 @@ func (processor *ConfigUpdateProcessor) processConfigChangedPipeline() {
 
 		sdk.LoggingClient().Info("Configurable Pipeline successfully reloaded from new configuration")
 	}
-}
-
-func (svc *Service) startStoreForward() {
-	var storeForwardEnabledCtx context.Context
-	svc.ctx.storeForwardWg = &sync.WaitGroup{}
-	storeForwardEnabledCtx, svc.ctx.storeForwardCancelCtx = context.WithCancel(context.Background())
-	svc.runtime.StartStoreAndForward(svc.ctx.appWg, svc.ctx.appCtx, svc.ctx.storeForwardWg, storeForwardEnabledCtx, svc.serviceKey)
-}
-
-func (svc *Service) stopStoreForward() {
-	svc.LoggingClient().Info("Canceling Store and Forward retry loop")
-	svc.ctx.storeForwardCancelCtx()
-	svc.ctx.storeForwardWg.Wait()
 }
 
 func (svc *Service) findMatchingFunction(configurable reflect.Value, functionName string) (reflect.Value, reflect.Type, error) {

@@ -13,7 +13,7 @@
  *******************************************************************************/
 
 // contracts are implementation agnostic data storage models.
-package contracts
+package interfaces
 
 import (
 	"errors"

@@ -19,12 +19,10 @@ package redis
 import (
 	"errors"
 	"fmt"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"sync"
 	"time"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/contracts"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/redis/models"
 
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
@@ -49,7 +47,7 @@ type Client struct {
 // * the object AppServiceKey to point to a SET containing all object ids associated with this
 //   app service. Note the key is prefixed to avoid key collisions.
 // * the object id to point to a HASH which contains the object AppServiceKey.
-func (c Client) Store(o contracts.StoredObject) (string, error) {
+func (c Client) Store(o interfaces.StoredObject) (string, error) {
 	err := o.ValidateContract(false)
 	if err != nil {
 		return "", err
@@ -90,7 +88,7 @@ func (c Client) Store(o contracts.StoredObject) (string, error) {
 }
 
 // RetrieveFromStore gets an object from the data store.
-func (c Client) RetrieveFromStore(appServiceKey string) (objects []contracts.StoredObject, err error) {
+func (c Client) RetrieveFromStore(appServiceKey string) (objects []interfaces.StoredObject, err error) {
 	// do not satisfy requests for a blank ASK
 	if appServiceKey == "" {
 		return nil, errors.New("no AppServiceKey provided")
@@ -127,7 +125,7 @@ func (c Client) RetrieveFromStore(appServiceKey string) (objects []contracts.Sto
 }
 
 // Update replaces the data currently in the store with the provided data.
-func (c Client) Update(o contracts.StoredObject) error {
+func (c Client) Update(o interfaces.StoredObject) error {
 	err := o.ValidateContract(true)
 	if err != nil {
 		return err
@@ -169,7 +167,7 @@ func (c Client) Update(o contracts.StoredObject) error {
 }
 
 // RemoveFromStore removes an object from the data store.
-func (c Client) RemoveFromStore(o contracts.StoredObject) error {
+func (c Client) RemoveFromStore(o interfaces.StoredObject) error {
 	err := o.ValidateContract(true)
 	if err != nil {
 		return err
@@ -203,7 +201,7 @@ func (c Client) Disconnect() error {
 }
 
 // NewClient provides a factory for building a StoreClient
-func NewClient(config db.DatabaseInfo, credentials bootstrapConfig.Credentials) (interfaces.StoreClient, error) {
+func NewClient(config interfaces.DatabaseInfo, credentials bootstrapConfig.Credentials) (interfaces.StoreClient, error) {
 	var retErr error
 	once.Do(func() {
 		connectionString := fmt.Sprintf("%s:%d", config.Host, config.Port)
