@@ -52,7 +52,6 @@ import (
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/flags"
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/secret"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 
@@ -174,11 +173,6 @@ func (svc *Service) MakeItRun() error {
 
 	svc.ctx.stop = stop
 
-	httpErrors := make(chan error)
-	defer close(httpErrors)
-
-	svc.webserver.StartWebServer(httpErrors)
-
 	// determine input type and create trigger for it
 	t := svc.setupTrigger(svc.config)
 	if t == nil {
@@ -195,15 +189,6 @@ func (svc *Service) MakeItRun() error {
 	// deferred is a function that needs to be called when services exits.
 	svc.addDeferred(deferred)
 
-	if secret.IsSecurityEnabled() {
-		// add a deferred function to close the SecretAddedSignal channel created during service initialization.
-		svc.addDeferred(func() {
-			if secretAddedSignal, ok := svc.ctx.appCtx.Value(internal.ContextKeySecretAddedSignal).(chan struct{}); ok {
-				close(secretAddedSignal)
-			}
-		})
-	}
-
 	if svc.config.Writable.StoreAndForward.Enabled {
 		svc.startStoreForward()
 	} else {
@@ -214,6 +199,11 @@ func (svc *Service) MakeItRun() error {
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	httpErrors := make(chan error)
+	defer close(httpErrors)
+
+	svc.webserver.StartWebServer(httpErrors)
 
 	select {
 	case httpError := <-httpErrors:
@@ -505,12 +495,6 @@ func (svc *Service) Initialize() error {
 	svc.ctx.appCtx, svc.ctx.appCancelCtx = context.WithCancel(context.Background())
 	svc.ctx.appWg = &sync.WaitGroup{}
 
-	var secretAddedSignal chan struct{}
-	if secret.IsSecurityEnabled() {
-		secretAddedSignal = make(chan struct{}, 1)
-		svc.ctx.appCtx = context.WithValue(svc.ctx.appCtx, internal.ContextKeySecretAddedSignal, secretAddedSignal)
-	}
-
 	var deferred bootstrap.Deferred
 	var successful bool
 	var configUpdated config.UpdatedStream = make(chan struct{})
@@ -557,7 +541,7 @@ func (svc *Service) Initialize() error {
 	// to wait to be signaled when the configuration has been updated and then process the changes
 	NewConfigUpdateProcessor(svc).WaitForConfigUpdates(configUpdated)
 
-	svc.webserver = webserver.NewWebServer(svc.dic, mux.NewRouter(), svc.serviceKey, secretAddedSignal)
+	svc.webserver = webserver.NewWebServer(svc.dic, mux.NewRouter(), svc.serviceKey)
 	svc.webserver.ConfigureStandardRoutes()
 
 	svc.lc.Info("Service started in: " + startupTimer.SinceAsString())
