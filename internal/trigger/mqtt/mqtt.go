@@ -21,22 +21,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/secure"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	commonContracts "github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/google/uuid"
+)
+
+const (
+	defaultRetryDuration = 600
+	defaultRetryInterval = 5
 )
 
 // Trigger implements Trigger to support Triggers
@@ -100,26 +109,28 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 	opts.KeepAlive = brokerConfig.KeepAlive
 	opts.Servers = []*url.URL{brokerUrl}
 
-	mqttFactory := secure.NewMqttFactory(
-		trigger.serviceBinding.SecretProvider(),
-		trigger.serviceBinding.LoggingClient(),
-		brokerConfig.AuthMode,
-		brokerConfig.SecretPath,
-		brokerConfig.SkipCertVerify,
-	)
+	if brokerConfig.RetryDuration <= 0 {
+		brokerConfig.RetryDuration = defaultRetryDuration
+	}
+	if brokerConfig.RetryInterval <= 0 {
+		brokerConfig.RetryInterval = defaultRetryInterval
+	}
 
-	mqttClient, err := mqttFactory.Create(opts)
+	sp := trigger.serviceBinding.SecretProvider()
+	var mqttClient pahoMqtt.Client
+	timer := startup.NewTimer(brokerConfig.RetryDuration, brokerConfig.RetryInterval)
+	for timer.HasNotElapsed() {
+		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts); err != nil {
+			lc.Errorf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
+			timer.SleepForInterval()
+			continue
+		}
+		break
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("unable to create secure MQTT Client: %s", err.Error())
+		return nil, fmt.Errorf("unable to create MQTT Client: %s", err.Error())
 	}
-
-	lc.Infof("Connecting to mqtt broker for MQTT trigger at: %s", brokerUrl)
-
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		return nil, fmt.Errorf("could not connect to broker for MQTT trigger: %s", token.Error().Error())
-	}
-
-	lc.Info("Connected to mqtt server for MQTT trigger")
 
 	deferred := func() {
 		lc.Info("Disconnecting from broker for MQTT trigger")
@@ -215,4 +226,33 @@ func (trigger *Trigger) responseHandler(appContext interfaces.AppFunctionContext
 		}
 	}
 	return nil
+}
+
+func createMqttClient(sp messaging.SecretDataProvider, lc logger.LoggingClient, config common.ExternalMqttConfig,
+	opts *pahoMqtt.ClientOptions) (pahoMqtt.Client, error) {
+	mqttFactory := secure.NewMqttFactory(
+		sp,
+		lc,
+		config.AuthMode,
+		config.SecretPath,
+		config.SkipCertVerify,
+	)
+	mqttClient, err := mqttFactory.Create(opts)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create secure MQTT Client: %s", err.Error())
+	}
+
+	brokerUrl, err := url.Parse(config.Url)
+	if err != nil {
+		return nil, fmt.Errorf("invalid MQTT Broker Url '%s': %s", config.Url, err.Error())
+	}
+
+	lc.Infof("Connecting to mqtt broker for MQTT trigger at: %s", brokerUrl)
+
+	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+		return nil, fmt.Errorf("could not connect to broker for MQTT trigger: %s", token.Error().Error())
+	}
+
+	lc.Info("Connected to mqtt server for MQTT trigger")
+	return mqttClient, nil
 }

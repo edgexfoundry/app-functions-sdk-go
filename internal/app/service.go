@@ -173,6 +173,11 @@ func (svc *Service) MakeItRun() error {
 
 	svc.ctx.stop = stop
 
+	httpErrors := make(chan error)
+	defer close(httpErrors)
+
+	svc.webserver.StartWebServer(httpErrors)
+
 	// determine input type and create trigger for it
 	t := svc.setupTrigger(svc.config)
 	if t == nil {
@@ -199,11 +204,6 @@ func (svc *Service) MakeItRun() error {
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	httpErrors := make(chan error)
-	defer close(httpErrors)
-
-	svc.webserver.StartWebServer(httpErrors)
 
 	select {
 	case httpError := <-httpErrors:
