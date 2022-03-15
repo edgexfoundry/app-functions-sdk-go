@@ -59,7 +59,7 @@ func TestMain(m *testing.M) {
 func TestPingRequest(t *testing.T) {
 	serviceName := uuid.NewString()
 
-	target := NewController(nil, dic, serviceName, nil)
+	target := NewController(nil, dic, serviceName)
 
 	recorder := doRequest(t, http.MethodGet, common.ApiPingRoute, target.Ping, nil)
 
@@ -83,7 +83,7 @@ func TestVersionRequest(t *testing.T) {
 	internal.ApplicationVersion = expectedAppVersion
 	internal.SDKVersion = expectedSdkVersion
 
-	target := NewController(nil, dic, serviceName, nil)
+	target := NewController(nil, dic, serviceName)
 
 	recorder := doRequest(t, http.MethodGet, common.ApiVersion, target.Version, nil)
 
@@ -100,7 +100,7 @@ func TestVersionRequest(t *testing.T) {
 func TestMetricsRequest(t *testing.T) {
 	serviceName := uuid.NewString()
 
-	target := NewController(nil, dic, serviceName, nil)
+	target := NewController(nil, dic, serviceName)
 
 	recorder := doRequest(t, http.MethodGet, common.ApiMetricsRoute, target.Metrics, nil)
 
@@ -140,7 +140,7 @@ func TestConfigRequest(t *testing.T) {
 		},
 	})
 
-	target := NewController(nil, dic, serviceName, nil)
+	target := NewController(nil, dic, serviceName)
 
 	recorder := doRequest(t, http.MethodGet, common.ApiConfigRoute, target.Config, nil)
 
@@ -176,10 +176,7 @@ func TestAddSecretRequest(t *testing.T) {
 	mockProvider.On("StoreSecrets", "/mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
 	mockProvider.On("StoreSecrets", "/no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("Invalid w/o Vault"))
 
-	ch := make(chan struct{}, 1)
-	defer close(ch)
-
-	target := NewController(nil, dic, uuid.NewString(), ch)
+	target := NewController(nil, dic, uuid.NewString())
 	assert.NotNil(t, target)
 
 	validRequest := commonDtos.SecretRequest{

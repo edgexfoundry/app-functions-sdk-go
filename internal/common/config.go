@@ -146,6 +146,10 @@ type ExternalMqttConfig struct {
 	// AuthMode indicates what to use when connecting to the broker. Options are "none", "cacert" , "usernamepassword", "clientcert".
 	// If a CA Cert exists in the SecretPath then it will be used for all modes except "none".
 	AuthMode string
+	// RetryDuration indicates how long (in seconds) to wait timing out on the MQTT client creation
+	RetryDuration int
+	// RetryInterval indicates the time (in seconds) that will be waited between attempts to create MQTT client
+	RetryInterval int
 }
 
 // PipelineInfo defines the top level data for configurable pipelines
