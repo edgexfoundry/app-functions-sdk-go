@@ -121,7 +121,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 	timer := startup.NewTimer(brokerConfig.RetryDuration, brokerConfig.RetryInterval)
 	for timer.HasNotElapsed() {
 		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts); err != nil {
-			lc.Errorf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
+			lc.Warnf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
 			timer.SleepForInterval()
 			continue
 		}
@@ -242,12 +242,7 @@ func createMqttClient(sp messaging.SecretDataProvider, lc logger.LoggingClient, 
 		return nil, fmt.Errorf("unable to create secure MQTT Client: %s", err.Error())
 	}
 
-	brokerUrl, err := url.Parse(config.Url)
-	if err != nil {
-		return nil, fmt.Errorf("invalid MQTT Broker Url '%s': %s", config.Url, err.Error())
-	}
-
-	lc.Infof("Connecting to mqtt broker for MQTT trigger at: %s", brokerUrl)
+	lc.Infof("Connecting to mqtt broker for MQTT trigger at: %s", config.Url)
 
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		return nil, fmt.Errorf("could not connect to broker for MQTT trigger: %s", token.Error().Error())
