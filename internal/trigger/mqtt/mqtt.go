@@ -120,12 +120,11 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 	var mqttClient pahoMqtt.Client
 	timer := startup.NewTimer(brokerConfig.RetryDuration, brokerConfig.RetryInterval)
 	for timer.HasNotElapsed() {
-		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts); err != nil {
-			lc.Warnf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
-			timer.SleepForInterval()
-			continue
+		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts); err == nil {
+			break
 		}
-		break
+		lc.Warnf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
+		timer.SleepForInterval()
 	}
 
 	if err != nil {
