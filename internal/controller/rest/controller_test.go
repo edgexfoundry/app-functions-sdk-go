@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -49,11 +50,20 @@ var expectedCorrelationId = uuid.New().String()
 var dic *di.Container
 
 func TestMain(m *testing.M) {
+	//secretProviderMock.on
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return logger.NewMockClient()
 		},
+		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
+			return &mocks.SecretProvider{}
+		},
+		container.ConfigurationName: func(get di.Get) interface{} {
+			return &sdkCommon.ConfigurationStruct{}
+		},
 	})
+
+	os.Exit(m.Run())
 }
 
 func TestPingRequest(t *testing.T) {
@@ -104,20 +114,31 @@ func TestMetricsRequest(t *testing.T) {
 
 	recorder := doRequest(t, http.MethodGet, common.ApiMetricsRoute, target.Metrics, nil)
 
-	actual := commonDtos.MetricsResponse{}
+	actual := commonDtos.MetricsResponse{
+		Metrics: commonDtos.Metrics{
+			MemAlloc:       math.MaxUint64,
+			MemFrees:       math.MaxUint64,
+			MemLiveObjects: math.MaxUint64,
+			MemMallocs:     math.MaxUint64,
+			MemSys:         math.MaxUint64,
+			MemTotalAlloc:  math.MaxUint64,
+			CpuBusyAvg:     0,
+		},
+	}
 	err := json.Unmarshal(recorder.Body.Bytes(), &actual)
 	require.NoError(t, err)
 
 	assert.Equal(t, common.ApiVersion, actual.ApiVersion)
 	assert.Equal(t, serviceName, actual.ServiceName)
 
-	assert.NotZero(t, actual.Metrics.MemAlloc)
-	assert.NotZero(t, actual.Metrics.MemFrees)
-	assert.NotZero(t, actual.Metrics.MemLiveObjects)
-	assert.NotZero(t, actual.Metrics.MemMallocs)
-	assert.NotZero(t, actual.Metrics.MemSys)
-	assert.NotZero(t, actual.Metrics.MemTotalAlloc)
-	assert.NotNil(t, actual.Metrics.CpuBusyAvg)
+	// Since when -race flag is use some values may come back as 0 we need to use the max value to detect change
+	assert.NotEqual(t, uint64(math.MaxUint64), actual.Metrics.MemAlloc)
+	assert.NotEqual(t, uint64(math.MaxUint64), actual.Metrics.MemFrees)
+	assert.NotEqual(t, uint64(math.MaxUint64), actual.Metrics.MemLiveObjects)
+	assert.NotEqual(t, uint64(math.MaxUint64), actual.Metrics.MemMallocs)
+	assert.NotEqual(t, uint64(math.MaxUint64), actual.Metrics.MemSys)
+	assert.NotEqual(t, uint64(math.MaxUint64), actual.Metrics.MemTotalAlloc)
+	assert.NotEqual(t, 0, actual.Metrics.CpuBusyAvg)
 }
 
 func TestConfigRequest(t *testing.T) {
@@ -166,15 +187,19 @@ func TestConfigRequest(t *testing.T) {
 func TestAddSecretRequest(t *testing.T) {
 	expectedRequestId := "82eb2e26-0f24-48aa-ae4c-de9dac3fb9bc"
 
+	mockProvider := &mocks.SecretProvider{}
+	mockProvider.On("StoreSecret", "/mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
+	mockProvider.On("StoreSecret", "mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
+	mockProvider.On("StoreSecret", "/no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("invalid w/o Vault"))
+
 	dic.Update(di.ServiceConstructorMap{
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return &sdkCommon.ConfigurationStruct{}
 		},
+		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
+			return mockProvider
+		},
 	})
-
-	mockProvider := &mocks.SecretProvider{}
-	mockProvider.On("StoreSecrets", "/mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
-	mockProvider.On("StoreSecrets", "/no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("Invalid w/o Vault"))
 
 	target := NewController(nil, dic, uuid.NewString())
 	assert.NotNil(t, target)
@@ -207,7 +232,7 @@ func TestAddSecretRequest(t *testing.T) {
 		{Key: "username", Value: ""},
 	}
 	noSecretStore := validRequest
-	noSecretStore.Path = "no"
+	noSecretStore.Path = "/no"
 
 	tests := []struct {
 		Name               string

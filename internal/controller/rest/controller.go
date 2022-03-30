@@ -146,9 +146,9 @@ func (c *Controller) sendResponse(
 
 	correlationID := request.Header.Get(common.CorrelationHeader)
 
-	writer.WriteHeader(statusCode)
 	writer.Header().Set(common.CorrelationHeader, correlationID)
 	writer.Header().Set(common.ContentType, common.ContentTypeJSON)
+	writer.WriteHeader(statusCode)
 
 	data, err := json.Marshal(response)
 	if err != nil {
