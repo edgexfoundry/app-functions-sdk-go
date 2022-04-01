@@ -148,15 +148,21 @@ func (processor *ConfigUpdateProcessor) processConfigChangedPipeline() {
 }
 
 func (svc *Service) findMatchingFunction(configurable reflect.Value, functionName string) (reflect.Value, reflect.Type, error) {
-	var functionValue reflect.Value
-	count := configurable.Type().NumMethod()
+	// Find if there is a method with name identical to the functionName
+	functionValue := configurable.MethodByName(functionName)
 
-	for index := 0; index < count; index++ {
-		method := configurable.Type().Method(index)
-		// If the target configuration function name starts with actual method name then it is a match
-		if strings.Index(functionName, method.Name) == 0 {
-			functionValue = configurable.MethodByName(method.Name)
-			break
+	if !functionValue.IsValid() {
+		longestMatchedNameLength := 0
+		count := configurable.Type().NumMethod()
+		// Iterate over all method names to find a match
+		for index := 0; index < count; index++ {
+			method := configurable.Type().Method(index)
+			// If the target configuration function name starts with actual method name then it is a match
+			// If there are multiple matches then pick the one with the longest name
+			if strings.Index(functionName, method.Name) == 0 && len(method.Name) > longestMatchedNameLength {
+				longestMatchedNameLength = len(method.Name)
+				functionValue = configurable.MethodByName(method.Name)
+			}
 		}
 	}
 
