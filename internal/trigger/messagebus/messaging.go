@@ -21,15 +21,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"strings"
 	"sync"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
-
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
 	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
@@ -44,12 +42,14 @@ type Trigger struct {
 	serviceBinding   trigger.ServiceBinding
 	topics           []types.TopicChannel
 	client           messaging.MessageClient
+	publishHostSet   bool
 }
 
 func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigger {
 	return &Trigger{
 		messageProcessor: mp,
 		serviceBinding:   bnd,
+		publishHostSet:   false,
 	}
 }
 
@@ -106,6 +106,7 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 			config.Trigger.EdgexMessageBus.PublishHost.Protocol,
 			config.Trigger.EdgexMessageBus.PublishHost.Host,
 			config.Trigger.EdgexMessageBus.PublishHost.Port)
+		trigger.publishHostSet = true
 	}
 
 	// Need to have a go func for each subscription, so we know with topic the data was received for.
@@ -194,48 +195,52 @@ func (trigger *Trigger) responseHandler(appContext interfaces.AppFunctionContext
 		lc := trigger.serviceBinding.LoggingClient()
 		config := trigger.serviceBinding.Config()
 
-		publishTopic, err := appContext.ApplyValues(config.Trigger.EdgexMessageBus.PublishHost.PublishTopic)
+		if trigger.publishHostSet {
+			publishTopic, err := appContext.ApplyValues(config.Trigger.EdgexMessageBus.PublishHost.PublishTopic)
 
-		if err != nil {
-			lc.Errorf("MessageBus Trigger: Unable to format output topic '%s' for pipeline '%s': %s",
-				config.Trigger.EdgexMessageBus.PublishHost.PublishTopic,
-				pipeline.Id,
-				err.Error())
-			return err
-		}
-
-		var contentType string
-
-		if appContext.ResponseContentType() != "" {
-			contentType = appContext.ResponseContentType()
-		} else {
-			contentType = common.ContentTypeJSON
-			if appContext.ResponseData()[0] != byte('{') && appContext.ResponseData()[0] != byte('[') {
-				// If not JSON then assume it is CBOR
-				contentType = common.ContentTypeCBOR
+			if err != nil {
+				lc.Errorf("MessageBus Trigger: Unable to format output topic '%s' for pipeline '%s': %s",
+					config.Trigger.EdgexMessageBus.PublishHost.PublishTopic,
+					pipeline.Id,
+					err.Error())
+				return err
 			}
-		}
-		outputEnvelope := types.MessageEnvelope{
-			CorrelationID: appContext.CorrelationID(),
-			Payload:       appContext.ResponseData(),
-			ContentType:   contentType,
-		}
 
-		err = trigger.client.Publish(outputEnvelope, publishTopic)
+			var contentType string
 
-		if err != nil {
-			lc.Errorf("MessageBus trigger: Could not publish to topic '%s' for pipeline '%s': %s",
-				publishTopic,
+			if appContext.ResponseContentType() != "" {
+				contentType = appContext.ResponseContentType()
+			} else {
+				contentType = common.ContentTypeJSON
+				if appContext.ResponseData()[0] != byte('{') && appContext.ResponseData()[0] != byte('[') {
+					// If not JSON then assume it is CBOR
+					contentType = common.ContentTypeCBOR
+				}
+			}
+			outputEnvelope := types.MessageEnvelope{
+				CorrelationID: appContext.CorrelationID(),
+				Payload:       appContext.ResponseData(),
+				ContentType:   contentType,
+			}
+
+			err = trigger.client.Publish(outputEnvelope, publishTopic)
+
+			if err != nil {
+				lc.Errorf("MessageBus trigger: Could not publish to topic '%s' for pipeline '%s': %s",
+					publishTopic,
+					pipeline.Id,
+					err.Error())
+				return err
+			}
+
+			lc.Debugf("MessageBus Trigger: Published response message for pipeline '%s' on topic '%s' with %d bytes",
 				pipeline.Id,
-				err.Error())
-			return err
+				publishTopic,
+				len(appContext.ResponseData()))
+			lc.Tracef("MessageBus Trigger published message: %s=%s", common.CorrelationHeader, appContext.CorrelationID())
+		} else {
+			lc.Errorf("MessageBusTrigger: ResponseData set by pipeline %q but no PublishHost configured.", pipeline.Id)
 		}
-
-		lc.Debugf("MessageBus Trigger: Published response message for pipeline '%s' on topic '%s' with %d bytes",
-			pipeline.Id,
-			publishTopic,
-			len(appContext.ResponseData()))
-		lc.Tracef("MessageBus Trigger published message: %s=%s", common.CorrelationHeader, appContext.CorrelationID())
 	}
 	return nil
 }

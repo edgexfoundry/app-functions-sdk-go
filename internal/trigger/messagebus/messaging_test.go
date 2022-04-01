@@ -21,30 +21,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus/mocks"
-	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
-	"github.com/stretchr/testify/mock"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus/mocks"
 	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/mocks"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
+	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
 	bootstrapMocks "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
-
+	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/requests"
 	"github.com/edgexfoundry/go-mod-messaging/v2/messaging"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -74,6 +71,37 @@ func TestInitializeNotSecure(t *testing.T) {
 					Protocol:     "tcp",
 					PublishTopic: "publish",
 				},
+				SubscribeHost: sdkCommon.SubscribeHostInfo{
+					Host:            "localhost",
+					Port:            5563,
+					Protocol:        "tcp",
+					SubscribeTopics: "events",
+				},
+			},
+		},
+	}
+
+	serviceBinding := &triggerMocks.ServiceBinding{}
+	serviceBinding.On("Config").Return(&config)
+	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
+
+	trigger := NewTrigger(serviceBinding, nil)
+
+	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
+	require.NoError(t, err)
+	assert.NotNil(t, trigger.client, "Expected client to be set")
+	assert.Equal(t, 1, len(trigger.topics))
+	assert.Equal(t, "events", trigger.topics[0].Topic)
+	assert.NotNil(t, trigger.topics[0].Messages)
+}
+
+func TestInitializeNoPublishHost(t *testing.T) {
+
+	config := sdkCommon.ConfigurationStruct{
+		Trigger: sdkCommon.TriggerInfo{
+			Type: TriggerTypeMessageBus,
+			EdgexMessageBus: sdkCommon.MessageBusConfig{
+				Type: "zero",
 				SubscribeHost: sdkCommon.SubscribeHostInfo{
 					Host:            "localhost",
 					Port:            5563,
@@ -461,6 +489,7 @@ func TestTrigger_responseHandler(t *testing.T) {
 			trigger := &Trigger{
 				serviceBinding: serviceBinding,
 				client:         client,
+				publishHostSet: true,
 			}
 			if err := trigger.responseHandler(ctx, tt.args.pipeline); (err != nil) != tt.wantErr {
 				t.Errorf("responseHandler() error = %v, wantErr %v", err, tt.wantErr)
