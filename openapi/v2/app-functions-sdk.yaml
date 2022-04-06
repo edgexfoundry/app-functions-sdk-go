@@ -19,6 +19,10 @@ components:
           type: string
           format: uuid
           example: "e6e8a2f4-eb14-4649-9e2b-175247911369"
+        apiVersion:
+          description: "A version number shows the API version in DTOs."
+          type: string
+          example: "v2"
     BaseResponse:
       description: "Defines basic properties which all use-case specific response DTO instances should support"
       type: object
@@ -111,6 +115,7 @@ components:
         path:
           description: Specifies the type or location of the secret to store
           type: string
+          example: "credentials"
         secretData:
           description: A list of the key/value pairs of secret data to store
           type: array
@@ -126,11 +131,11 @@ components:
         key: 
           description: The key to identify the secret data
           type: string
-          example: "appsecret"
+          example: "username"
         value:
           description: The value of the secret data
           type: string
-          example: "appsecret-value"
+          example: "mqtt-user"
       required:
         - key
         - value
