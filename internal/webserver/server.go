@@ -27,6 +27,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/controller/rest"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
@@ -61,6 +62,11 @@ func NewWebServer(dic *di.Container, router *mux.Router, serviceName string) *We
 	}
 
 	return ws
+}
+
+// SetCustomConfigInfo sets the custom configurations
+func (webserver *WebServer) SetCustomConfigInfo(customConfig interfaces.UpdatableConfig) {
+	webserver.controller.SetCustomConfigInfo(customConfig)
 }
 
 // AddRoute enables support to leverage the existing webserver to add routes.

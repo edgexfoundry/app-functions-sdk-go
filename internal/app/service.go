@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -53,6 +52,7 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/flags"
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 
 	"github.com/gorilla/mux"
@@ -556,7 +556,14 @@ func (svc *Service) LoadCustomConfig(customConfig interfaces.UpdatableConfig, se
 	if svc.configProcessor == nil {
 		svc.configProcessor = config.NewProcessorForCustomConfig(svc.flags, svc.ctx.appCtx, svc.ctx.appWg, svc.dic)
 	}
-	return svc.configProcessor.LoadCustomConfigSection(customConfig, sectionName)
+
+	if err := svc.configProcessor.LoadCustomConfigSection(customConfig, sectionName); err != nil {
+		return err
+	}
+
+	svc.webserver.SetCustomConfigInfo(customConfig)
+
+	return nil
 }
 
 // ListenForCustomConfigChanges uses the Config Processor from go-mod-bootstrap to attempt to listen for
