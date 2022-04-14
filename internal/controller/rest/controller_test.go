@@ -184,6 +184,72 @@ func TestConfigRequest(t *testing.T) {
 	assert.Equal(t, expectedConfig, actualConfig)
 }
 
+func TestConfigRequest_CustomConfig(t *testing.T) {
+	serviceName := uuid.NewString()
+
+	expectedConfig := sdkCommon.ConfigurationStruct{
+		Writable: sdkCommon.WritableInfo{
+			LogLevel: "DEBUG",
+		},
+		Registry: bootstrapConfig.RegistryInfo{
+			Host: "localhost",
+			Port: 8500,
+			Type: "consul",
+		},
+	}
+
+	dic.Update(di.ServiceConstructorMap{
+		container.ConfigurationName: func(get di.Get) interface{} {
+			return &expectedConfig
+		},
+	})
+
+	expectedCustomConfig := TestCustomConfig{
+		"test custom config",
+	}
+
+	type fullConfig struct {
+		sdkCommon.ConfigurationStruct
+		CustomConfiguration TestCustomConfig
+	}
+
+	expectedFullConfig := fullConfig{
+		expectedConfig,
+		expectedCustomConfig,
+	}
+
+	target := NewController(nil, dic, serviceName)
+	target.SetCustomConfigInfo(&expectedCustomConfig)
+
+	recorder := doRequest(t, http.MethodGet, common.ApiConfigRoute, target.Config, nil)
+
+	actualResponse := commonDtos.ConfigResponse{}
+	err := json.Unmarshal(recorder.Body.Bytes(), &actualResponse)
+	require.NoError(t, err)
+
+	assert.Equal(t, common.ApiVersion, actualResponse.ApiVersion)
+	assert.Equal(t, serviceName, actualResponse.ServiceName)
+
+	// actualResponse.Config is an interface{} so need to re-marshal/un-marshal into sdkCommon.ConfigurationStruct
+	configJson, err := json.Marshal(actualResponse.Config)
+	require.NoError(t, err)
+	require.Less(t, 0, len(configJson))
+
+	actualConfig := fullConfig{}
+	err = json.Unmarshal(configJson, &actualConfig)
+	require.NoError(t, err)
+
+	assert.Equal(t, expectedFullConfig, actualConfig)
+}
+
+type TestCustomConfig struct {
+	Sample string
+}
+
+func (t TestCustomConfig) UpdateFromRaw(_ interface{}) bool {
+	return true
+}
+
 func TestAddSecretRequest(t *testing.T) {
 	expectedRequestId := "82eb2e26-0f24-48aa-ae4c-de9dac3fb9bc"
 
