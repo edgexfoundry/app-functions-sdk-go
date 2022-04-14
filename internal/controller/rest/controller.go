@@ -82,13 +82,20 @@ func (c *Controller) Version(writer http.ResponseWriter, request *http.Request) 
 // Config handles the request to /config endpoint. Is used to request the service's configuration
 // It returns a response as specified by the V2 API swagger in openapi/v2
 func (c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
-	// create a struct combining the common configuration and custom configuration sections
-	fullConfig := struct {
-		sdkCommon.ConfigurationStruct
-		CustomConfiguration interfaces.UpdatableConfig
-	}{
-		*c.config,
-		c.customConfig,
+	var fullConfig interface{}
+
+	if c.customConfig == nil {
+		// case of no custom configs
+		fullConfig = *c.config
+	} else {
+		// create a struct combining the common configuration and custom configuration sections
+		fullConfig = struct {
+			sdkCommon.ConfigurationStruct
+			CustomConfiguration interfaces.UpdatableConfig
+		}{
+			*c.config,
+			c.customConfig,
+		}
 	}
 
 	response := commonDtos.NewConfigResponse(fullConfig, c.serviceName)
