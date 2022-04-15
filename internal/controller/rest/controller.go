@@ -29,8 +29,9 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/telemetry"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
@@ -41,9 +42,10 @@ import (
 // Controller controller for V2 REST APIs
 type Controller struct {
 	router         *mux.Router
-	secretProvider interfaces.SecretProvider
+	secretProvider bootstrapInterfaces.SecretProvider
 	lc             logger.LoggingClient
 	config         *sdkCommon.ConfigurationStruct
+	customConfig   interfaces.UpdatableConfig
 	serviceName    string
 }
 
@@ -56,6 +58,11 @@ func NewController(router *mux.Router, dic *di.Container, serviceName string) *C
 		config:         container.ConfigurationFrom(dic.Get),
 		serviceName:    serviceName,
 	}
+}
+
+// SetCustomConfigInfo sets the custom configuration, which is used to include the service's custom config in the /config endpoint response.
+func (c *Controller) SetCustomConfigInfo(customConfig interfaces.UpdatableConfig) {
+	c.customConfig = customConfig
 }
 
 // Ping handles the request to /ping endpoint. Is used to test if the service is working
@@ -75,7 +82,23 @@ func (c *Controller) Version(writer http.ResponseWriter, request *http.Request) 
 // Config handles the request to /config endpoint. Is used to request the service's configuration
 // It returns a response as specified by the V2 API swagger in openapi/v2
 func (c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
-	response := commonDtos.NewConfigResponse(*c.config, c.serviceName)
+	var fullConfig interface{}
+
+	if c.customConfig == nil {
+		// case of no custom configs
+		fullConfig = *c.config
+	} else {
+		// create a struct combining the common configuration and custom configuration sections
+		fullConfig = struct {
+			sdkCommon.ConfigurationStruct
+			CustomConfiguration interfaces.UpdatableConfig
+		}{
+			*c.config,
+			c.customConfig,
+		}
+	}
+
+	response := commonDtos.NewConfigResponse(fullConfig, c.serviceName)
 	c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
 }
 
