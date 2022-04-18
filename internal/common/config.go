@@ -17,8 +17,9 @@
 package common
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 )
 
 // WritableInfo is used to hold configuration information that is considered "live" or can be changed on the fly without a restart of the service.
@@ -32,6 +33,7 @@ type WritableInfo struct {
 	Pipeline        PipelineInfo
 	StoreAndForward StoreAndForwardInfo
 	InsecureSecrets bootstrapConfig.InsecureSecrets
+	Telemetry       bootstrapConfig.TelemetryInfo
 }
 
 // ConfigurationStruct
@@ -251,6 +253,11 @@ func (c *ConfigurationStruct) GetInsecureSecrets() bootstrapConfig.InsecureSecre
 // GetMessageBusInfo returns dummy MessageBusInfo since SDK doesn't use MessageBusInfo
 func (c *ConfigurationStruct) GetMessageBusInfo() bootstrapConfig.MessageBusInfo {
 	return bootstrapConfig.MessageBusInfo{}
+}
+
+// GetTelemetryInfo returns the service's Telemetry settings.
+func (c *ConfigurationStruct) GetTelemetryInfo() *bootstrapConfig.TelemetryInfo {
+	return &c.Writable.Telemetry
 }
 
 // transformToBootstrapServiceInfo transforms the SDK's ServiceInfo to the bootstrap's version of ServiceInfo
