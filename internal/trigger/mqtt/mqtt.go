@@ -68,7 +68,7 @@ func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigge
 }
 
 // Initialize initializes the Trigger for an external MQTT broker
-func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
+func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
 	// Convenience short cuts
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
@@ -119,12 +119,18 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, _ context.Context, backgro
 	sp := trigger.serviceBinding.SecretProvider()
 	var mqttClient pahoMqtt.Client
 	timer := startup.NewTimer(brokerConfig.RetryDuration, brokerConfig.RetryInterval)
+
 	for timer.HasNotElapsed() {
 		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts); err == nil {
 			break
 		}
-		lc.Warnf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
-		timer.SleepForInterval()
+		select {
+		case <-ctx.Done():
+			return nil, errors.New("aborted MQTT Trigger initialization")
+		default:
+			lc.Warnf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
+			timer.SleepForInterval()
+		}
 	}
 
 	if err != nil {
