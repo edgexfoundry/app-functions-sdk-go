@@ -69,6 +69,14 @@ ServerName = ""
 TokenFile = "/tmp/edgex/secrets/new-app-service/secrets-token.json"
   [SecretStore.Authentication]
   AuthType = "X-Vault-Token"
+  [SecretStore.RuntimeTokenProvider]
+  Enabled = false
+  Protocol = "https"
+  Host = "localhost"
+  Port = 59841
+  TrustDomain = "edgexfoundry.org"
+  EndpointSocket = "/tmp/edgex/secrets/spiffe/public/api.sock"
+  RequiredSecrets = "redisdb"
 
 [Clients]
   [Clients.core-data]
