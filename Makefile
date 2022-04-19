@@ -30,7 +30,7 @@ lint:
 	@if [ "z${ARCH}" = "zx86_64" ] && which golangci-lint >/dev/null ; then golangci-lint run --config .golangci.yml ; else echo "WARNING: Linting skipped (not on x86_64 or linter not installed)"; fi
 
 tidy:
-	go mod tidy
+	go mod tidy -compat=1.17
 
 test-template:
 	make -C ./app-service-template test
