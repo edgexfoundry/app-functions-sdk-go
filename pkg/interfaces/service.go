@@ -16,9 +16,10 @@
 package interfaces
 
 import (
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 	"net/http"
 	"time"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
@@ -155,6 +156,9 @@ type ApplicationService interface {
 	// RegistryClient returns the Registry client. Note the registry must been enable, otherwise this will return nil.
 	// Useful if service needs to add additional health checks or needs to get endpoint of another registered service
 	RegistryClient() registry.Client
+	// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
+	// github.com/rcrowley/go-metrics
+	MetricsManager() bootstrapInterfaces.MetricsManager
 	// LoadConfigurablePipeline loads the default function pipeline from configuration.
 	// An error is returned if the configuration is not valid, i.e. missing required function parameters,
 	// invalid function name, etc.

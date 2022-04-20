@@ -21,21 +21,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus/mocks"
-	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
-	"github.com/stretchr/testify/mock"
+	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus/mocks"
+	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+
+	"github.com/stretchr/testify/mock"
 
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/mocks"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
-	bootstrapMocks "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
+
+	bootstrapMocks "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
@@ -52,6 +58,18 @@ import (
 const TriggerTypeMessageBus = "EDGEX-MESSAGEBUS"
 
 var addEventRequest = createTestEventRequest()
+
+var dic *di.Container
+
+func TestMain(m *testing.M) {
+	dic = di.NewContainer(di.ServiceConstructorMap{
+		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
+			return logger.NewMockClient()
+		},
+	})
+
+	os.Exit(m.Run())
+}
 
 func createTestEventRequest() requests.AddEventRequest {
 	event := dtos.NewEvent("thermostat", "LivingRoomThermostat", "temperature")
@@ -88,7 +106,7 @@ func TestInitializeNotSecure(t *testing.T) {
 	serviceBinding.On("Config").Return(&config)
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
-	trigger := NewTrigger(serviceBinding, nil)
+	trigger := NewTrigger(serviceBinding, nil, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	require.NoError(t, err)
@@ -138,7 +156,7 @@ func TestInitializeSecure(t *testing.T) {
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 	serviceBinding.On("SecretProvider").Return(&mock)
 
-	trigger := NewTrigger(serviceBinding, nil)
+	trigger := NewTrigger(serviceBinding, nil, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	require.NoError(t, err)
@@ -176,7 +194,7 @@ func TestInitializeBadConfiguration(t *testing.T) {
 	serviceBinding.On("Config").Return(&config)
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
-	trigger := NewTrigger(serviceBinding, nil)
+	trigger := NewTrigger(serviceBinding, nil, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	assert.Error(t, err)
@@ -222,7 +240,7 @@ func TestInitializeAndProcessEvent(t *testing.T) {
 		return nil
 	})
 
-	trigger := NewTrigger(serviceBinding, messageProcessor)
+	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	require.NoError(t, err)
@@ -290,7 +308,7 @@ func TestInitializeAndProcessBackgroundMessage(t *testing.T) {
 	serviceBinding.On("Config").Return(&config)
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
-	trigger := NewTrigger(serviceBinding, nil)
+	trigger := NewTrigger(serviceBinding, nil, dic)
 
 	testClientConfig := types.MessageBusConfig{
 		SubscribeHost: types.HostInfo{

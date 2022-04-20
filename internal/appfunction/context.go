@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
@@ -184,6 +185,12 @@ func (appContext *Context) DeviceClient() clients.DeviceClient {
 // NotificationClient returns the Notification client, which may be nil, from the dependency injection container
 func (appContext *Context) NotificationClient() clients.NotificationClient {
 	return container.NotificationClientFrom(appContext.Dic.Get)
+}
+
+// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
+// github.com/rcrowley/go-metrics
+func (appContext *Context) MetricsManager() bootstrapInterfaces.MetricsManager {
+	return container.MetricsManagerFrom(appContext.Dic.Get)
 }
 
 // SubscriptionClient returns the Subscription client, which may be nil, from the dependency injection container

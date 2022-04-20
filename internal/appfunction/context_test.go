@@ -160,6 +160,20 @@ func TestContext_SubscriptionClient(t *testing.T) {
 	assert.NotNil(t, actual)
 }
 
+func TestContext_MetricsManager(t *testing.T) {
+	actual := target.MetricsManager()
+	assert.Nil(t, actual)
+
+	dic.Update(di.ServiceConstructorMap{
+		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
+			return &mocks.MetricsManager{}
+		},
+	})
+
+	actual = target.MetricsManager()
+	assert.NotNil(t, actual)
+}
+
 func TestContext_LoggingClient(t *testing.T) {
 	actual := target.LoggingClient()
 	assert.NotNil(t, actual)

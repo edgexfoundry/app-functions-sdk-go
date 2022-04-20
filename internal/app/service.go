@@ -29,6 +29,8 @@ import (
 	"syscall"
 	"time"
 
+	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/handlers"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
@@ -38,7 +40,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
-	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/handlers"
 
 	clientInterfaces "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
@@ -514,6 +515,7 @@ func (svc *Service) Initialize() error {
 			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
 			handlers.NewTelemetry().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,
+			bootstrapHandlers.NewServiceMetrics(svc.serviceKey).BootstrapHandler,
 		},
 	)
 
@@ -635,6 +637,12 @@ func (svc *Service) NotificationClient() clientInterfaces.NotificationClient {
 // SubscriptionClient returns the Subscription client, which may be nil, from the dependency injection container
 func (svc *Service) SubscriptionClient() clientInterfaces.SubscriptionClient {
 	return bootstrapContainer.SubscriptionClientFrom(svc.dic.Get)
+}
+
+// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
+// github.com/rcrowley/go-metrics
+func (svc *Service) MetricsManager() bootstrapInterfaces.MetricsManager {
+	return bootstrapContainer.MetricsManagerFrom(svc.dic.Get)
 }
 
 func listParameters(parameters map[string]string) string {

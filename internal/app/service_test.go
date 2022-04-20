@@ -25,6 +25,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	builtin "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
 
@@ -885,6 +887,20 @@ func TestService_SubscriptionClient(t *testing.T) {
 	})
 
 	actual = target.SubscriptionClient()
+	assert.NotNil(t, actual)
+}
+
+func TestService_MetricsManager(t *testing.T) {
+	actual := target.MetricsManager()
+	assert.Nil(t, actual)
+
+	dic.Update(di.ServiceConstructorMap{
+		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
+			return &mocks.MetricsManager{}
+		},
+	})
+
+	actual = target.MetricsManager()
 	assert.NotNil(t, actual)
 }
 
