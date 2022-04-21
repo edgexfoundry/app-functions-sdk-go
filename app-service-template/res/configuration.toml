@@ -1,5 +1,5 @@
 # TODO: Go here for detailed information on Application Service configuation:
-#       https://docs.edgexfoundry.org/1.3/microservices/application/GeneralAppServiceConfig/
+#       https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/
 [Writable]
 LogLevel = "INFO"
 
