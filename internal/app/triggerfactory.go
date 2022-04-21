@@ -20,12 +20,13 @@ package app
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/http"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/mqtt"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"strings"
 )
 
 const (
@@ -48,7 +49,7 @@ func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) inte
 
 	case TriggerTypeMessageBus:
 		svc.LoggingClient().Info("EdgeX MessageBus trigger selected")
-		t = messagebus.NewTrigger(bnd, mp)
+		t = messagebus.NewTrigger(bnd, mp, svc.dic)
 
 	case TriggerTypeMQTT:
 		svc.LoggingClient().Info("External MQTT trigger selected")

@@ -21,21 +21,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"strings"
 	"sync"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-messaging/v2/messaging"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
+	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 )
 
 // Trigger implements Trigger to support MessageBusData
@@ -44,12 +49,14 @@ type Trigger struct {
 	serviceBinding   trigger.ServiceBinding
 	topics           []types.TopicChannel
 	client           messaging.MessageClient
+	dic              *di.Container
 }
 
-func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigger {
+func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor, dic *di.Container) *Trigger {
 	return &Trigger{
 		messageProcessor: mp,
 		serviceBinding:   bnd,
+		dic:              dic,
 	}
 }
 
@@ -72,6 +79,12 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 	if err != nil {
 		return nil, err
 	}
+
+	trigger.dic.Update(di.ServiceConstructorMap{
+		container.MessagingClientName: func(get di.Get) interface{} {
+			return trigger.client
+		},
+	})
 
 	subscribeTopics := strings.TrimSpace(config.Trigger.EdgexMessageBus.SubscribeHost.SubscribeTopics)
 

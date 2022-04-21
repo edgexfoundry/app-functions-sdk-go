@@ -19,6 +19,7 @@ package interfaces
 import (
 	"time"
 
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
@@ -94,6 +95,9 @@ type AppFunctionContext interface {
 	// DeviceClient returns the Device client. Note if Core Metadata is not specified in the
 	// Clients configuration, this will return nil.
 	DeviceClient() interfaces.DeviceClient
+	// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
+	// github.com/rcrowley/go-metrics
+	MetricsManager() bootstrapInterfaces.MetricsManager
 	// PushToCore pushes a new event to Core Data.
 	PushToCore(event dtos.Event) (common.BaseWithIdResponse, error)
 	// GetDeviceResource retrieves the DeviceResource for given profileName and resourceName.

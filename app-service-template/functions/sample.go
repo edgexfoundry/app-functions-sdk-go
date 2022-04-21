@@ -17,14 +17,20 @@
 package functions
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+
+	gometrics "github.com/rcrowley/go-metrics"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 )
+
+// TODO: Remove sample metric and implement meaningful metrics if any needed.
+const eventsConvertedToXMLName = "EventsConvertedToXML"
 
 // TODO: Create your custom type and function(s) and remove these samples
 
@@ -36,6 +42,8 @@ func NewSample() Sample {
 
 // Sample ...
 type Sample struct {
+	// TODO: Remove sample metric and implement meaningful metrics if any needed.
+	eventsConvertedToXML gometrics.Counter
 	// TODO: Add properties that the function(s) will need each time one is executed
 }
 
@@ -111,6 +119,25 @@ func (s *Sample) ConvertEventToXML(ctx interfaces.AppFunctionContext, data inter
 	//     To see debug log messages, Set WRITABLE_LOGLEVEL=DEBUG environment variable or
 	//     change LogLevel in configuration.toml before running app service.
 	lc.Debugf("Event converted to XML in pipeline '%s': %s", ctx.PipelineId(), xml)
+
+	// TODO: Remove sample metric and implement meaningful metrics if any needed.
+	if s.eventsConvertedToXML == nil {
+		var err error
+
+		s.eventsConvertedToXML = gometrics.NewCounter()
+		metricsManger := ctx.MetricsManager()
+		if metricsManger != nil {
+			err = metricsManger.Register(eventsConvertedToXMLName, s.eventsConvertedToXML, nil)
+		} else {
+			err = errors.New("metrics manager not available")
+		}
+
+		if err != nil {
+			lc.Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", eventsConvertedToXMLName, err.Error())
+		}
+
+	}
+	s.eventsConvertedToXML.Inc(1)
 
 	// Returning true indicates that the pipeline execution should continue with the next function
 	// using the event passed as input in this case.
