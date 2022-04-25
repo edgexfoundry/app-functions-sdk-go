@@ -22,6 +22,9 @@ import (
 	"fmt"
 	"strings"
 
+	gometrics "github.com/rcrowley/go-metrics"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/http"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus"
@@ -40,7 +43,12 @@ func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) inte
 	var t interfaces.Trigger
 
 	bnd := NewTriggerServiceBinding(svc)
-	mp := &triggerMessageProcessor{bnd}
+	mp := &triggerMessageProcessor{
+		bnd:              bnd,
+		messagesReceived: gometrics.NewCounter()}
+
+	svc.MetricsManager().Register(internal.MessagesReceivedName, mp.messagesReceived, nil)
+	svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
 
 	switch triggerType := strings.ToUpper(configuration.Trigger.Type); triggerType {
 	case TriggerTypeHTTP:
@@ -88,7 +96,12 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 
 	svc.customTriggerFactories[nu] = func(sdk *Service) (interfaces.Trigger, error) {
 		binding := NewTriggerServiceBinding(sdk)
-		messageProcessor := &triggerMessageProcessor{binding}
+		messageProcessor := &triggerMessageProcessor{
+			bnd:              binding,
+			messagesReceived: gometrics.NewCounter()}
+
+		svc.MetricsManager().Register(internal.MessagesReceivedName, messageProcessor.messagesReceived, nil)
+		svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
 
 		cfg := interfaces.TriggerConfig{
 			Logger:           sdk.lc,

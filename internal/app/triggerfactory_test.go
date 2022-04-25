@@ -77,7 +77,7 @@ func TestRegisterCustomTrigger(t *testing.T) {
 	builder := func(c interfaces.TriggerConfig) (interfaces.Trigger, error) {
 		return &trig, nil
 	}
-	sdk := Service{config: &common.ConfigurationStruct{}}
+	sdk := Service{config: &common.ConfigurationStruct{}, dic: dic}
 
 	err := sdk.RegisterCustomTriggerFactory(name, builder)
 
@@ -99,7 +99,8 @@ func TestSetupTrigger_HTTP(t *testing.T) {
 				Type: TriggerTypeHTTP,
 			},
 		},
-		lc: logger.MockLogger{},
+		lc:  logger.MockLogger{},
+		dic: dic,
 	}
 
 	trigger := sdk.setupTrigger(sdk.config)
@@ -115,7 +116,8 @@ func TestSetupTrigger_EdgeXMessageBus(t *testing.T) {
 				Type: TriggerTypeMessageBus,
 			},
 		},
-		lc: logger.MockLogger{},
+		lc:  logger.MockLogger{},
+		dic: dic,
 	}
 
 	trigger := sdk.setupTrigger(sdk.config)
@@ -165,7 +167,8 @@ func Test_Service_setupTrigger_CustomType(t *testing.T) {
 				Type: triggerName,
 			},
 		},
-		lc: logger.MockLogger{},
+		lc:  logger.MockLogger{},
+		dic: dic,
 	}
 
 	err := sdk.RegisterCustomTriggerFactory(triggerName, func(c interfaces.TriggerConfig) (interfaces.Trigger, error) {
@@ -188,7 +191,8 @@ func Test_Service_SetupTrigger_CustomTypeError(t *testing.T) {
 				Type: triggerName,
 			},
 		},
-		lc: logger.MockLogger{},
+		lc:  logger.MockLogger{},
+		dic: dic,
 	}
 
 	err := sdk.RegisterCustomTriggerFactory(triggerName, func(c interfaces.TriggerConfig) (interfaces.Trigger, error) {
@@ -210,7 +214,8 @@ func Test_Service_SetupTrigger_CustomTypeNotFound(t *testing.T) {
 				Type: triggerName,
 			},
 		},
-		lc: logger.MockLogger{},
+		lc:  logger.MockLogger{},
+		dic: dic,
 	}
 
 	trigger := sdk.setupTrigger(sdk.config)

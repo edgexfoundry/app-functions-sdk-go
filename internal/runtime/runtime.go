@@ -29,7 +29,9 @@ import (
 	"sync"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	gometrics "github.com/rcrowley/go-metrics"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
@@ -52,10 +54,12 @@ const (
 
 func NewFunctionPipeline(id string, topics []string, transforms []interfaces.AppFunction) interfaces.FunctionPipeline {
 	pipeline := interfaces.FunctionPipeline{
-		Id:         id,
-		Transforms: transforms,
-		Topics:     topics,
-		Hash:       calculatePipelineHash(transforms),
+		Id:                    id,
+		Transforms:            transforms,
+		Topics:                topics,
+		Hash:                  calculatePipelineHash(transforms),
+		MessagesProcessed:     gometrics.NewCounter(),
+		MessageProcessingTime: gometrics.NewTimer(),
 	}
 
 	return pipeline
@@ -131,7 +135,25 @@ func (gr *GolangRuntime) AddFunctionsPipeline(id string, topics []string, transf
 		return fmt.Errorf("pipeline with Id='%s' already exists", id)
 	}
 
-	gr.addFunctionsPipeline(id, topics, transforms)
+	pipeline := gr.addFunctionsPipeline(id, topics, transforms)
+
+	lc := bootstrapContainer.LoggingClientFrom(gr.dic.Get)
+	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
+	name := strings.Replace(internal.PipelineMessagesProcessedName, internal.PipelineIdTxt, pipeline.Id, 1)
+	err := metricManager.Register(name, pipeline.MessagesProcessed, nil)
+	if err != nil {
+		lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", name, err.Error())
+	} else {
+		lc.Infof("%s metric has been registered and will be reported", name)
+	}
+
+	name = strings.Replace(internal.PipelineMessageProcessingTimeName, internal.PipelineIdTxt, pipeline.Id, 1)
+	err = metricManager.Register(name, pipeline.MessageProcessingTime, nil)
+	if err != nil {
+		lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", name, err.Error())
+	} else {
+		lc.Infof("%s metric has been registered and will be reported", name)
+	}
 
 	return nil
 }

@@ -32,3 +32,11 @@ var SDKVersion = "0.0.0"
 
 // ApplicationVersion indicates the version of the application itself, not the SDK - will be overwritten by build
 var ApplicationVersion = "0.0.0"
+
+// Names for the Common Application Service Metrics
+const (
+	MessagesReceivedName              = "MessagesReceived"
+	PipelineIdTxt                     = "{PipelineId}"
+	PipelineMessagesProcessedName     = "PipelineMessagesProcessed-" + PipelineIdTxt
+	PipelineMessageProcessingTimeName = "PipelineMessageProcessingTime-" + PipelineIdTxt
+)

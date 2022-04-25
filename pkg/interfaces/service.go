@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/config"
+	gometrics "github.com/rcrowley/go-metrics"
 
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces"
@@ -56,6 +57,9 @@ type FunctionPipeline struct {
 	Topics []string
 	// Hash of the list of transforms set and used internally for Store and Forward
 	Hash string
+
+	MessagesProcessed     gometrics.Counter
+	MessageProcessingTime gometrics.Timer
 }
 
 // UpdatableConfig interface allows services to have custom configuration populated from configuration stored

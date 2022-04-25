@@ -18,17 +18,20 @@ package app
 
 import (
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"sync"
+
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 	"github.com/hashicorp/go-multierror"
-	"sync"
+	gometrics "github.com/rcrowley/go-metrics"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 )
 
 type simpleTriggerServiceBinding struct {
@@ -61,12 +64,14 @@ func (b *simpleTriggerServiceBinding) Config() *common.ConfigurationStruct {
 
 // triggerMessageProcessor wraps the ServiceBinding interface so that we can attach methods
 type triggerMessageProcessor struct {
-	bnd trigger.ServiceBinding
+	bnd              trigger.ServiceBinding
+	messagesReceived gometrics.Counter
 }
 
 // Process provides runtime orchestration to pass the envelope / context to the pipeline.
 // Deprecated: This does NOT support multi-pipeline usage.  Will send a message to the default pipeline ONLY and throw if not configured.  Use MessageReceived.
 func (mp *triggerMessageProcessor) Process(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope) error {
+	mp.messagesReceived.Inc(1)
 	context, ok := ctx.(*appfunction.Context)
 	if !ok {
 		return fmt.Errorf("App Context must be an instance of internal appfunction.Context. Use NewAppContext to create instance.")
@@ -89,8 +94,8 @@ func (mp *triggerMessageProcessor) Process(ctx interfaces.AppFunctionContext, en
 
 // MessageReceived provides runtime orchestration to pass the envelope / context to configured pipeline(s) along with a response callback to execute on each completion.
 func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope, responseHandler interfaces.PipelineResponseHandler) error {
+	mp.messagesReceived.Inc(1)
 	lc := mp.bnd.LoggingClient()
-
 	lc.Debugf("trigger attempting to find pipeline(s) for topic %s", envelope.ReceivedTopic)
 
 	// ensure we have a context established that we can safely cast to *appfunction.Context to pass to runtime
@@ -109,6 +114,8 @@ func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionCon
 
 	for _, pipeline := range pipelines {
 		pipelinesWaitGroup.Add(1)
+		pipeline.MessagesProcessed.Inc(1)
+
 		go func(p *interfaces.FunctionPipeline, wg *sync.WaitGroup, errCollector func(error)) {
 			defer wg.Done()
 
