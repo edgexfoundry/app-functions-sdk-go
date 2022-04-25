@@ -482,3 +482,25 @@ func TestConfigurable_PushToCore(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigurable_ToLineProtocol(t *testing.T) {
+	configurable := Configurable{lc: lc}
+
+	tests := []struct {
+		Name      string
+		Params    map[string]string
+		ExpectNil bool
+	}{
+		{"Valid, empty tags parameter", map[string]string{Tags: ""}, false},
+		{"Valid, some tags", map[string]string{Tags: "tag1:value1, tag2:value2"}, false},
+		{"Invalid, no tags parameter", nil, true},
+		{"Invalid, bad tags", map[string]string{Tags: "tag1 = value1, tag2 =value2"}, true},
+	}
+
+	for _, test := range tests {
+		t.Run(t.Name(), func(t *testing.T) {
+			actual := configurable.ToLineProtocol(test.Params)
+			assert.Equal(t, test.ExpectNil, actual == nil)
+		})
+	}
+}
