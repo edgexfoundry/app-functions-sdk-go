@@ -47,8 +47,11 @@ func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) inte
 		bnd:              bnd,
 		messagesReceived: gometrics.NewCounter()}
 
-	svc.MetricsManager().Register(internal.MessagesReceivedName, mp.messagesReceived, nil)
-	svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
+	if err := svc.MetricsManager().Register(internal.MessagesReceivedName, mp.messagesReceived, nil); err != nil {
+		svc.lc.Warnf("%s metric failed to register and will not be reported: %s", internal.MessagesReceivedName, err.Error())
+	} else {
+		svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
+	}
 
 	switch triggerType := strings.ToUpper(configuration.Trigger.Type); triggerType {
 	case TriggerTypeHTTP:
@@ -100,8 +103,11 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 			bnd:              binding,
 			messagesReceived: gometrics.NewCounter()}
 
-		svc.MetricsManager().Register(internal.MessagesReceivedName, messageProcessor.messagesReceived, nil)
-		svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
+		if err := svc.MetricsManager().Register(internal.MessagesReceivedName, messageProcessor.messagesReceived, nil); err != nil {
+			svc.lc.Warnf("%s metric failed to register and will not be reported: %s", internal.MessagesReceivedName, err.Error())
+		} else {
+			svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
+		}
 
 		cfg := interfaces.TriggerConfig{
 			Logger:           sdk.lc,
