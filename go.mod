@@ -6,8 +6,8 @@ require (
 	bitbucket.org/bertimus9/systemstat v0.0.0-20180207000608-0eeff89b0690
 	github.com/diegoholiveira/jsonlogic v1.0.1-0.20200220175622-ab7989be08b9
 	github.com/eclipse/paho.mqtt.golang v1.3.5
-	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.0-dev.13
-	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.2.0-dev.25
+	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.0-dev.16
+	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.2.0-dev.26
 	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.0-dev.12
 	github.com/edgexfoundry/go-mod-registry/v2 v2.2.0-dev.3
 	github.com/fxamacker/cbor/v2 v2.4.0
@@ -15,6 +15,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
 	github.com/stretchr/testify v1.7.1
 )
 
@@ -52,7 +53,6 @@ require (
 	github.com/pebbe/zmq4 v1.2.7 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect
 	github.com/spiffe/go-spiffe/v2 v2.0.0 // indirect
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect

@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
 
@@ -57,12 +58,18 @@ var baseUrl = "http://localhost:"
 func TestMain(m *testing.M) {
 	// No remote and no file results in STDOUT logging only
 	lc = logger.NewMockClient()
+	mockMetricsManager := &mocks.MetricsManager{}
+	mockMetricsManager.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return lc
 		},
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return &common.ConfigurationStruct{}
+		},
+		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
+			return mockMetricsManager
 		},
 	})
 
@@ -236,7 +243,8 @@ func TestAddBackgroundPublisher_HTTP(t *testing.T) {
 
 func TestSetupHTTPTrigger(t *testing.T) {
 	sdk := Service{
-		lc: lc,
+		lc:  lc,
+		dic: dic,
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: "htTp",
@@ -256,7 +264,8 @@ func TestSetupHTTPTrigger(t *testing.T) {
 
 func TestSetupMessageBusTrigger(t *testing.T) {
 	sdk := Service{
-		lc: lc,
+		lc:  lc,
+		dic: dic,
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeMessageBus,
@@ -275,7 +284,8 @@ func TestSetupMessageBusTrigger(t *testing.T) {
 
 func TestSetDefaultFunctionsPipelineNoTransforms(t *testing.T) {
 	sdk := Service{
-		lc: lc,
+		lc:  lc,
+		dic: dic,
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeMessageBus,
@@ -290,6 +300,7 @@ func TestSetDefaultFunctionsPipelineNoTransforms(t *testing.T) {
 func TestSetDefaultFunctionsPipelineOneTransform(t *testing.T) {
 	service := Service{
 		lc:      lc,
+		dic:     dic,
 		runtime: runtime.NewGolangRuntime("", nil, dic),
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
@@ -891,16 +902,8 @@ func TestService_SubscriptionClient(t *testing.T) {
 }
 
 func TestService_MetricsManager(t *testing.T) {
+	// MetricsManager Mock added to DIC in TestMain()
 	actual := target.MetricsManager()
-	assert.Nil(t, actual)
-
-	dic.Update(di.ServiceConstructorMap{
-		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
-			return &mocks.MetricsManager{}
-		},
-	})
-
-	actual = target.MetricsManager()
 	assert.NotNil(t, actual)
 }
 

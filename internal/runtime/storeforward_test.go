@@ -18,9 +18,12 @@ package runtime
 
 import (
 	"errors"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
 	"os"
 	"testing"
+
+	mocks2 "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
@@ -47,12 +50,18 @@ func TestMain(m *testing.M) {
 		},
 	}
 
+	mockMetricsManager := &mocks2.MetricsManager{}
+	mockMetricsManager.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return &config
 		},
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return logger.NewMockClient()
+		},
+		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
+			return mockMetricsManager
 		},
 	})
 
