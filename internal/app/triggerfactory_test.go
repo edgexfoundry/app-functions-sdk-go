@@ -77,7 +77,10 @@ func TestRegisterCustomTrigger(t *testing.T) {
 	builder := func(c interfaces.TriggerConfig) (interfaces.Trigger, error) {
 		return &trig, nil
 	}
-	sdk := Service{config: &common.ConfigurationStruct{}, dic: dic}
+	sdk := Service{
+		config: &common.ConfigurationStruct{},
+		lc:     logger.NewMockClient(),
+		dic:    dic}
 
 	err := sdk.RegisterCustomTriggerFactory(name, builder)
 
