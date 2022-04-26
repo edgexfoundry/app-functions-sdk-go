@@ -19,6 +19,7 @@ package app
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
@@ -117,6 +118,8 @@ func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionCon
 		pipeline.MessagesProcessed.Inc(1)
 
 		go func(p *interfaces.FunctionPipeline, wg *sync.WaitGroup, errCollector func(error)) {
+			startedAt := time.Now()
+			defer p.MessageProcessingTime.UpdateSince(startedAt)
 			defer wg.Done()
 
 			lc.Debugf("trigger sending message to pipeline %s (%s)", p.Id, envelope.CorrelationID)
