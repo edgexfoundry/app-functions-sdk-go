@@ -63,6 +63,9 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		ctx      interfaces.AppFunctionContext
 		envelope types.MessageEnvelope
 	}
+	errorPipeline := testPipeline()
+	errorPipeline.Id = "errorid"
+
 	tests := []struct {
 		name    string
 		setup   returns
@@ -79,7 +82,7 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		{
 			name: "single pipeline",
 			setup: returns{
-				pipelineMatcher:  []*interfaces.FunctionPipeline{{MessagesProcessed: gometrics.NewCounter()}},
+				pipelineMatcher:  []*interfaces.FunctionPipeline{testPipeline()},
 				runtimeProcessor: nil,
 			},
 			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
@@ -88,7 +91,7 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		{
 			name: "single pipeline error",
 			setup: returns{
-				pipelineMatcher:  []*interfaces.FunctionPipeline{{MessagesProcessed: gometrics.NewCounter()}},
+				pipelineMatcher:  []*interfaces.FunctionPipeline{testPipeline()},
 				runtimeProcessor: &runtime.MessageError{Err: fmt.Errorf("some error")},
 			},
 			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
@@ -97,7 +100,7 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		{
 			name: "multi pipeline",
 			setup: returns{
-				pipelineMatcher: []*interfaces.FunctionPipeline{{MessagesProcessed: gometrics.NewCounter()}, {MessagesProcessed: gometrics.NewCounter()}, {MessagesProcessed: gometrics.NewCounter()}},
+				pipelineMatcher: []*interfaces.FunctionPipeline{testPipeline(), testPipeline(), testPipeline()},
 			},
 			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
 			wantErr: 0,
@@ -105,7 +108,7 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		{
 			name: "multi pipeline single err",
 			setup: returns{
-				pipelineMatcher: []*interfaces.FunctionPipeline{{MessagesProcessed: gometrics.NewCounter()}, {Id: "errorid", MessagesProcessed: gometrics.NewCounter()}, {MessagesProcessed: gometrics.NewCounter()}},
+				pipelineMatcher: []*interfaces.FunctionPipeline{testPipeline(), errorPipeline, testPipeline()},
 				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
 					if pipeline.Id == "errorid" {
 						return &runtime.MessageError{Err: fmt.Errorf("new error")}
@@ -119,7 +122,7 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		{
 			name: "multi pipeline multi err",
 			setup: returns{
-				pipelineMatcher:  []*interfaces.FunctionPipeline{{MessagesProcessed: gometrics.NewCounter()}, {MessagesProcessed: gometrics.NewCounter()}, {MessagesProcessed: gometrics.NewCounter()}},
+				pipelineMatcher:  []*interfaces.FunctionPipeline{testPipeline(), testPipeline(), testPipeline()},
 				runtimeProcessor: &runtime.MessageError{Err: fmt.Errorf("new error")},
 			},
 			args:    args{envelope: types.MessageEnvelope{CorrelationID: uuid.NewString(), ContentType: uuid.NewString(), ReceivedTopic: uuid.NewString()}, ctx: &appfunction.Context{}},
@@ -160,5 +163,12 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func testPipeline() *interfaces.FunctionPipeline {
+	return &interfaces.FunctionPipeline{
+		MessagesProcessed:     gometrics.NewCounter(),
+		MessageProcessingTime: gometrics.NewTimer(),
 	}
 }

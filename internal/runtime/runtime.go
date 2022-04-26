@@ -135,7 +135,15 @@ func (gr *GolangRuntime) AddFunctionsPipeline(id string, topics []string, transf
 		return fmt.Errorf("pipeline with Id='%s' already exists", id)
 	}
 
-	pipeline := gr.addFunctionsPipeline(id, topics, transforms)
+	_ = gr.addFunctionsPipeline(id, topics, transforms)
+	return nil
+}
+
+func (gr *GolangRuntime) addFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) *interfaces.FunctionPipeline {
+	pipeline := NewFunctionPipeline(id, topics, transforms)
+	gr.isBusyCopying.Lock()
+	gr.pipelines[id] = &pipeline
+	gr.isBusyCopying.Unlock()
 
 	lc := bootstrapContainer.LoggingClientFrom(gr.dic.Get)
 	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
@@ -154,15 +162,6 @@ func (gr *GolangRuntime) AddFunctionsPipeline(id string, topics []string, transf
 	} else {
 		lc.Infof("%s metric has been registered and will be reported", name)
 	}
-
-	return nil
-}
-
-func (gr *GolangRuntime) addFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) *interfaces.FunctionPipeline {
-	pipeline := NewFunctionPipeline(id, topics, transforms)
-	gr.isBusyCopying.Lock()
-	gr.pipelines[id] = &pipeline
-	gr.isBusyCopying.Unlock()
 
 	return &pipeline
 }
