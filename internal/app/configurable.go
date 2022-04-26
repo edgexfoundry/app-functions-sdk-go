@@ -602,10 +602,20 @@ func (app *Configurable) JSONLogic(parameters map[string]string) interfaces.AppF
 // AddTags adds the configured list of tags to Events passed to the transform.
 // This function is a configuration function and returns a function pointer.
 func (app *Configurable) AddTags(parameters map[string]string) interfaces.AppFunction {
+	tags, failed := app.processTagsParameter(parameters)
+	if failed {
+		return nil
+	}
+
+	transform := transforms.NewGenericTags(tags)
+	return transform.AddTags
+}
+
+func (app *Configurable) processTagsParameter(parameters map[string]string) (map[string]interface{}, bool) {
 	tagsSpec, ok := parameters[Tags]
 	if !ok {
 		app.lc.Error(fmt.Sprintf("Could not find '%s' parameter", Tags))
-		return nil
+		return nil, true
 	}
 
 	tagKeyValues := util.DeleteEmptyAndTrim(strings.FieldsFunc(tagsSpec, util.SplitComma))
@@ -615,23 +625,21 @@ func (app *Configurable) AddTags(parameters map[string]string) interfaces.AppFun
 		keyValue := util.DeleteEmptyAndTrim(strings.FieldsFunc(tag, util.SplitColon))
 		if len(keyValue) != 2 {
 			app.lc.Errorf("Bad Tags specification format. Expect comma separated list of 'key:value'. Got `%s`", tagsSpec)
-			return nil
+			return nil, true
 		}
 
 		if len(keyValue[0]) == 0 {
 			app.lc.Errorf("Tag key missing. Got '%s'", tag)
-			return nil
+			return nil, true
 		}
 		if len(keyValue[1]) == 0 {
 			app.lc.Errorf("Tag value missing. Got '%s'", tag)
-			return nil
+			return nil, true
 		}
 
 		tags[keyValue[0]] = keyValue[1]
 	}
-
-	transform := transforms.NewGenericTags(tags)
-	return transform.AddTags
+	return tags, false
 }
 
 func (app *Configurable) processFilterParameters(
@@ -749,4 +757,21 @@ func (app *Configurable) processHttpExportParameters(
 	}
 
 	return result, method, nil
+}
+
+// ToLineProtocol transforms the Metric DTO passed to the transform to a string conforming to Line Protocol syntax.
+// This function is a configuration function and returns a function pointer.
+func (app *Configurable) ToLineProtocol(parameters map[string]string) interfaces.AppFunction {
+	tags, failed := app.processTagsParameter(parameters)
+	if failed {
+		return nil
+	}
+
+	mp, err := transforms.NewMetricsProcessor(tags)
+	if err != nil {
+		app.lc.Errorf("unable to configure ToLineProtocol function: %s", err.Error())
+		return nil
+	}
+
+	return mp.ToLineProtocol
 }

@@ -162,6 +162,9 @@ type PipelineInfo struct {
 	PerTopicPipelines map[string]TopicPipeline
 	// UseTargetTypeOfByteArray indicates if raw []byte type is to be used for the TargetType
 	UseTargetTypeOfByteArray bool
+	// TODO: for 3.0 rework this to be a single TargetType with empty, "raw" and "metric" as to allowed values
+	// UseTargetTypeOfMetric indicates the Dtos.Metric is to be used for the TargetType
+	UseTargetTypeOfMetric bool
 	// Functions is a collection of pipeline functions with configured parameters to be used in the ExecutionOrder of one
 	// of the configured pipelines (default or pre topic)
 	Functions map[string]PipelineFunction
