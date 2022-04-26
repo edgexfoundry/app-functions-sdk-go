@@ -30,6 +30,7 @@ import (
 	"time"
 
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/handlers"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
@@ -261,8 +262,17 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 
 	svc.targetType = nil
 
+	if svc.config.Writable.Pipeline.UseTargetTypeOfByteArray &&
+		svc.config.Writable.Pipeline.UseTargetTypeOfMetric {
+		return nil, errors.New("can not have Pipeline UseTargetTypeOfByteArray and UseTargetTypeOfMetric both set to true")
+	}
+
 	if svc.config.Writable.Pipeline.UseTargetTypeOfByteArray {
 		svc.targetType = &[]byte{}
+	}
+
+	if svc.config.Writable.Pipeline.UseTargetTypeOfMetric {
+		svc.targetType = &dtos.Metric{}
 	}
 
 	configurable := reflect.ValueOf(NewConfigurable(svc.lc))
