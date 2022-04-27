@@ -70,7 +70,7 @@ func TestMetricsProcessor_ToLineProtocol(t *testing.T) {
 	require.NoError(t, err)
 	expectedTimestamp := time.Now().UnixMilli()
 	expectedContinue := true
-	expectedResult := fmt.Sprintf("UnitTestMetric,ServiceName=UnitTestService,SomeTag=SomeValue,Tag1=value1 int=12i,float=12.35,uint=99u %d", expectedTimestamp)
+	expectedResult := fmt.Sprintf("UnitTestMetric,ServiceName=UnitTestService,SomeTag=SomeValue,Tag1=value1 int=12i,float=12.35,uint=99u %d\n", expectedTimestamp)
 	source := dtos.Metric{
 		Versionable: common.NewVersionable(),
 		Name:        "UnitTestMetric",

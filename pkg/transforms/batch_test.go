@@ -248,3 +248,28 @@ func TestBatchIsEventData(t *testing.T) {
 		})
 	}
 }
+
+func TestBatch_MergeOnSend(t *testing.T) {
+	dataToBatch := []string{
+		"String one ",
+		"String two",
+		"String three",
+	}
+
+	expected := dataToBatch[0] + dataToBatch[1] + dataToBatch[2]
+
+	bbc, err := NewBatchByCount(len(dataToBatch))
+	require.NoError(t, err)
+	bbc.MergeOnSend = true
+
+	var result interface{}
+	for _, item := range dataToBatch {
+		_, result = bbc.Batch(ctx, item)
+	}
+
+	actual, ok := result.([]byte)
+	require.True(t, ok)
+
+	require.NotNil(t, actual)
+	assert.Equal(t, expected, string(actual))
+}
