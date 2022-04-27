@@ -28,14 +28,14 @@ import (
 	"strings"
 	"sync"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	gometrics "github.com/rcrowley/go-metrics"
+
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
@@ -43,6 +43,8 @@ import (
 	edgexErrors "github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 
 	"github.com/fxamacker/cbor/v2"
 )
@@ -148,19 +150,19 @@ func (gr *GolangRuntime) addFunctionsPipeline(id string, topics []string, transf
 	lc := bootstrapContainer.LoggingClientFrom(gr.dic.Get)
 	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
 	name := strings.Replace(internal.PipelineMessagesProcessedName, internal.PipelineIdTxt, pipeline.Id, 1)
-	err := metricManager.Register(name, pipeline.MessagesProcessed, nil)
+	err := metricManager.Register(name, pipeline.MessagesProcessed, map[string]string{"pipeline": pipeline.Id})
 	if err != nil {
 		lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", name, err.Error())
 	} else {
-		lc.Infof("%s metric has been registered and will be reported", name)
+		lc.Infof("%s metric has been registered and will be reported (if enabled)", name)
 	}
 
 	name = strings.Replace(internal.PipelineMessageProcessingTimeName, internal.PipelineIdTxt, pipeline.Id, 1)
-	err = metricManager.Register(name, pipeline.MessageProcessingTime, nil)
+	err = metricManager.Register(name, pipeline.MessageProcessingTime, map[string]string{"pipeline": pipeline.Id})
 	if err != nil {
 		lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", name, err.Error())
 	} else {
-		lc.Infof("%s metric has been registered and will be reported", name)
+		lc.Infof("%s metric has been registered and will be reported (if enabled)", name)
 	}
 
 	return &pipeline
