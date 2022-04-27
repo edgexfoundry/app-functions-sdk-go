@@ -106,7 +106,7 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 		if err := svc.MetricsManager().Register(internal.MessagesReceivedName, messageProcessor.messagesReceived, nil); err != nil {
 			svc.lc.Warnf("%s metric failed to register and will not be reported: %s", internal.MessagesReceivedName, err.Error())
 		} else {
-			svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
+			svc.lc.Infof("%s metric has been registered and will be reported (if enabled)", internal.MessagesReceivedName)
 		}
 
 		cfg := interfaces.TriggerConfig{
