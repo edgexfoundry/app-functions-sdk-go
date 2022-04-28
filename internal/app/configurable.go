@@ -81,6 +81,7 @@ const (
 	BatchByTime         = "bytime"
 	BatchByTimeAndCount = "bytimecount"
 	IsEventData         = "iseventdata"
+	MergeOnSend         = "mergeonsend"
 )
 
 // Configurable contains the helper functions that return the function pointers for building the configurable function pipeline.
@@ -582,6 +583,18 @@ func (app *Configurable) Batch(parameters map[string]string) interfaces.AppFunct
 		}
 
 		transform.IsEventData = isEventData
+	}
+
+	// MergeOnSend is optional
+	mergeOnSendValue, ok := parameters[MergeOnSend]
+	if ok {
+		mergeOnSend, err := strconv.ParseBool(mergeOnSendValue)
+		if err != nil {
+			app.lc.Errorf("Could not parse '%s' to a bool for '%s' parameter: %s", mergeOnSendValue, mergeOnSend, err.Error())
+			return nil
+		}
+
+		transform.MergeOnSend = mergeOnSend
 	}
 
 	return transform.Batch

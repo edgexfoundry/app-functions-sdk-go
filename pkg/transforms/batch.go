@@ -74,6 +74,7 @@ func (d *atomicBatchData) length() int {
 // BatchConfig ...
 type BatchConfig struct {
 	IsEventData    bool
+	MergeOnSend    bool
 	timeInterval   string
 	parsedDuration time.Duration
 	batchThreshold int
@@ -192,10 +193,18 @@ func (batch *BatchConfig) Batch(ctx interfaces.AppFunctionContext, data interfac
 			}
 
 			resultData = events
+		} else if batch.MergeOnSend {
+			var mergedData []byte
+			for _, data := range copyOfData {
+				mergedData = append(mergedData, data...)
+			}
+
+			resultData = mergedData
 		}
 
 		batch.batchData.removeAll()
 		return true, resultData
 	}
+
 	return false, nil
 }

@@ -64,7 +64,8 @@ func (mp *MetricsProcessor) ToLineProtocol(ctx interfaces.AppFunctionContext, da
 		metric.Tags = append(metric.Tags, mp.additionalTags...)
 	}
 
-	result := metric.ToLineProtocol()
+	// New line is needed if the resulting metric data is batched and sent in chunks to service like InfluxDB
+	result := fmt.Sprintln(metric.ToLineProtocol())
 
 	lc.Debugf("Transformed Metric to '%s' in pipeline '%s", result, ctx.PipelineId())
 
