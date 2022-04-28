@@ -2,7 +2,7 @@
 
 This folder contains a buildable/runnable template for a new custom application service based on the Pre-Release 2.x release of the App Functions SDK. 
 
-> **Note**: If you only need to use the built-in pipeline functions, then it is advisable that you use `App Service Configurable` rather then create a new custom application service. See [here](https://docs.edgexfoundry.org/1.3/microservices/application/AppServiceConfigurable/) for more details on `App Service Configurable`
+> **Note**: If you only need to use the built-in pipeline functions, then it is advisable that you use `App Service Configurable` rather then create a new custom application service. See [here](https://docs.edgexfoundry.org/2.2/microservices/application/AppServiceConfigurable/) for more details on `App Service Configurable`
 
 Follow the instructions below to create your new customer application service:
 

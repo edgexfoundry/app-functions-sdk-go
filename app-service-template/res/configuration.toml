@@ -68,7 +68,7 @@ Timeout = "30s"
 #       if not this secion can be removed, but you must make sure EDGEX_SECURITY_SECRET_STORE is set to false
 #       Note is database is running in secure more and you have Store and Forward enable you will need to run this
 #       service in secure mode.
-#       For more deatils about SecretStore: https://docs.edgexfoundry.org/1.3/microservices/security/Ch-SecretStore/
+#       For more deatils about SecretStore: https://docs.edgexfoundry.org/2.2/microservices/security/Ch-SecretStore/
 [SecretStore]
 Type = "vault"
 Host = "localhost"
@@ -157,7 +157,7 @@ Type="edgex-messagebus"
 
 # TODO: Add custom settings needed by your app service or remove if you don't have any settings.
 # This can be any Key/Value pair you need.
-# For more details see: https://docs.edgexfoundry.org/1.3/microservices/application/GeneralAppServiceConfig/#application-settings
+# For more details see: https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#application-settings
 # Example that works with devices from the Virtual Device service:
 [ApplicationSettings]
 DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device"
@@ -165,7 +165,7 @@ DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInte
 # TODO: Replace this section with your actual structured custom configuration section
 #       or remove if you don't have a need for structured custom configuration
 # This can be any structure you need, but it can not contain slices. Use a maps instead of slices.
-# For more details see: https://docs.edgexfoundry.org/2.0/microservices/application/GeneralAppServiceConfig/#custom-configuration
+# For more details see: https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#custom-configuration
 [AppCustom]
 ResourceNames = "Boolean, Int32, Uint32, Float32, Binary"
 SomeValue = 123
