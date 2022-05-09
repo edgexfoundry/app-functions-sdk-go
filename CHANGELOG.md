@@ -11,6 +11,68 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+## [v2.2.0] Kamakura - 2022-05-11 (Only compatible with the 2.x releases)
+
+### Features ✨
+
+- Add option for Batch to merge results before sending. ([#1103](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1103)) ([#8ff173f](https://github.com/edgexfoundry/app-functions-sdk-go/commits/8ff173f))
+- Add pipeline IDs as tags to the metris collected for each pipeline. ([#1102](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1102)) ([#cad5e53](https://github.com/edgexfoundry/app-functions-sdk-go/commits/cad5e53))
+- Add Line Protocol function to transform Metric DTO ([#1100](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1100)) ([#4ae2578](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4ae2578))
+- Added initial SDK level App service metrics ([#1098](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1098)) ([#3a510b3](https://github.com/edgexfoundry/app-functions-sdk-go/commits/3a510b3))
+- Added support for custom app service to have custom service metrics ([#1094](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1094)) ([#a0ca9d1](https://github.com/edgexfoundry/app-functions-sdk-go/commits/a0ca9d1))
+- Enable Delayed Start and Service Metrics capability ([#1093](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1093)) ([#cf0a0b1](https://github.com/edgexfoundry/app-functions-sdk-go/commits/cf0a0b1))
+- Optimize findMatchingFunction ([#1071](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1071)) ([#5f18f9a](https://github.com/edgexfoundry/app-functions-sdk-go/commits/5f18f9a))
+- Expose the RequestTimeout configuration setting to app service ([#1039](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1039)) ([#c8cbc5e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/c8cbc5e))
+- Improve service initialization process ([#1047](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1047)) ([#6bcd8b5](https://github.com/edgexfoundry/app-functions-sdk-go/commits/6bcd8b5))
+- Location of client service obtained from the registry ([#1038](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1038)) ([#cc5ba68](https://github.com/edgexfoundry/app-functions-sdk-go/commits/cc5ba68))
+- **store-forward:** Enable Custom Factory Registration ([#1051](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1051)) ([#c4fff4f](https://github.com/edgexfoundry/app-functions-sdk-go/commits/c4fff4f))
+- **webserver:** Create Common DTOs with ServiceName ([#1029](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1029)) ([#3b5051e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/3b5051e))
+
+### Test
+
+- **sdk:** Use -race Flag when testing ([#1026](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1026)) ([#ec717f4](https://github.com/edgexfoundry/app-functions-sdk-go/commits/ec717f4))
+
+### Bug Fixes 🐛
+
+- Use latest 1.8.8 of redigo and ignore bad v2.0.0 tag ([#1049](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1049)) ([#73b9dee](https://github.com/edgexfoundry/app-functions-sdk-go/commits/73b9dee))
+- Refine the retry mechanism inside the MQTT trigger Initialize func ([#1090](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1090)) ([#241a840](https://github.com/edgexfoundry/app-functions-sdk-go/commits/241a840))
+- Missed ServiceName in Swagger ([#1033](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1033)) ([#1fe855a](https://github.com/edgexfoundry/app-functions-sdk-go/commits/1fe855a))
+- Update sample data in swagger for /secret to be correct ([#1075](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1075)) ([#7cb97b0](https://github.com/edgexfoundry/app-functions-sdk-go/commits/7cb97b0))
+- Enable controller tests to run and fix failures ([#1067](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1067)) ([#2bb5a09](https://github.com/edgexfoundry/app-functions-sdk-go/commits/2bb5a09))
+- improper use of secretAddedSignal channel ([#1054](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1054)) ([#50cceb0](https://github.com/edgexfoundry/app-functions-sdk-go/commits/50cceb0))
+- Update all doc links in app template to refer to version 2.2 ([#1105](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1105)) ([#8d5a86b](https://github.com/edgexfoundry/app-functions-sdk-go/commits/8d5a86b))
+- **configuration:** add handling for custom configuration section in c… ([#1082](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1082)) ([#e072562](https://github.com/edgexfoundry/app-functions-sdk-go/commits/e072562))
+- **triggers:** Write HTTP Response Data ([#1034](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1034)) ([#7f6b5c5](https://github.com/edgexfoundry/app-functions-sdk-go/commits/7f6b5c5))
+- **triggers:** Log / Config Access ([#1021](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1021)) ([#221b25e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/221b25e))
+- **triggers:** Return Bad Request Errors Where Appropriate ([#1022](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1022)) ([#354085e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/354085e))
+- **triggers:** Pass Child Context to Response Handler ([#1011](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1011)) ([#4ccfd54](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4ccfd54))
+
+### Code Refactoring ♻
+
+- Improve the code readability for the change of issue [#1046](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1046) ([#1060](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1060)) ([#fa9e06d](https://github.com/edgexfoundry/app-functions-sdk-go/commits/fa9e06d))
+- **triggers:** Normalize Orchestration ([#967](https://github.com/edgexfoundry/app-functions-sdk-go/issues/967)) ([#a4177a0](https://github.com/edgexfoundry/app-functions-sdk-go/commits/a4177a0))
+
+### Documentation 📖
+
+- update outdated link in configuration.toml ([#1097](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1097)) ([#3fb663e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/3fb663e))
+- Publish swagger to 2.2.0 ([#1015](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1015)) ([#7c5d33e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/7c5d33e))
+
+### Build 👷
+
+- enable security hardening ([#1079](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1079)) ([#ba5e325](https://github.com/edgexfoundry/app-functions-sdk-go/commits/ba5e325))
+
+- Update to latest go-mod-messaging w/o ZMQ on windows ([#1009](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1009)) ([#d30acd6](https://github.com/edgexfoundry/app-functions-sdk-go/commits/d30acd6))
+
+  ```
+  BREAKING CHANGE:
+  ZeroMQ no longer supported on native Windows for EdgeX
+  MessageBus
+  ```
+
+### Continuous Integration 🔄
+
+- Go 1.17 related changes ([#1023](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1023)) ([#a651657](https://github.com/edgexfoundry/app-functions-sdk-go/commits/a651657))
+
 ## [v2.1.0] Jakarta - 2021-11-17 (Only compatible with the 2.x releases)
 
 ### Features ✨
