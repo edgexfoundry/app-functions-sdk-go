@@ -26,12 +26,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus/mocks"
-	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus/mocks"
+	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
 
 	"github.com/stretchr/testify/mock"
 
@@ -123,18 +124,18 @@ func TestInitializeSecure(t *testing.T) {
 		Trigger: sdkCommon.TriggerInfo{
 			Type: TriggerTypeMessageBus,
 			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "zero",
+				Type: "redis",
 
 				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "*",
-					Port:         5563,
-					Protocol:     "tcp",
+					Host:         "localhost",
+					Port:         6379,
+					Protocol:     "redis",
 					PublishTopic: "publish",
 				},
 				SubscribeHost: sdkCommon.SubscribeHostInfo{
 					Host:            "localhost",
-					Port:            5563,
-					Protocol:        "tcp",
+					Port:            6379,
+					Protocol:        "redis",
 					SubscribeTopics: "events",
 				},
 				Optional: map[string]string{
@@ -164,6 +165,7 @@ func TestInitializeSecure(t *testing.T) {
 	assert.Equal(t, 1, len(trigger.topics))
 	assert.Equal(t, "events", trigger.topics[0].Topic)
 	assert.NotNil(t, trigger.topics[0].Messages)
+	assert.Empty(t, config.Trigger.EdgexMessageBus.Optional[bootstrapMessaging.SecretPasswordKey])
 }
 
 func TestInitializeBadConfiguration(t *testing.T) {
