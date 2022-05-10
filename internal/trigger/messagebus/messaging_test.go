@@ -165,6 +165,7 @@ func TestInitializeSecure(t *testing.T) {
 	assert.NotNil(t, trigger.client, "Expected client to be set")
 	assert.Equal(t, 1, len(trigger.topics))
 	assert.Equal(t, "events", trigger.topics[0].Topic)
+	assert.Empty(t, config.Trigger.EdgexMessageBus.Optional[bootstrapMessaging.SecretPasswordKey])
 	assert.NotNil(t, trigger.topics[0].Messages)
 }
 
