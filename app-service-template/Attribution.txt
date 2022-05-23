@@ -132,7 +132,7 @@ https://github.com/golang/sync/blob/master/LICENSE
 golang.org/x/text (Unspecified) https://github.com/golang/text
 https://github.com/golang/text/blob/master/LICENSE
 
-github.com/diegoholiveira/jsonlogic (MIT) https://github.com/diegoholiveira/
+github.com/diegoholiveira/jsonlogic/v3 (MIT) https://github.com/diegoholiveira/
 https://github.com/diegoholiveira/jsonlogic/blob/master/LICENSE
 
 github.com/go-redis/redis/v7 (BSD-2) https://github.com/go-redis/redis
