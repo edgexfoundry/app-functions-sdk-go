@@ -256,10 +256,18 @@ func (_ *Trigger) createMessagingClientConfig(localConfig sdkCommon.MessageBusCo
 			Protocol: localConfig.SubscribeHost.Protocol,
 		},
 		Type:     localConfig.Type,
-		Optional: localConfig.Optional,
+		Optional: deepCopy(localConfig.Optional),
 	}
 
 	return clientConfig
+}
+
+func deepCopy(target map[string]string) map[string]string {
+	result := make(map[string]string)
+	for key, value := range target {
+		result[key] = value
+	}
+	return result
 }
 
 func (trigger *Trigger) setOptionalAuthData(messageBusConfig *types.MessageBusConfig, lc logger.LoggingClient) error {
