@@ -4,12 +4,24 @@
 
 ### Change Logs for EdgeX Dependencies
 
-- [go-mod-bootstrap](https://github.com/edgexfoundry/go-mod-bootstrap/blob/main/CHANGELOG.md)
-- [go-mod-core-contracts](https://github.com/edgexfoundry/go-mod-core-contracts/blob/main/CHANGELOG.md)
-- [go-mod-messaging](https://github.com/edgexfoundry/go-mod-messaging/blob/main/CHANGELOG.md)
-- [go-mod-registry](https://github.com/edgexfoundry/go-mod-registry/blob/main/CHANGELOG.md) 
-- [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
-- [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
+- [go-mod-bootstrap](https://github.com/edgexfoundry/go-mod-bootstrap/blob/jakarta/CHANGELOG.md)
+- [go-mod-core-contracts](https://github.com/edgexfoundry/go-mod-core-contracts/blob/jakarta/CHANGELOG.md)
+- [go-mod-messaging](https://github.com/edgexfoundry/go-mod-messaging/blob/jakarta/CHANGELOG.md)
+- [go-mod-registry](https://github.com/edgexfoundry/go-mod-registry/blob/jakarta/CHANGELOG.md) 
+- [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/jakarta/CHANGELOG.md) (indirect dependency)
+- [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/jakarta/CHANGELOG.md) (indirect dependency)
+
+## [v2.1.1] Jakarta - 2022-06-08 (Only compatible with the 2.x releases)
+
+### Bug Fixes 🐛
+
+- Back port swagger /secret fix ([#1115](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1115)) ([#a513521](https://github.com/edgexfoundry/app-functions-sdk-go/commits/a513521))
+- Make deep copy of MessageBus Optional map to avoid external adds ([#1109](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1109)) ([#1113](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1113)) ([#4d8b155](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4d8b155))
+- **triggers:** Pass Child Context to Response Handler ([#1118](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1118)) ([#f9b1467](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f9b1467))
+
+### Build 👷
+
+- Update go-mod versions for those that changed for the 2.1.1 patch ([#1119](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1119)) ([#1afd2ca](https://github.com/edgexfoundry/app-functions-sdk-go/commits/1afd2ca))
 
 ## [v2.1.0] Jakarta - 2021-11-17 (Only compatible with the 2.x releases)
 
