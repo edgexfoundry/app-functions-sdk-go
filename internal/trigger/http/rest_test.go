@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2020 Technotects
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,19 +21,20 @@ package http
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"testing"
+
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/http/mocks"
 	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/mocks"
 	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
@@ -105,18 +106,19 @@ func TestTriggerRequestHandler_ProcessError(t *testing.T) {
 	contentType := "arbitrary string"
 	correlationId := uuid.NewString()
 	errCode := 47
-	afc := appfunction.NewContext("", nil, contentType) // &interfaceMocks.AppFunctionContext{}
+	afc := appfunction.NewContext(correlationId, nil, contentType) // &interfaceMocks.AppFunctionContext{}
 	pipeline := &interfaces.FunctionPipeline{}
 
 	bnd := &triggerMocks.ServiceBinding{}
 	bnd.On("LoggingClient").Return(logger.NewMockClient())
 	bnd.On("BuildContext", mock.AnythingOfType("types.MessageEnvelope")).Return(afc)
 	bnd.On("GetDefaultPipeline").Return(pipeline)
-	bnd.On("ProcessMessage", afc, mock.AnythingOfType("types.MessageEnvelope"), pipeline).Return(func(ctx *appfunction.Context, env types.MessageEnvelope, p *interfaces.FunctionPipeline) *runtime.MessageError {
-		assert.Equal(t, correlationId, env.CorrelationID)
+	bnd.On("DecodeMessage", mock.Anything, mock.Anything).Return(data, nil, false)
+	bnd.On("ProcessMessage", afc, mock.Anything, pipeline).Return(func(ctx *appfunction.Context, messageData interface{}, p *interfaces.FunctionPipeline) *runtime.MessageError {
+		assert.Equal(t, correlationId, ctx.CorrelationID())
 		assert.Equal(t, afc, ctx)
-		assert.Equal(t, data, env.Payload)
-		assert.Equal(t, contentType, env.ContentType)
+		assert.Equal(t, data, messageData)
+		assert.Equal(t, contentType, ctx.InputContentType())
 		return &runtime.MessageError{
 			Err:       fmt.Errorf("error"),
 			ErrorCode: errCode,
@@ -148,18 +150,19 @@ func TestTriggerRequestHandler(t *testing.T) {
 	data := []byte("some data")
 	contentType := "arbitrary string"
 	correlationId := uuid.NewString()
-	afc := appfunction.NewContext("", nil, contentType) // &interfaceMocks.AppFunctionContext{}
+	afc := appfunction.NewContext(correlationId, nil, contentType) // &interfaceMocks.AppFunctionContext{}
 	pipeline := &interfaces.FunctionPipeline{}
 
 	bnd := &triggerMocks.ServiceBinding{}
 	bnd.On("LoggingClient").Return(logger.NewMockClient())
 	bnd.On("BuildContext", mock.AnythingOfType("types.MessageEnvelope")).Return(afc)
 	bnd.On("GetDefaultPipeline").Return(pipeline)
-	bnd.On("ProcessMessage", afc, mock.AnythingOfType("types.MessageEnvelope"), pipeline).Return(func(ctx *appfunction.Context, env types.MessageEnvelope, p *interfaces.FunctionPipeline) *runtime.MessageError {
-		assert.Equal(t, correlationId, env.CorrelationID)
+	bnd.On("DecodeMessage", afc, mock.Anything).Return(data, nil, false)
+	bnd.On("ProcessMessage", afc, mock.Anything, pipeline).Return(func(ctx *appfunction.Context, messageData interface{}, p *interfaces.FunctionPipeline) *runtime.MessageError {
+		assert.Equal(t, correlationId, ctx.CorrelationID())
 		assert.Equal(t, afc, ctx)
-		assert.Equal(t, data, env.Payload)
-		assert.Equal(t, contentType, env.ContentType)
+		assert.Equal(t, data, messageData)
+		assert.Equal(t, contentType, ctx.InputContentType())
 		ctx.SetResponseData(data)
 		return nil
 	})

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -107,7 +107,10 @@ func TestInitializeNotSecure(t *testing.T) {
 	serviceBinding.On("Config").Return(&config)
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
-	trigger := NewTrigger(serviceBinding, nil, dic)
+	messageProcessor := &triggerMocks.MessageProcessor{}
+	messageProcessor.On("ReceivedInvalidMessage")
+
+	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	require.NoError(t, err)
@@ -157,7 +160,10 @@ func TestInitializeSecure(t *testing.T) {
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 	serviceBinding.On("SecretProvider").Return(&mock)
 
-	trigger := NewTrigger(serviceBinding, nil, dic)
+	messageProcessor := &triggerMocks.MessageProcessor{}
+	messageProcessor.On("ReceivedInvalidMessage")
+
+	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	require.NoError(t, err)
@@ -196,7 +202,10 @@ func TestInitializeBadConfiguration(t *testing.T) {
 	serviceBinding.On("Config").Return(&config)
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
-	trigger := NewTrigger(serviceBinding, nil, dic)
+	messageProcessor := &triggerMocks.MessageProcessor{}
+	messageProcessor.On("ReceivedInvalidMessage")
+
+	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
 
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	assert.Error(t, err)
@@ -241,6 +250,7 @@ func TestInitializeAndProcessEvent(t *testing.T) {
 		messageProcessed <- true
 		return nil
 	})
+	messageProcessor.On("ReceivedInvalidMessage")
 
 	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
 
@@ -310,7 +320,10 @@ func TestInitializeAndProcessBackgroundMessage(t *testing.T) {
 	serviceBinding.On("Config").Return(&config)
 	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
-	trigger := NewTrigger(serviceBinding, nil, dic)
+	messageProcessor := &triggerMocks.MessageProcessor{}
+	messageProcessor.On("ReceivedInvalidMessage")
+
+	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
 
 	testClientConfig := types.MessageBusConfig{
 		SubscribeHost: types.HostInfo{
@@ -479,8 +492,9 @@ func TestTrigger_responseHandler(t *testing.T) {
 			}
 
 			trigger := &Trigger{
-				serviceBinding: serviceBinding,
-				client:         client,
+				serviceBinding:   serviceBinding,
+				messageProcessor: &triggerMocks.MessageProcessor{},
+				client:           client,
 			}
 			if err := trigger.responseHandler(ctx, tt.args.pipeline); (err != nil) != tt.wantErr {
 				t.Errorf("responseHandler() error = %v, wantErr %v", err, tt.wantErr)

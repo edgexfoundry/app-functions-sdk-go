@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +42,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/requests"
 	edgexErrors "github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
+
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
@@ -169,22 +170,36 @@ func (gr *GolangRuntime) addFunctionsPipeline(id string, topics []string, transf
 }
 
 // ProcessMessage sends the contents of the message through the functions pipeline
-func (gr *GolangRuntime) ProcessMessage(
-	appContext *appfunction.Context,
-	envelope types.MessageEnvelope,
-	pipeline *interfaces.FunctionPipeline) *MessageError {
+func (gr *GolangRuntime) ProcessMessage(appContext *appfunction.Context, target interface{}, pipeline *interfaces.FunctionPipeline) *MessageError {
 	lc := appContext.LoggingClient()
 
 	if len(pipeline.Transforms) == 0 {
 		err := fmt.Errorf("no transforms configured for pipleline Id='%s'. Please check log for earlier errors loading pipeline", pipeline.Id)
-		logError(lc, err, envelope.CorrelationID)
+		logError(lc, err, appContext.CorrelationID())
 		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
 	}
 
-	appContext.AddValue(interfaces.RECEIVEDTOPIC, envelope.ReceivedTopic)
 	appContext.AddValue(interfaces.PIPELINEID, pipeline.Id)
 
 	lc.Debugf("Pipeline '%s' processing message %d Transforms", pipeline.Id, len(pipeline.Transforms))
+
+	// Make copy of transform functions to avoid disruption of pipeline when updating the pipeline from registry
+	gr.isBusyCopying.Lock()
+	execPipeline := &interfaces.FunctionPipeline{
+		Id:         pipeline.Id,
+		Transforms: make([]interfaces.AppFunction, len(pipeline.Transforms)),
+		Topics:     pipeline.Topics,
+		Hash:       pipeline.Hash,
+	}
+	copy(execPipeline.Transforms, pipeline.Transforms)
+	gr.isBusyCopying.Unlock()
+
+	return gr.ExecutePipeline(target, appContext, execPipeline, 0, false)
+}
+
+// DecodeMessage decode the message wrapped in the MessageEnvelope and return the data to be processed.
+func (gr *GolangRuntime) DecodeMessage(appContext *appfunction.Context, envelope types.MessageEnvelope) (interface{}, *MessageError, bool) {
+	lc := appContext.LoggingClient()
 
 	// Default Target Type for the function pipeline is an Event DTO.
 	// The Event DTO can be wrapped in an AddEventRequest DTO or just be the un-wrapped Event DTO,
@@ -196,7 +211,7 @@ func (gr *GolangRuntime) ProcessMessage(
 	if reflect.TypeOf(gr.TargetType).Kind() != reflect.Ptr {
 		err := errors.New("TargetType must be a pointer, not a value of the target type")
 		logError(lc, err, envelope.CorrelationID)
-		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
+		return nil, &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}, false
 	}
 
 	// Must make a copy of the type so that data isn't retained between calls for custom types
@@ -213,15 +228,9 @@ func (gr *GolangRuntime) ProcessMessage(
 		// Dynamically process either AddEventRequest or Event DTO
 		event, err := gr.processEventPayload(envelope, lc)
 		if err != nil {
-			errorCode := http.StatusInternalServerError
-			if edgexErrors.Kind(err) == edgexErrors.KindContractInvalid {
-				errorCode = http.StatusBadRequest
-			}
-
 			err = fmt.Errorf("unable to process payload %s", err.Error())
 			logError(lc, err, envelope.CorrelationID)
-
-			return &MessageError{Err: err, ErrorCode: errorCode}
+			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
 		}
 
 		if lc.LogLevel() == models.DebugLog {
@@ -242,33 +251,23 @@ func (gr *GolangRuntime) ProcessMessage(
 		if err := gr.unmarshalPayload(envelope, target); err != nil {
 			err = fmt.Errorf("unable to process custom object received of type '%s': %s", customTypeName, err.Error())
 			logError(lc, err, envelope.CorrelationID)
-			return &MessageError{Err: err, ErrorCode: http.StatusBadRequest}
+			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
 		}
 	}
 
 	appContext.SetCorrelationID(envelope.CorrelationID)
+	appContext.SetInputContentType(envelope.ContentType)
+	appContext.AddValue(interfaces.RECEIVEDTOPIC, envelope.ReceivedTopic)
 
 	// All functions expect an object, not a pointer to an object, so must use reflection to
 	// dereference to pointer to the object
 	target = reflect.ValueOf(target).Elem().Interface()
 
-	// Make copy of transform functions to avoid disruption of pipeline when updating the pipeline from registry
-	gr.isBusyCopying.Lock()
-	execPipeline := &interfaces.FunctionPipeline{
-		Id:         pipeline.Id,
-		Transforms: make([]interfaces.AppFunction, len(pipeline.Transforms)),
-		Topics:     pipeline.Topics,
-		Hash:       pipeline.Hash,
-	}
-	copy(execPipeline.Transforms, pipeline.Transforms)
-	gr.isBusyCopying.Unlock()
-
-	return gr.ExecutePipeline(target, envelope.ContentType, appContext, execPipeline, 0, false)
+	return target, nil, false
 }
 
 func (gr *GolangRuntime) ExecutePipeline(
 	target interface{},
-	contentType string,
 	appContext *appfunction.Context,
 	pipeline *interfaces.FunctionPipeline,
 	startPosition int,
@@ -285,7 +284,6 @@ func (gr *GolangRuntime) ExecutePipeline(
 		appContext.SetRetryData(nil)
 
 		if result == nil {
-			appContext.SetInputContentType(contentType)
 			continuePipeline, result = trxFunc(appContext, target)
 		} else {
 			continuePipeline, result = trxFunc(appContext, result)

@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2021 One Track Consulting
+// Copyright (c) 2022 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +18,9 @@
 package trigger
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 )
 
 type MessageProcessor interface {
@@ -27,4 +29,6 @@ type MessageProcessor interface {
 	Process(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope) error
 	// MessageReceived provides runtime orchestration to pass the envelope / context to configured pipeline(s)
 	MessageReceived(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope, outputHandler interfaces.PipelineResponseHandler) error
+	// ReceivedInvalidMessage is called when an invalid message is received so the metrics counter can be incremented.
+	ReceivedInvalidMessage()
 }

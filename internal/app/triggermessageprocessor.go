@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2021 One Track Consulting
+// Copyright (c) 2022 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,17 +23,20 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
-	"github.com/hashicorp/go-multierror"
-	gometrics "github.com/rcrowley/go-metrics"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+
+	"github.com/hashicorp/go-multierror"
+	gometrics "github.com/rcrowley/go-metrics"
 )
 
 type simpleTriggerServiceBinding struct {
@@ -65,8 +69,33 @@ func (b *simpleTriggerServiceBinding) Config() *common.ConfigurationStruct {
 
 // triggerMessageProcessor wraps the ServiceBinding interface so that we can attach methods
 type triggerMessageProcessor struct {
-	bnd              trigger.ServiceBinding
-	messagesReceived gometrics.Counter
+	serviceBinding          trigger.ServiceBinding
+	messagesReceived        gometrics.Counter
+	invalidMessagesReceived gometrics.Counter
+}
+
+func NewTriggerMessageProcessor(bnd trigger.ServiceBinding, metricsManager bootstrapInterfaces.MetricsManager) *triggerMessageProcessor {
+	lc := bnd.LoggingClient()
+
+	mp := &triggerMessageProcessor{
+		serviceBinding:          bnd,
+		messagesReceived:        gometrics.NewCounter(),
+		invalidMessagesReceived: gometrics.NewCounter(),
+	}
+
+	if err := metricsManager.Register(internal.MessagesReceivedName, mp.messagesReceived, nil); err != nil {
+		lc.Warnf("%s metric failed to register and will not be reported: %s", internal.MessagesReceivedName, err.Error())
+	} else {
+		lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
+	}
+
+	if err := metricsManager.Register(internal.InvalidMessagesReceivedName, mp.invalidMessagesReceived, nil); err != nil {
+		lc.Warnf("%s metric failed to register and will not be reported: %s", internal.InvalidMessagesReceivedName, err.Error())
+	} else {
+		lc.Infof("%s metric has been registered and will be reported (if enabled)", internal.InvalidMessagesReceivedName)
+	}
+
+	return mp
 }
 
 // Process provides runtime orchestration to pass the envelope / context to the pipeline.
@@ -78,13 +107,13 @@ func (mp *triggerMessageProcessor) Process(ctx interfaces.AppFunctionContext, en
 		return fmt.Errorf("App Context must be an instance of internal appfunction.Context. Use NewAppContext to create instance.")
 	}
 
-	defaultPipelines := mp.bnd.GetMatchingPipelines(interfaces.DefaultPipelineId)
+	defaultPipelines := mp.serviceBinding.GetMatchingPipelines(interfaces.DefaultPipelineId)
 
 	if len(defaultPipelines) != 1 {
 		return fmt.Errorf("TriggerMessageProcessor is deprecated and does not support non-default or multiple pipelines.  Please use TriggerMessageHandler.")
 	}
 
-	messageError := mp.bnd.ProcessMessage(context, envelope, defaultPipelines[0])
+	messageError := mp.serviceBinding.ProcessMessage(context, envelope, defaultPipelines[0])
 	if messageError != nil {
 		// ProcessMessage logs the error, so no need to log it here.
 		return messageError.Err
@@ -96,15 +125,15 @@ func (mp *triggerMessageProcessor) Process(ctx interfaces.AppFunctionContext, en
 // MessageReceived provides runtime orchestration to pass the envelope / context to configured pipeline(s) along with a response callback to execute on each completion.
 func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope, responseHandler interfaces.PipelineResponseHandler) error {
 	mp.messagesReceived.Inc(1)
-	lc := mp.bnd.LoggingClient()
+	lc := mp.serviceBinding.LoggingClient()
 	lc.Debugf("trigger attempting to find pipeline(s) for topic %s", envelope.ReceivedTopic)
 
 	// ensure we have a context established that we can safely cast to *appfunction.Context to pass to runtime
 	if _, ok := ctx.(*appfunction.Context); ctx == nil || !ok {
-		ctx = mp.bnd.BuildContext(envelope)
+		ctx = mp.serviceBinding.BuildContext(envelope)
 	}
 
-	pipelines := mp.bnd.GetMatchingPipelines(envelope.ReceivedTopic)
+	pipelines := mp.serviceBinding.GetMatchingPipelines(envelope.ReceivedTopic)
 
 	lc.Debugf("trigger found %d pipeline(s) that match the incoming topic '%s'", len(pipelines), envelope.ReceivedTopic)
 
@@ -112,6 +141,19 @@ func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionCon
 	errorCollectionLock := sync.RWMutex{}
 
 	pipelinesWaitGroup := sync.WaitGroup{}
+
+	appContext, ok := ctx.(*appfunction.Context)
+	if !ok {
+		return fmt.Errorf("context received was not *appfunction.Context (%T)", ctx)
+	}
+
+	targetData, err, isInvalidMessage := mp.serviceBinding.DecodeMessage(appContext, envelope)
+	if err != nil {
+		if isInvalidMessage {
+			mp.invalidMessagesReceived.Inc(1)
+		}
+		return fmt.Errorf("unable to decode message: %s", err.Err.Error())
+	}
 
 	for _, pipeline := range pipelines {
 		pipelinesWaitGroup.Add(1)
@@ -131,7 +173,7 @@ func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionCon
 				return
 			}
 
-			if msgErr := mp.bnd.ProcessMessage(childCtx, envelope, p); msgErr != nil {
+			if msgErr := mp.serviceBinding.ProcessMessage(childCtx, targetData, p); msgErr != nil {
 				lc.Errorf("message error in pipeline %s (%s): %s", p.Id, envelope.CorrelationID, msgErr.Err.Error())
 				errCollector(msgErr.Err)
 			} else {
@@ -154,4 +196,12 @@ func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionCon
 	pipelinesWaitGroup.Wait()
 
 	return finalErr
+}
+
+// ReceivedInvalidMessage is called when an error occurs decoding the message from the MessageBus into the MessageEnvelope
+func (mp *triggerMessageProcessor) ReceivedInvalidMessage() {
+	// messagesReceived includes all message received
+	mp.messagesReceived.Inc(1)
+	// invalidMessagesReceived is just the invalid messages received
+	mp.invalidMessagesReceived.Inc(1)
 }

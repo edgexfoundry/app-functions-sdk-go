@@ -21,12 +21,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"io"
 	"net/http"
 	"sync"
+
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 
@@ -113,7 +115,14 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	appContext := trigger.serviceBinding.BuildContext(envelope)
 
 	defaultPipeline := trigger.serviceBinding.GetDefaultPipeline()
-	messageError := trigger.serviceBinding.ProcessMessage(appContext.(*appfunction.Context), envelope, defaultPipeline)
+	targetData, decodeErr, _ := trigger.serviceBinding.DecodeMessage(appContext.(*appfunction.Context), envelope)
+	if decodeErr != nil {
+		writer.WriteHeader(decodeErr.ErrorCode)
+		_, _ = writer.Write([]byte(decodeErr.Err.Error()))
+		return
+	}
+
+	messageError := trigger.serviceBinding.ProcessMessage(appContext.(*appfunction.Context), targetData, defaultPipeline)
 
 	if messageError != nil {
 		writer.WriteHeader(messageError.ErrorCode)
