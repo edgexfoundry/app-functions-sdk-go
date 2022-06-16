@@ -113,7 +113,15 @@ func (mp *triggerMessageProcessor) Process(ctx interfaces.AppFunctionContext, en
 		return fmt.Errorf("TriggerMessageProcessor is deprecated and does not support non-default or multiple pipelines.  Please use TriggerMessageHandler.")
 	}
 
-	messageError := mp.serviceBinding.ProcessMessage(context, envelope, defaultPipelines[0])
+	targetData, err, isInvalidMessage := mp.serviceBinding.DecodeMessage(context, envelope)
+	if err != nil {
+		if isInvalidMessage {
+			mp.invalidMessagesReceived.Inc(1)
+		}
+		return fmt.Errorf("unable to decode message: %s", err.Err.Error())
+	}
+
+	messageError := mp.serviceBinding.ProcessMessage(context, targetData, defaultPipelines[0])
 	if messageError != nil {
 		// ProcessMessage logs the error, so no need to log it here.
 		return messageError.Err
