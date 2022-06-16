@@ -77,9 +77,10 @@ func TestProcessMessageBusRequest(t *testing.T) {
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{dummyTransform})
 
-	_, result, _ := runtime.DecodeMessage(context, envelope)
-	require.NotNil(t, result)
-	assert.Equal(t, expected, result.ErrorCode)
+	_, decodeErr, _ := runtime.DecodeMessage(context, envelope)
+	require.NotNil(t, decodeErr)
+
+	assert.Equal(t, expected, decodeErr.ErrorCode)
 }
 
 func TestProcessMessageNoTransforms(t *testing.T) {
@@ -98,6 +99,7 @@ func TestProcessMessageNoTransforms(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.NotNil(t, result)
@@ -131,6 +133,7 @@ func TestProcessMessageOneCustomTransform(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.Nil(t, result)
@@ -175,6 +178,7 @@ func TestProcessMessageTwoCustomTransforms(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.Nil(t, result)
@@ -226,6 +230,7 @@ func TestProcessMessageThreeCustomTransformsOneFail(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.Nil(t, result)
@@ -261,6 +266,7 @@ func TestProcessMessageTransformError(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	msgErr := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 
@@ -329,6 +335,7 @@ func TestProcessMessageJSON(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	assert.Nilf(t, result, "result should be null. Got %v", result)
@@ -370,6 +377,7 @@ func TestProcessMessageCBOR(t *testing.T) {
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
 
 	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	assert.Nil(t, result, "result should be null")
@@ -446,7 +454,8 @@ func TestDecode_Process_MessageTargetType(t *testing.T) {
 				assert.Error(t, err.Err, fmt.Sprintf("expected an error for test '%s'", currentTest.Name))
 				return
 			} else {
-				assert.Nil(t, err, fmt.Sprintf("unexpected error for test '%s'", currentTest.Name))
+				require.Nil(t, err, fmt.Sprintf("unexpected error for test '%s'", currentTest.Name))
+				require.NotNil(t, targetData)
 			}
 
 			err = runtime.ProcessMessage(context, targetData, runtime.GetDefaultPipeline())

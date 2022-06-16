@@ -69,7 +69,8 @@ func (b *simpleTriggerServiceBinding) Config() *common.ConfigurationStruct {
 
 // triggerMessageProcessor wraps the ServiceBinding interface so that we can attach methods
 type triggerMessageProcessor struct {
-	serviceBinding          trigger.ServiceBinding
+	serviceBinding trigger.ServiceBinding
+	// messagesReceived includes all message received (valid and invalid)
 	messagesReceived        gometrics.Counter
 	invalidMessagesReceived gometrics.Counter
 }

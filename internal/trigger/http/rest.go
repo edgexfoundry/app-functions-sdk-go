@@ -118,7 +118,10 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	targetData, decodeErr, _ := trigger.serviceBinding.DecodeMessage(appContext.(*appfunction.Context), envelope)
 	if decodeErr != nil {
 		writer.WriteHeader(decodeErr.ErrorCode)
-		_, _ = writer.Write([]byte(decodeErr.Err.Error()))
+		_, err = writer.Write([]byte(decodeErr.Err.Error()))
+		if err != nil {
+			lc.Errorf("unable to write Error (%s) as HTTP response: %s", decodeErr.Err.Error(), err.Error())
+		}
 		return
 	}
 
@@ -126,7 +129,10 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 
 	if messageError != nil {
 		writer.WriteHeader(messageError.ErrorCode)
-		_, _ = writer.Write([]byte(messageError.Err.Error()))
+		_, err = writer.Write([]byte(messageError.Err.Error()))
+		if err != nil {
+			lc.Errorf("unable to write Error (%s) as HTTP response: %s", messageError.Err.Error(), err.Error())
+		}
 		return
 	}
 
