@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2020 Technotects
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +22,6 @@ import (
 	"fmt"
 	"strings"
 
-	gometrics "github.com/rcrowley/go-metrics"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/http"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus"
@@ -42,29 +39,21 @@ const (
 func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) interfaces.Trigger {
 	var t interfaces.Trigger
 
-	bnd := NewTriggerServiceBinding(svc)
-	mp := &triggerMessageProcessor{
-		bnd:              bnd,
-		messagesReceived: gometrics.NewCounter()}
-
-	if err := svc.MetricsManager().Register(internal.MessagesReceivedName, mp.messagesReceived, nil); err != nil {
-		svc.lc.Warnf("%s metric failed to register and will not be reported: %s", internal.MessagesReceivedName, err.Error())
-	} else {
-		svc.lc.Infof("%s metric has been registered and will be reported", internal.MessagesReceivedName)
-	}
+	serviceBinding := NewTriggerServiceBinding(svc)
+	messageProcessor := NewTriggerMessageProcessor(serviceBinding, svc.MetricsManager())
 
 	switch triggerType := strings.ToUpper(configuration.Trigger.Type); triggerType {
 	case TriggerTypeHTTP:
 		svc.LoggingClient().Info("HTTP trigger selected")
-		t = http.NewTrigger(bnd, mp, svc.webserver)
+		t = http.NewTrigger(serviceBinding, messageProcessor, svc.webserver)
 
 	case TriggerTypeMessageBus:
 		svc.LoggingClient().Info("EdgeX MessageBus trigger selected")
-		t = messagebus.NewTrigger(bnd, mp, svc.dic)
+		t = messagebus.NewTrigger(serviceBinding, messageProcessor, svc.dic)
 
 	case TriggerTypeMQTT:
 		svc.LoggingClient().Info("External MQTT trigger selected")
-		t = mqtt.NewTrigger(bnd, mp)
+		t = mqtt.NewTrigger(serviceBinding, messageProcessor)
 
 	default:
 		if factory, found := svc.customTriggerFactories[triggerType]; found {
@@ -98,23 +87,15 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 	}
 
 	svc.customTriggerFactories[nu] = func(sdk *Service) (interfaces.Trigger, error) {
-		binding := NewTriggerServiceBinding(sdk)
-		messageProcessor := &triggerMessageProcessor{
-			bnd:              binding,
-			messagesReceived: gometrics.NewCounter()}
-
-		if err := svc.MetricsManager().Register(internal.MessagesReceivedName, messageProcessor.messagesReceived, nil); err != nil {
-			svc.lc.Warnf("%s metric failed to register and will not be reported: %s", internal.MessagesReceivedName, err.Error())
-		} else {
-			svc.lc.Infof("%s metric has been registered and will be reported (if enabled)", internal.MessagesReceivedName)
-		}
+		serviceBinding := NewTriggerServiceBinding(sdk)
+		messageProcessor := NewTriggerMessageProcessor(serviceBinding, svc.MetricsManager())
 
 		cfg := interfaces.TriggerConfig{
 			Logger:           sdk.lc,
-			ContextBuilder:   binding.BuildContext,
+			ContextBuilder:   serviceBinding.BuildContext,
 			MessageProcessor: messageProcessor.Process,
 			MessageReceived:  messageProcessor.MessageReceived,
-			ConfigLoader:     binding.LoadCustomConfig,
+			ConfigLoader:     serviceBinding.LoadCustomConfig,
 		}
 
 		return factory(cfg)

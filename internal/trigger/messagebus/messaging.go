@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,23 +24,19 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
-	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
-
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-messaging/v2/messaging"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
+	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
 )
 
 // Trigger implements Trigger to support MessageBusData
@@ -151,7 +147,10 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 				return
 
 			case msgErr := <-messageErrors:
-				lc.Errorf("Failed to receive message from bus, %v", msgErr)
+				lc.Errorf("error receiving message from bus, %s", msgErr.Error())
+				// This will occur if an invalid message from the MessageBus fails to decode into the MessageEnvelope
+				// Must let the message processor know, so it can update the service metrics it is managing.
+				trigger.messageProcessor.ReceivedInvalidMessage()
 
 			case bg := <-background:
 				go func() {

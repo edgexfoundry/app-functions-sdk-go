@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2021 One Track Consulting
+// Copyright (c) 2022 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +21,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 	"github.com/google/uuid"
@@ -109,7 +111,7 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 			name: "multi pipeline single err",
 			setup: returns{
 				pipelineMatcher: []*interfaces.FunctionPipeline{testPipeline(), errorPipeline, testPipeline()},
-				runtimeProcessor: func(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
+				runtimeProcessor: func(appContext *appfunction.Context, data interface{}, pipeline *interfaces.FunctionPipeline) *runtime.MessageError {
 					if pipeline.Id == "errorid" {
 						return &runtime.MessageError{Err: fmt.Errorf("new error")}
 					}
@@ -134,14 +136,14 @@ func Test_triggerMessageProcessor_MessageReceived(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tsb := triggerMocks.ServiceBinding{}
 
-			tsb.On("ProcessMessage", mock.AnythingOfType("*appfunction.Context"), mock.AnythingOfType("types.MessageEnvelope"), mock.AnythingOfType("*interfaces.FunctionPipeline")).Return(tt.setup.runtimeProcessor)
+			tsb.On("ProcessMessage", mock.Anything, mock.Anything, mock.Anything).Return(tt.setup.runtimeProcessor)
+			tsb.On("DecodeMessage", mock.Anything, mock.Anything).Return(nil, nil, false)
 			tsb.On("GetMatchingPipelines", tt.args.envelope.ReceivedTopic).Return(tt.setup.pipelineMatcher)
 			tsb.On("LoggingClient").Return(lc)
 
-			bnd := &triggerMessageProcessor{
-				bnd:              &tsb,
-				messagesReceived: gometrics.NewCounter(),
-			}
+			mmMock := mocks.MetricsManager{}
+			mmMock.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			bnd := NewTriggerMessageProcessor(&tsb, &mmMock)
 
 			var rh interfaces.PipelineResponseHandler
 

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,9 +76,11 @@ func TestProcessMessageBusRequest(t *testing.T) {
 
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{dummyTransform})
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
-	require.NotNil(t, result)
-	assert.Equal(t, expected, result.ErrorCode)
+
+	_, decodeErr, _ := runtime.DecodeMessage(context, envelope)
+	require.NotNil(t, decodeErr)
+
+	assert.Equal(t, expected, decodeErr.ErrorCode)
 }
 
 func TestProcessMessageNoTransforms(t *testing.T) {
@@ -95,7 +97,11 @@ func TestProcessMessageNoTransforms(t *testing.T) {
 
 	runtime := NewGolangRuntime("", nil, dic)
 
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.NotNil(t, result)
 	assert.Equal(t, expected, result.ErrorCode)
 }
@@ -124,7 +130,12 @@ func TestProcessMessageOneCustomTransform(t *testing.T) {
 	}
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.Nil(t, result)
 	require.True(t, transform1WasCalled, "transform1 should have been called")
 
@@ -165,7 +176,11 @@ func TestProcessMessageTwoCustomTransforms(t *testing.T) {
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1, transform2})
 
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.Nil(t, result)
 	assert.True(t, transform1WasCalled, "transform1 should have been called")
 	assert.True(t, transform2WasCalled, "transform2 should have been called")
@@ -213,7 +228,11 @@ func TestProcessMessageThreeCustomTransformsOneFail(t *testing.T) {
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1, transform2, transform3})
 
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	require.Nil(t, result)
 	assert.True(t, transform1WasCalled, "transform1 should have been called")
 	assert.False(t, transform2WasCalled, "transform2 should NOT have been called")
@@ -244,7 +263,12 @@ func TestProcessMessageTransformError(t *testing.T) {
 	runtime := NewGolangRuntime("", &config.RegistryInfo{}, dic)
 	// FilterByDeviceName with return an error if it doesn't receive and Event
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transforms.NewFilterFor([]string{"SomeDevice"}).FilterByDeviceName})
-	msgErr := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	msgErr := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 
 	require.NotNil(t, msgErr, "Expected an error")
 	require.Error(t, msgErr.Err, "Expected an error")
@@ -309,7 +333,11 @@ func TestProcessMessageJSON(t *testing.T) {
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	assert.Nilf(t, result, "result should be null. Got %v", result)
 	assert.True(t, transform1WasCalled, "transform1 should have been called")
 }
@@ -347,7 +375,11 @@ func TestProcessMessageCBOR(t *testing.T) {
 	runtime := NewGolangRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 
-	result := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
+	require.Nil(t, decodeError)
+	require.NotNil(t, messageData)
+
+	result := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 	assert.Nil(t, result, "result should be null")
 	assert.True(t, transform1WasCalled, "transform1 should have been called")
 }
@@ -367,7 +399,7 @@ func (custom CustomType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(test)
 }
 
-func TestProcessMessageTargetType(t *testing.T) {
+func TestDecode_Process_MessageTargetType(t *testing.T) {
 	jsonPayload, err := json.Marshal(testAddEventRequest)
 	require.NoError(t, err)
 
@@ -416,13 +448,18 @@ func TestProcessMessageTargetType(t *testing.T) {
 			runtime := NewGolangRuntime("", currentTest.TargetType, dic)
 			runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transforms.NewResponseData().SetResponseData})
 
-			err := runtime.ProcessMessage(context, envelope, runtime.GetDefaultPipeline())
+			targetData, err, _ := runtime.DecodeMessage(context, envelope)
 			if currentTest.ErrorExpected {
 				assert.NotNil(t, err, fmt.Sprintf("expected an error for test '%s'", currentTest.Name))
 				assert.Error(t, err.Err, fmt.Sprintf("expected an error for test '%s'", currentTest.Name))
+				return
 			} else {
-				assert.Nil(t, err, fmt.Sprintf("unexpected error for test '%s'", currentTest.Name))
+				require.Nil(t, err, fmt.Sprintf("unexpected error for test '%s'", currentTest.Name))
+				require.NotNil(t, targetData)
 			}
+
+			err = runtime.ProcessMessage(context, targetData, runtime.GetDefaultPipeline())
+			require.Nil(t, err)
 
 			// ResponseData will be nil if an error occurred in the pipeline processing the data
 			assert.Equal(t, currentTest.ExpectedOutputData, context.ResponseData(), fmt.Sprintf("'%s' test failed", currentTest.Name))
@@ -456,7 +493,7 @@ func TestExecutePipelinePersist(t *testing.T) {
 
 	pipeline := runtime.GetDefaultPipeline()
 	// Target of this test
-	actual := runtime.ExecutePipeline(payload, "", context, pipeline, 0, false)
+	actual := runtime.ExecutePipeline(payload, context, pipeline, 0, false)
 
 	require.NotNil(t, actual)
 	require.Error(t, actual.Err, "Error expected from export function")

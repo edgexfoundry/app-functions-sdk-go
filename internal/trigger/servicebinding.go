@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2021 One Track Consulting
+// Copyright (c) 2022 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,18 +18,22 @@
 package trigger
 
 import (
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+
+	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
-	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 )
 
 type ServiceBinding interface {
-	// ProcessMessage provides access to the runtime's ProcessMessage function
-	ProcessMessage(appContext *appfunction.Context, envelope types.MessageEnvelope, pipeline *interfaces.FunctionPipeline) *runtime.MessageError
+	// DecodeMessage decodes the message received in the envelope and returns the data to be processed
+	DecodeMessage(appContext *appfunction.Context, envelope types.MessageEnvelope) (interface{}, *runtime.MessageError, bool)
+	// ProcessMessage provides access to the runtime's ProcessMessage function to process the decoded data
+	ProcessMessage(appContext *appfunction.Context, data interface{}, pipeline *interfaces.FunctionPipeline) *runtime.MessageError
 	// GetMatchingPipelines provides access to the runtime's GetMatchingPipelines function
 	GetMatchingPipelines(incomingTopic string) []*interfaces.FunctionPipeline
 	// GetDefaultPipeline provides access to the runtime's GetDefaultPipeline function
