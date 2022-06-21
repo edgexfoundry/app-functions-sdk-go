@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,13 +18,16 @@ package transforms
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
+	gometrics "github.com/rcrowley/go-metrics"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 )
@@ -209,7 +212,33 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 		return true, data
 	}
 
-	ctx.LoggingClient().Debugf("Sent %d bytes of data in pipeline '%s'. Response status is %s", len(exportData), ctx.PipelineId(), response.Status)
+	// capture the size into metrics
+	exportDataBytes := len(exportData)
+	// TODO: EdgeX 3.0 refactor size metrics once receivers are pointers (like mqtt size metrics)
+	metrics := gometrics.DefaultRegistry.Get(internal.HttpExportSizeName)
+	var httpMetrics gometrics.Histogram
+	if metrics == nil {
+		var err error
+		lc.Debugf("Initializing metric %s.", internal.HttpExportSizeName)
+		httpMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		metricsManger := ctx.MetricsManager()
+		if metricsManger != nil {
+			// TODO: EdgeX 3.0 append url to export size name
+			err = metricsManger.Register(internal.HttpExportSizeName, httpMetrics, nil)
+		} else {
+			err = errors.New("metrics manager not available")
+		}
+
+		if err != nil {
+			lc.Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", internal.HttpExportSizeName, err.Error())
+		}
+
+	} else {
+		httpMetrics = metrics.(gometrics.Histogram)
+	}
+	httpMetrics.Update(int64(exportDataBytes))
+
+	ctx.LoggingClient().Debugf("Sent %d bytes of data in pipeline '%s'. Response status is %s", exportDataBytes, ctx.PipelineId(), response.Status)
 	ctx.LoggingClient().Tracef("Data exported for pipeline '%s' (%s=%s)", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
 
 	// This allows multiple HTTP Exports to be chained in the pipeline to send the same data to different destinations
