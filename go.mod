@@ -8,7 +8,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.0
 	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.2.0
-	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.1-dev.4
+	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.1-dev.5
 	github.com/edgexfoundry/go-mod-registry/v2 v2.2.0
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/gomodule/redigo v1.8.8
