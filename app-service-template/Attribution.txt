@@ -9,7 +9,7 @@ https://github.com/armon/go-metrics/blob/master/LICENSE
 cenkalti/backoff (MIT) https://github.com/cenkalti/backoff
 https://github.com/cenkalti/backoff/blob/master/LICENSE
 
-eclipse/paho.mqtt.golang (Eclipse Public License 1.0) https://github.com/eclipse/paho.mqtt.golang
+eclipse/paho.mqtt.golang (Eclipse Public License 2.0) https://github.com/eclipse/paho.mqtt.golang
 https://github.com/eclipse/paho.mqtt.golang/blob/master/LICENSE
 
 edgexfoundry/app-functions-sdk-go (Apache 2.0) https://github.com/edgexfoundry/app-functions-sdk-go/v2
