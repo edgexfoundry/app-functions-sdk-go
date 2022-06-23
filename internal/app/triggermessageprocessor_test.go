@@ -172,5 +172,6 @@ func testPipeline() *interfaces.FunctionPipeline {
 	return &interfaces.FunctionPipeline{
 		MessagesProcessed:     gometrics.NewCounter(),
 		MessageProcessingTime: gometrics.NewTimer(),
+		ProcessingErrors:      gometrics.NewCounter(),
 	}
 }
