@@ -216,15 +216,15 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 	exportDataBytes := len(exportData)
 	// TODO: EdgeX 3.0 refactor size metrics once receivers are pointers (like mqtt size metrics)
 	metrics := gometrics.DefaultRegistry.Get(internal.HttpExportSizeName)
-	var httpMetrics gometrics.Histogram
+	var httpExportSizeMetric gometrics.Histogram
 	if metrics == nil {
 		var err error
 		lc.Debugf("Initializing metric %s.", internal.HttpExportSizeName)
-		httpMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		httpExportSizeMetric = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
 		metricsManger := ctx.MetricsManager()
 		if metricsManger != nil {
 			// TODO: EdgeX 3.0 append url to export size name
-			err = metricsManger.Register(internal.HttpExportSizeName, httpMetrics, nil)
+			err = metricsManger.Register(internal.HttpExportSizeName, httpExportSizeMetric, nil)
 		} else {
 			err = errors.New("metrics manager not available")
 		}
@@ -234,9 +234,9 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 		}
 
 	} else {
-		httpMetrics = metrics.(gometrics.Histogram)
+		httpExportSizeMetric = metrics.(gometrics.Histogram)
 	}
-	httpMetrics.Update(int64(exportDataBytes))
+	httpExportSizeMetric.Update(int64(exportDataBytes))
 
 	ctx.LoggingClient().Debugf("Sent %d bytes of data in pipeline '%s'. Response status is %s", exportDataBytes, ctx.PipelineId(), response.Status)
 	ctx.LoggingClient().Tracef("Data exported for pipeline '%s' (%s=%s)", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
