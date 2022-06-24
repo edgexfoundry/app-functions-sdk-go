@@ -17,13 +17,16 @@
 package transforms
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	gometrics "github.com/rcrowley/go-metrics"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/secure"
@@ -39,6 +42,7 @@ type MQTTSecretSender struct {
 	opts                 *MQTT.ClientOptions
 	secretsLastRetrieved time.Time
 	topicFormatter       StringValuesFormatter
+	MqttSizeMetrics      gometrics.Histogram
 }
 
 // MQTTSecretConfig ...
@@ -208,8 +212,27 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		sender.setRetryData(ctx, exportData)
 		return false, token.Error()
 	}
+	// capture the size for metrics
+	exportDataBytes := len(exportData)
+	if sender.MqttSizeMetrics == nil {
+		var err error
+		ctx.LoggingClient().Debugf("Initializing metric %s.", internal.MqttExportSizeName)
+		sender.MqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		metricsManger := ctx.MetricsManager()
+		if metricsManger != nil {
+			// TODO: EdgeX 3.0 append topic to export size name
+			err = metricsManger.Register(internal.MqttExportSizeName, sender.MqttSizeMetrics, nil)
+		} else {
+			err = errors.New("metrics manager not available")
+		}
 
-	ctx.LoggingClient().Debugf("Sent data to MQTT Broker in pipeline '%s'", ctx.PipelineId())
+		if err != nil {
+			ctx.LoggingClient().Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", internal.MqttExportSizeName, err.Error())
+		}
+
+	}
+	sender.MqttSizeMetrics.Update(int64(exportDataBytes))
+	ctx.LoggingClient().Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s'", exportDataBytes, ctx.PipelineId())
 	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
 
 	return true, nil
