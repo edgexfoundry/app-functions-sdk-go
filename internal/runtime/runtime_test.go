@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/google/uuid"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
@@ -29,7 +30,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/config"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/requests"
@@ -533,7 +533,7 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 		{"invalid CBOR", cborInvalidPayload, common.ContentTypeCBOR, nil, true},
 	}
 
-	target := GolangRuntime{}
+	target := GolangRuntime{lc: logger.NewMockClient()}
 
 	for _, testCase := range tests {
 		t.Run(testCase.Name, func(t *testing.T) {
@@ -541,7 +541,7 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 			envelope.Payload = testCase.Payload
 			envelope.ContentType = testCase.ContentType
 
-			actual, err := target.processEventPayload(envelope, logger.NewMockClient())
+			actual, err := target.processEventPayload(envelope)
 			if testCase.ExpectError {
 				require.Error(t, err)
 				return

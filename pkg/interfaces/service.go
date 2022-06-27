@@ -60,6 +60,7 @@ type FunctionPipeline struct {
 
 	MessagesProcessed     gometrics.Counter
 	MessageProcessingTime gometrics.Timer
+	ProcessingErrors      gometrics.Counter
 }
 
 // UpdatableConfig interface allows services to have custom configuration populated from configuration stored

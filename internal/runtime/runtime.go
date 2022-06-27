@@ -28,26 +28,23 @@ import (
 	"strings"
 	"sync"
 
-	gometrics "github.com/rcrowley/go-metrics"
-
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/requests"
 	edgexErrors "github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
-
 	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-
 	"github.com/fxamacker/cbor/v2"
+	gometrics "github.com/rcrowley/go-metrics"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 )
 
 const (
@@ -63,6 +60,7 @@ func NewFunctionPipeline(id string, topics []string, transforms []interfaces.App
 		Hash:                  calculatePipelineHash(transforms),
 		MessagesProcessed:     gometrics.NewCounter(),
 		MessageProcessingTime: gometrics.NewTimer(),
+		ProcessingErrors:      gometrics.NewCounter(),
 	}
 
 	return pipeline
@@ -75,6 +73,7 @@ type GolangRuntime struct {
 	pipelines     map[string]*interfaces.FunctionPipeline
 	isBusyCopying sync.Mutex
 	storeForward  storeForwardInfo
+	lc            logger.LoggingClient
 	dic           *di.Container
 }
 
@@ -94,6 +93,7 @@ func NewGolangRuntime(serviceKey string, targetType interface{}, dic *di.Contain
 
 	gr.storeForward.dic = dic
 	gr.storeForward.runtime = gr
+	gr.lc = bootstrapContainer.LoggingClientFrom(gr.dic.Get)
 
 	return gr
 }
@@ -107,17 +107,15 @@ func (gr *GolangRuntime) SetDefaultFunctionsPipeline(transforms []interfaces.App
 // SetFunctionsPipelineTransforms sets the transforms for an existing function pipeline.
 // Non-existent pipelines are ignored
 func (gr *GolangRuntime) SetFunctionsPipelineTransforms(id string, transforms []interfaces.AppFunction) {
-	lc := bootstrapContainer.LoggingClientFrom(gr.dic.Get)
-
 	pipeline := gr.pipelines[id]
 	if pipeline != nil {
 		gr.isBusyCopying.Lock()
 		pipeline.Transforms = transforms
 		pipeline.Hash = calculatePipelineHash(transforms)
 		gr.isBusyCopying.Unlock()
-		lc.Infof("Transforms set for `%s` pipeline", id)
+		gr.lc.Infof("Transforms set for `%s` pipeline", id)
 	} else {
-		lc.Warnf("Unable to set transforms for `%s` pipeline: Pipeline not found", id)
+		gr.lc.Warnf("Unable to set transforms for `%s` pipeline: Pipeline not found", id)
 	}
 }
 
@@ -148,48 +146,46 @@ func (gr *GolangRuntime) addFunctionsPipeline(id string, topics []string, transf
 	gr.pipelines[id] = &pipeline
 	gr.isBusyCopying.Unlock()
 
-	lc := bootstrapContainer.LoggingClientFrom(gr.dic.Get)
 	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
-	name := strings.Replace(internal.PipelineMessagesProcessedName, internal.PipelineIdTxt, pipeline.Id, 1)
-	err := metricManager.Register(name, pipeline.MessagesProcessed, map[string]string{"pipeline": pipeline.Id})
-	if err != nil {
-		lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", name, err.Error())
-	} else {
-		lc.Infof("%s metric has been registered and will be reported (if enabled)", name)
-	}
-
-	name = strings.Replace(internal.PipelineMessageProcessingTimeName, internal.PipelineIdTxt, pipeline.Id, 1)
-	err = metricManager.Register(name, pipeline.MessageProcessingTime, map[string]string{"pipeline": pipeline.Id})
-	if err != nil {
-		lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", name, err.Error())
-	} else {
-		lc.Infof("%s metric has been registered and will be reported (if enabled)", name)
-	}
+	gr.registerPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, pipeline.Id, pipeline.MessageProcessingTime)
+	gr.registerPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, pipeline.Id, pipeline.MessageProcessingTime)
+	gr.registerPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, pipeline.Id, pipeline.ProcessingErrors)
 
 	return &pipeline
 }
 
+func (gr *GolangRuntime) registerPipelineMetric(metricManager bootstrapInterfaces.MetricsManager, metricName string, pipelineId string, metric interface{}) {
+	registeredName := strings.Replace(metricName, internal.PipelineIdTxt, pipelineId, 1)
+	err := metricManager.Register(registeredName, metric, map[string]string{"pipeline": pipelineId})
+	if err != nil {
+		gr.lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", registeredName, err.Error())
+	} else {
+		gr.lc.Infof("%s metric has been registered and will be reported (if enabled)", registeredName)
+	}
+}
+
 // ProcessMessage sends the contents of the message through the functions pipeline
 func (gr *GolangRuntime) ProcessMessage(appContext *appfunction.Context, target interface{}, pipeline *interfaces.FunctionPipeline) *MessageError {
-	lc := appContext.LoggingClient()
-
 	if len(pipeline.Transforms) == 0 {
 		err := fmt.Errorf("no transforms configured for pipleline Id='%s'. Please check log for earlier errors loading pipeline", pipeline.Id)
-		logError(lc, err, appContext.CorrelationID())
+		gr.logError(err, appContext.CorrelationID())
 		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
 	}
 
 	appContext.AddValue(interfaces.PIPELINEID, pipeline.Id)
 
-	lc.Debugf("Pipeline '%s' processing message %d Transforms", pipeline.Id, len(pipeline.Transforms))
+	gr.lc.Debugf("Pipeline '%s' processing message %d Transforms", pipeline.Id, len(pipeline.Transforms))
 
 	// Make copy of transform functions to avoid disruption of pipeline when updating the pipeline from registry
 	gr.isBusyCopying.Lock()
 	execPipeline := &interfaces.FunctionPipeline{
-		Id:         pipeline.Id,
-		Transforms: make([]interfaces.AppFunction, len(pipeline.Transforms)),
-		Topics:     pipeline.Topics,
-		Hash:       pipeline.Hash,
+		Id:                    pipeline.Id,
+		Transforms:            make([]interfaces.AppFunction, len(pipeline.Transforms)),
+		Topics:                pipeline.Topics,
+		Hash:                  pipeline.Hash,
+		MessagesProcessed:     pipeline.MessagesProcessed,
+		MessageProcessingTime: pipeline.MessageProcessingTime,
+		ProcessingErrors:      pipeline.ProcessingErrors,
 	}
 	copy(execPipeline.Transforms, pipeline.Transforms)
 	gr.isBusyCopying.Unlock()
@@ -199,8 +195,6 @@ func (gr *GolangRuntime) ProcessMessage(appContext *appfunction.Context, target 
 
 // DecodeMessage decode the message wrapped in the MessageEnvelope and return the data to be processed.
 func (gr *GolangRuntime) DecodeMessage(appContext *appfunction.Context, envelope types.MessageEnvelope) (interface{}, *MessageError, bool) {
-	lc := appContext.LoggingClient()
-
 	// Default Target Type for the function pipeline is an Event DTO.
 	// The Event DTO can be wrapped in an AddEventRequest DTO or just be the un-wrapped Event DTO,
 	// which is handled dynamically below.
@@ -210,7 +204,7 @@ func (gr *GolangRuntime) DecodeMessage(appContext *appfunction.Context, envelope
 
 	if reflect.TypeOf(gr.TargetType).Kind() != reflect.Ptr {
 		err := errors.New("TargetType must be a pointer, not a value of the target type")
-		logError(lc, err, envelope.CorrelationID)
+		gr.logError(err, envelope.CorrelationID)
 		return nil, &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}, false
 	}
 
@@ -219,22 +213,22 @@ func (gr *GolangRuntime) DecodeMessage(appContext *appfunction.Context, envelope
 
 	switch target.(type) {
 	case *[]byte:
-		lc.Debug("Expecting raw byte data")
+		gr.lc.Debug("Expecting raw byte data")
 		target = &envelope.Payload
 
 	case *dtos.Event:
-		lc.Debug("Expecting an AddEventRequest or Event DTO")
+		gr.lc.Debug("Expecting an AddEventRequest or Event DTO")
 
 		// Dynamically process either AddEventRequest or Event DTO
-		event, err := gr.processEventPayload(envelope, lc)
+		event, err := gr.processEventPayload(envelope)
 		if err != nil {
 			err = fmt.Errorf("unable to process payload %s", err.Error())
-			logError(lc, err, envelope.CorrelationID)
+			gr.logError(err, envelope.CorrelationID)
 			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
 		}
 
-		if lc.LogLevel() == models.DebugLog {
-			gr.debugLogEvent(lc, event)
+		if gr.lc.LogLevel() == models.DebugLog {
+			gr.debugLogEvent(event)
 		}
 
 		appContext.AddValue(interfaces.DEVICENAME, event.DeviceName)
@@ -245,12 +239,12 @@ func (gr *GolangRuntime) DecodeMessage(appContext *appfunction.Context, envelope
 
 	default:
 		customTypeName := di.TypeInstanceToName(target)
-		lc.Debugf("Expecting a custom type of %s", customTypeName)
+		gr.lc.Debugf("Expecting a custom type of %s", customTypeName)
 
 		// Expecting a custom type so just unmarshal into the target type.
 		if err := gr.unmarshalPayload(envelope, target); err != nil {
 			err = fmt.Errorf("unable to process custom object received of type '%s': %s", customTypeName, err.Error())
-			logError(lc, err, envelope.CorrelationID)
+			gr.logError(err, envelope.CorrelationID)
 			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
 		}
 	}
@@ -303,6 +297,7 @@ func (gr *GolangRuntime) ExecutePipeline(
 						gr.storeForward.storeForLaterRetry(appContext.RetryData(), appContext, pipeline, functionIndex)
 					}
 
+					pipeline.ProcessingErrors.Inc(1)
 					return &MessageError{Err: err, ErrorCode: http.StatusUnprocessableEntity}
 				}
 			}
@@ -323,16 +318,16 @@ func (gr *GolangRuntime) StartStoreAndForward(
 	gr.storeForward.startStoreAndForwardRetryLoop(appWg, appCtx, enabledWg, enabledCtx, serviceKey)
 }
 
-func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope, lc logger.LoggingClient) (*dtos.Event, error) {
+func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope) (*dtos.Event, error) {
 
-	lc.Debug("Attempting to process Payload as an AddEventRequest DTO")
+	gr.lc.Debug("Attempting to process Payload as an AddEventRequest DTO")
 	requestDto := requests.AddEventRequest{}
 
 	// Note that DTO validation is called during the unmarshaling
 	// which results in a KindContractInvalid error
 	requestDtoErr := gr.unmarshalPayload(envelope, &requestDto)
 	if requestDtoErr == nil {
-		lc.Debug("Using Event DTO from AddEventRequest DTO")
+		gr.lc.Debug("Using Event DTO from AddEventRequest DTO")
 
 		// Determine that we have an AddEventRequest DTO
 		return &requestDto.Event, nil
@@ -345,13 +340,13 @@ func (gr *GolangRuntime) processEventPayload(envelope types.MessageEnvelope, lc 
 
 	// KindContractInvalid indicates that we likely don't have an AddEventRequest
 	// so try to process as Event
-	lc.Debug("Attempting to process Payload as an Event DTO")
+	gr.lc.Debug("Attempting to process Payload as an Event DTO")
 	event := &dtos.Event{}
 	err := gr.unmarshalPayload(envelope, event)
 	if err == nil {
 		err = common.Validate(event)
 		if err == nil {
-			lc.Debug("Using Event DTO received")
+			gr.lc.Debug("Using Event DTO received")
 			return event, nil
 		}
 	}
@@ -384,34 +379,38 @@ func (gr *GolangRuntime) unmarshalPayload(envelope types.MessageEnvelope, target
 	return err
 }
 
-func (gr *GolangRuntime) debugLogEvent(lc logger.LoggingClient, event *dtos.Event) {
-	lc.Debugf("Event Received with ProfileName=%s, DeviceName=%s and ReadingCount=%d",
+func (gr *GolangRuntime) debugLogEvent(event *dtos.Event) {
+	gr.lc.Debugf("Event Received with ProfileName=%s, DeviceName=%s and ReadingCount=%d",
 		event.ProfileName,
 		event.DeviceName,
 		len(event.Readings))
 	if len(event.Tags) > 0 {
-		lc.Debugf("Event tags are: [%v]", event.Tags)
+		gr.lc.Debugf("Event tags are: [%v]", event.Tags)
 	} else {
-		lc.Debug("Event has no tags")
+		gr.lc.Debug("Event has no tags")
 	}
 
 	for index, reading := range event.Readings {
 		switch strings.ToLower(reading.ValueType) {
 		case strings.ToLower(common.ValueTypeBinary):
-			lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, MediaType=%s and BinaryValue of size=`%d`",
+			gr.lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, MediaType=%s and BinaryValue of size=`%d`",
 				index+1,
 				reading.ResourceName,
 				reading.ValueType,
 				reading.MediaType,
 				len(reading.BinaryValue))
 		default:
-			lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, Value=`%s`",
+			gr.lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, Value=`%s`",
 				index+1,
 				reading.ResourceName,
 				reading.ValueType,
 				reading.Value)
 		}
 	}
+}
+
+func (gr *GolangRuntime) logError(err error, correlationID string) {
+	gr.lc.Errorf("%s. %s=%s", err.Error(), common.CorrelationHeader, correlationID)
 }
 
 func (gr *GolangRuntime) GetDefaultPipeline() *interfaces.FunctionPipeline {
@@ -485,8 +484,4 @@ func calculatePipelineHash(transforms []interfaces.AppFunction) string {
 	}
 
 	return hash
-}
-
-func logError(lc logger.LoggingClient, err error, correlationID string) {
-	lc.Errorf("%s. %s=%s", err.Error(), common.CorrelationHeader, correlationID)
 }

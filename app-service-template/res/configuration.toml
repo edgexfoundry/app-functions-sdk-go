@@ -29,6 +29,8 @@ LogLevel = "INFO"
     InvalidMessagesReceived = true
     PipelineMessagesProcessed = true # Your pipeline IDs are added to this name for the actual metric name reported
     PipelineMessageProcessingTime = true # Your pipeline IDs are added to this name for the actual metric name reported
+    PipelineProcessingErrors = true # Your pipeline IDs are added to this name for the actual metric name reported
+    HttpExportSizeName = true
     # TODO: Remove sample custom metric and implement meaningful custom metrics if any needed.
     EventsConvertedToXML = true
     [Writable.Telemetry.Tags] # Contains the service level tags to be attached to all the service's metrics

@@ -40,8 +40,9 @@ const (
 	PipelineIdTxt                     = "{PipelineId}"
 	PipelineMessagesProcessedName     = "PipelineMessagesProcessed-" + PipelineIdTxt
 	PipelineMessageProcessingTimeName = "PipelineMessageProcessingTime-" + PipelineIdTxt
+	PipelineProcessingErrorsName      = "PipelineProcessingErrors-" + PipelineIdTxt
 	HttpExportSizeName                = "HttpExportSize"
 )
 
-// Metrics Sample Reservoir size
+// MetricsReservoirSize is the default Metrics Sample Reservoir size
 const MetricsReservoirSize = 1028
