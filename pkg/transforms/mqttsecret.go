@@ -42,7 +42,7 @@ type MQTTSecretSender struct {
 	opts                 *MQTT.ClientOptions
 	secretsLastRetrieved time.Time
 	topicFormatter       StringValuesFormatter
-	MqttSizeMetrics      gometrics.Histogram
+	mqttSizeMetrics      gometrics.Histogram
 }
 
 // MQTTSecretConfig ...
@@ -214,14 +214,15 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	}
 	// capture the size for metrics
 	exportDataBytes := len(exportData)
-	if sender.MqttSizeMetrics == nil {
+	if sender.mqttSizeMetrics == nil {
 		var err error
-		ctx.LoggingClient().Debugf("Initializing metric %s.", internal.MqttExportSizeName)
-		sender.MqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		tag := fmt.Sprintf("%s/%s", sender.mqttConfig.BrokerAddress, publishTopic)
+		metricName := fmt.Sprintf("%s-%s", internal.MqttExportSizeName, tag)
+		ctx.LoggingClient().Debugf("Initializing metric %s.", metricName)
+		sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
 		metricsManger := ctx.MetricsManager()
 		if metricsManger != nil {
-			// TODO: EdgeX 3.0 append topic to export size name
-			err = metricsManger.Register(internal.MqttExportSizeName, sender.MqttSizeMetrics, nil)
+			err = metricsManger.Register(metricName, sender.mqttSizeMetrics, map[string]string{"address/topic": tag})
 		} else {
 			err = errors.New("metrics manager not available")
 		}
@@ -231,7 +232,7 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		}
 
 	}
-	sender.MqttSizeMetrics.Update(int64(exportDataBytes))
+	sender.mqttSizeMetrics.Update(int64(exportDataBytes))
 	ctx.LoggingClient().Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s'", exportDataBytes, ctx.PipelineId())
 	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
 
