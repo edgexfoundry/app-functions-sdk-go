@@ -42,6 +42,7 @@ const (
 	PipelineMessageProcessingTimeName = "PipelineMessageProcessingTime-" + PipelineIdTxt
 	PipelineProcessingErrorsName      = "PipelineProcessingErrors-" + PipelineIdTxt
 	HttpExportSizeName                = "HttpExportSize"
+	MqttExportSizeName                = "MqttExportSize"
 )
 
 // MetricsReservoirSize is the default Metrics Sample Reservoir size

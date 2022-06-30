@@ -17,13 +17,16 @@
 package transforms
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	gometrics "github.com/rcrowley/go-metrics"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/secure"
@@ -39,6 +42,7 @@ type MQTTSecretSender struct {
 	opts                 *MQTT.ClientOptions
 	secretsLastRetrieved time.Time
 	topicFormatter       StringValuesFormatter
+	mqttSizeMetrics      gometrics.Histogram
 }
 
 // MQTTSecretConfig ...
@@ -208,8 +212,28 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		sender.setRetryData(ctx, exportData)
 		return false, token.Error()
 	}
+	// capture the size for metrics
+	exportDataBytes := len(exportData)
+	if sender.mqttSizeMetrics == nil {
+		var err error
+		tag := fmt.Sprintf("%s/%s", sender.mqttConfig.BrokerAddress, publishTopic)
+		metricName := fmt.Sprintf("%s-%s", internal.MqttExportSizeName, tag)
+		ctx.LoggingClient().Debugf("Initializing metric %s.", metricName)
+		sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		metricsManger := ctx.MetricsManager()
+		if metricsManger != nil {
+			err = metricsManger.Register(metricName, sender.mqttSizeMetrics, map[string]string{"address/topic": tag})
+		} else {
+			err = errors.New("metrics manager not available")
+		}
 
-	ctx.LoggingClient().Debugf("Sent data to MQTT Broker in pipeline '%s'", ctx.PipelineId())
+		if err != nil {
+			ctx.LoggingClient().Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", internal.MqttExportSizeName, err.Error())
+		}
+
+	}
+	sender.mqttSizeMetrics.Update(int64(exportDataBytes))
+	ctx.LoggingClient().Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s'", exportDataBytes, ctx.PipelineId())
 	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
 
 	return true, nil
