@@ -35,8 +35,8 @@ github.com/diegoholiveira/jsonlogic/v3 v3.2.3/go.mod h1:9oE8z9G+0OMxOoLHF3fhek3K
 github.com/eclipse/paho.mqtt.golang v1.3.5/go.mod h1:eTzb4gxwwyWpqBUHGQZ4ABAV7+Jgm1PklsYT/eo8Hcc=
 github.com/eclipse/paho.mqtt.golang v1.4.1 h1:tUSpviiL5G3P9SZZJPC4ZULZJsxQKXxfENpMvdbAXAI=
 github.com/eclipse/paho.mqtt.golang v1.4.1/go.mod h1:JGt0RsEwEX+Xa/agj90YJ9d9DH2b7upDZMK9HRbFvCA=
-github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.4 h1:um5VGtBqaccLABqjWIz/afki55w2lNR0IJnizJu3ufc=
-github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.4/go.mod h1:1Z0tp3z1uGSKUKez989h3CrbPnH0bLHQ2cfnclQVTBM=
+github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.5 h1:jbFJ3XI3XNiRO+18nW1qo8AU90M7aConLXXGpDn3Ja8=
+github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.5/go.mod h1:dvG0DQGNSVpVsYkHi1ZAZIhUvGVgKrcwMvayKtJJqyM=
 github.com/edgexfoundry/go-mod-configuration/v2 v2.2.0 h1:AZeaAPJM5X93ITFgwbwluYDtYEJ7tkCMSlj35GwfLLU=
 github.com/edgexfoundry/go-mod-configuration/v2 v2.2.0/go.mod h1:YP17JhMnXTitowXE13QJwFaKo0oc03iyoKLjWAYl4FE=
 github.com/edgexfoundry/go-mod-core-contracts/v2 v2.2.0 h1:Sfi9jAIgRXZaJQw8Ji6+8//47D+iOyGiXQSNZXhy3HE=
@@ -230,7 +230,6 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
 github.com/stretchr/testify v1.7.5/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
