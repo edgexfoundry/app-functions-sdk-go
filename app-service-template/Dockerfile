@@ -1,6 +1,6 @@
 # TODO: Change Copyright to your company if open sourcing or remove header
 #
-# Copyright (c) 2021 Intel Corporation
+# Copyright (c) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 #
 
 #build stage
-ARG BASE=golang:1.17-alpine3.15
+ARG BASE=golang:1.18-alpine3.16
 FROM ${BASE} AS builder
 
 ARG ALPINE_PKG_BASE="make git gcc libc-dev libsodium-dev zeromq-dev"
 ARG ALPINE_PKG_EXTRA=""
 
-RUN sed -e 's/dl-cdn[.]alpinelinux.org/nl.alpinelinux.org/g' -i~ /etc/apk/repositories
+RUN sed -e 's/dl-cdn[.]alpinelinux.org/dl-4.alpinelinux.org/g' -i~ /etc/apk/repositories
 RUN apk add --update --no-cache ${ALPINE_PKG_BASE} ${ALPINE_PKG_EXTRA}
 WORKDIR /app
 
@@ -34,10 +34,10 @@ ARG MAKE="make build"
 RUN $MAKE
 
 #final stage
-FROM alpine:3.14
+FROM alpine:3.16
 # TODO: Change Copyright to your company if open sourcing or remove label
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
-  copyright='Copyright (c) 2021: Intel'
+  copyright='Copyright (c) 2022: Intel'
 LABEL Name=new-app-service Version=${VERSION}
 
 # dumb-init is required as security-bootstrapper uses it in the entrypoint script
