@@ -11,7 +11,7 @@ require (
 	github.com/edgexfoundry/go-mod-messaging/v2 v2.2.1-dev.8
 	github.com/edgexfoundry/go-mod-registry/v2 v2.2.0
 	github.com/fxamacker/cbor/v2 v2.4.0
-	github.com/gomodule/redigo v1.8.8
+	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
