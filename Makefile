@@ -22,7 +22,11 @@ GO=CGO_ENABLED=1 GO111MODULE=on go
 
 GOTESTFLAGS?=-race
 
-build:
+git-test:
+	git version
+	git status --porcelain
+
+build: git-test
 	make -C ./app-service-template build
 
 lint:

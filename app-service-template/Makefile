@@ -37,16 +37,20 @@ APPVERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
 SDKVERSION=$(shell cat ./go.mod | grep 'github.com/edgexfoundry/app-functions-sdk-go/v2 v' | sed 's/require//g' | awk '{print $$2}')
 
 MICROSERVICE=new-app-service
-GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly -buildvcs=false
-CGOFLAGS=-ldflags "-linkmode=external -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly -buildmode=pie -buildvcs=false
+GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly
+CGOFLAGS=-ldflags "-linkmode=external -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly -buildmode=pie
 
 # TODO: uncomment and remove default once files are in a Github repository or
 #       remove totally including usage below
 #GIT_SHA=$(shell git rev-parse HEAD)
 GIT_SHA=no-sha
 
-build: tidy
-	$(GO) build $(CGOFLAGS) -o $(MICROSERVICE)
+git-test:
+	git version
+	git status --porcelain
+
+build: git-test tidy
+	$(GO) build -x $(CGOFLAGS) -o $(MICROSERVICE)
 
 tidy:
 	go mod tidy
