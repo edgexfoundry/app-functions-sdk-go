@@ -46,7 +46,7 @@ CGOFLAGS=-ldflags "-linkmode=external -X github.com/edgexfoundry/app-functions-s
 GIT_SHA=no-sha
 
 build: tidy
-	$(GO) build $(CGOFLAGS) -o $(MICROSERVICE)
+	$(GO) build -x $(CGOFLAGS) -o $(MICROSERVICE)
 
 tidy:
 	go mod tidy
