@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+@Library("edgex-global-pipelines@677fadcc9a37328466da988fea5f2bc088427165") _
+
 edgeXBuildGoApp (
     project: 'app-functions-sdk-go',
     semver: true,
