@@ -49,7 +49,7 @@ build: tidy
 	$(GO) build $(CGOFLAGS) -o $(MICROSERVICE)
 
 tidy:
-	go mod tidy -compat=1.17
+	go mod tidy
 
 # TODO: Change the registries (edgexfoundry, nexus3.edgexfoundry.org:10004) below as needed.
 #       Leave them as is if service is to be upstreamed to EdgeX Foundry
