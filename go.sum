@@ -34,8 +34,8 @@ github.com/diegoholiveira/jsonlogic/v3 v3.2.3 h1:1DpcfYz6g8OvZkS7v4xfD6OY7mvk/j3
 github.com/diegoholiveira/jsonlogic/v3 v3.2.3/go.mod h1:9oE8z9G+0OMxOoLHF3fhek3KuqD5CBqM0B6XFL08MSg=
 github.com/eclipse/paho.mqtt.golang v1.4.1 h1:tUSpviiL5G3P9SZZJPC4ZULZJsxQKXxfENpMvdbAXAI=
 github.com/eclipse/paho.mqtt.golang v1.4.1/go.mod h1:JGt0RsEwEX+Xa/agj90YJ9d9DH2b7upDZMK9HRbFvCA=
-github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.5 h1:jbFJ3XI3XNiRO+18nW1qo8AU90M7aConLXXGpDn3Ja8=
-github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.5/go.mod h1:dvG0DQGNSVpVsYkHi1ZAZIhUvGVgKrcwMvayKtJJqyM=
+github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.6 h1:tAAVIIEZk6gMi5fK3Hi0Tses96dkP7c8ezQRN6lMth0=
+github.com/edgexfoundry/go-mod-bootstrap/v2 v2.2.1-dev.6/go.mod h1:LDigeDGuBmtjhhEXRWmB9mUlVWXeYY1TgLBp+Zpp/sw=
 github.com/edgexfoundry/go-mod-configuration/v2 v2.2.0 h1:AZeaAPJM5X93ITFgwbwluYDtYEJ7tkCMSlj35GwfLLU=
 github.com/edgexfoundry/go-mod-configuration/v2 v2.2.0/go.mod h1:YP17JhMnXTitowXE13QJwFaKo0oc03iyoKLjWAYl4FE=
 github.com/edgexfoundry/go-mod-core-contracts/v2 v2.2.0 h1:Sfi9jAIgRXZaJQw8Ji6+8//47D+iOyGiXQSNZXhy3HE=
@@ -44,8 +44,8 @@ github.com/edgexfoundry/go-mod-messaging/v2 v2.2.1-dev.8 h1:SxzHUEVEhPsMmU/QTZmv
 github.com/edgexfoundry/go-mod-messaging/v2 v2.2.1-dev.8/go.mod h1:vDHeO5Lssp0g9VXOXeM2C0d6KDuuaiJ27U2qpUnO2SA=
 github.com/edgexfoundry/go-mod-registry/v2 v2.2.0 h1:dk9ul1t7INAiyZXeu/GrpinFE3qOekdy8uZOqEGgIiE=
 github.com/edgexfoundry/go-mod-registry/v2 v2.2.0/go.mod h1:DUQRnAd5fVzoROc5SI+PTFUD/vCNeZmZHBMrLElbmwI=
-github.com/edgexfoundry/go-mod-secrets/v2 v2.2.1-dev.1 h1:XE6jMyHdLD47yuYwySLM5TuhG0h3+zBK1lkQNrYGVZo=
-github.com/edgexfoundry/go-mod-secrets/v2 v2.2.1-dev.1/go.mod h1:hxT+5YzqX9rtkDS8TQmjFlVxxdXzULzIbm23EC81JsU=
+github.com/edgexfoundry/go-mod-secrets/v2 v2.2.1-dev.4 h1:SfkwUVSSOksxcdpMfGtJRTbESZeGDP4FrITuuWIlW34=
+github.com/edgexfoundry/go-mod-secrets/v2 v2.2.1-dev.4/go.mod h1:eaN5zS2gTUXHs7BnVOLn3Wdvhh8eKvCq+H4wi5t28x4=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
@@ -214,8 +214,8 @@ github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 h1:nn5Wsu0esKSJiIVhscUt
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
-github.com/spiffe/go-spiffe/v2 v2.1.0 h1:IZRlWhyFpPbJOiK8K+MwEFPU/QCdaW4Zf5bmIKBd3XM=
-github.com/spiffe/go-spiffe/v2 v2.1.0/go.mod h1:5qg6rpqlwIub0JAiF1UK9IMD6BpPTmvG6yfSgDBs5lg=
+github.com/spiffe/go-spiffe/v2 v2.1.1 h1:RT9kM8MZLZIsPTH+HKQEP5yaAk3yd/VBzlINaRjXs8k=
+github.com/spiffe/go-spiffe/v2 v2.1.1/go.mod h1:5qg6rpqlwIub0JAiF1UK9IMD6BpPTmvG6yfSgDBs5lg=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0 h1:M2gUjqZET1qApGOWNSnZ49BAIMX4F/1plDv3+l31EJ4=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
