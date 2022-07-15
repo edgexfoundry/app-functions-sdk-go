@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2022 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
-
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 )
@@ -255,6 +254,71 @@ func (app *Configurable) PushToCore(parameters map[string]string) interfaces.App
 	}
 
 	return transform.PushToCoreData
+}
+
+// WrapIntoEvent pushes the provided value as an event to CoreData using the device name and reading name that have been
+// set. If validation is turned on in CoreServices then your deviceName and readingName must exist in the CoreMetadata
+// and be properly registered in EdgeX. This function is a configuration function and returns a function pointer.
+func (app *Configurable) WrapIntoEvent(parameters map[string]string) interfaces.AppFunction {
+	profileName, ok := parameters[ProfileName]
+	if !ok {
+		app.lc.Errorf("Could not find %s", ProfileName)
+		return nil
+	}
+	deviceName, ok := parameters[DeviceName]
+	if !ok {
+		app.lc.Errorf("Could not find %s", DeviceName)
+		return nil
+	}
+	resourceName, ok := parameters[ResourceName]
+	if !ok {
+		app.lc.Errorf("Could not find %s", ResourceName)
+		return nil
+	}
+	valueType, ok := parameters[ValueType]
+	if !ok {
+		app.lc.Errorf("Could not find %s", ValueType)
+		return nil
+	}
+
+	profileName = strings.TrimSpace(profileName)
+	deviceName = strings.TrimSpace(deviceName)
+	resourceName = strings.TrimSpace(resourceName)
+	valueType = strings.TrimSpace(valueType)
+
+	var transform *transforms.EventWrapper
+
+	// Converts to upper case and validates it is a validates ValueType
+	valueType, err := common.NormalizeValueType(valueType)
+	if err != nil {
+		app.lc.Error(err.Error())
+		return nil
+	}
+
+	switch valueType {
+	case common.ValueTypeBinary:
+		mediaType, ok := parameters[MediaType]
+		if !ok {
+			app.lc.Error("Could not find " + MediaType)
+			return nil
+		}
+
+		mediaType = strings.TrimSpace(mediaType)
+
+		if len(mediaType) == 0 {
+			app.lc.Error("MediaType can not be empty when ValueType=Binary")
+			return nil
+		}
+
+		transform = transforms.NewEventWrapperBinaryReading(profileName, deviceName, resourceName, mediaType)
+	case common.ValueTypeObject:
+		transform = transforms.NewEventWrapperObjectReading(profileName, deviceName, resourceName)
+
+	default:
+		transform = transforms.NewEventWrapperSimpleReading(profileName, deviceName, resourceName, valueType)
+	}
+
+	return transform.Wrap
 }
 
 // Compress compresses data received as either a string,[]byte, or json.Marshaller using the specified algorithm (GZIP or ZLIB)
