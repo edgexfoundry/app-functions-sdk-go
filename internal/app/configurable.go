@@ -256,7 +256,7 @@ func (app *Configurable) PushToCore(parameters map[string]string) interfaces.App
 	return transform.PushToCoreData
 }
 
-// WrapIntoEvent wraps the provided value as an event to CoreData using the configured event/reading metadata that have been
+// WrapIntoEvent wraps the provided value as an EdgeX Event using the configured event/reading metadata that have been
 // set. The new Event/Reading is returned to the next pipeline function. This function is a configuration function and
 // returns a function pointer.
 func (app *Configurable) WrapIntoEvent(parameters map[string]string) interfaces.AppFunction {
