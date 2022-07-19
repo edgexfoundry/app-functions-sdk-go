@@ -69,18 +69,12 @@ func NewEventWrapperObjectReading(profileName string, deviceName string, resourc
 	return eventWrapper
 }
 
-// Wrap creates an EventRequest using the device name and reading name that have been set. If validation is turned on in
-// CoreServices then your deviceName and readingName must exist in the CoreMetadata and be properly registered in EdgeX.
+// // Wrap creates an EventRequest using the Event/Reading metadata that have been set.
 func (ew *EventWrapper) Wrap(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	ctx.LoggingClient().Info("Creating Event...")
 
 	if data == nil {
-		return false, fmt.Errorf("function EventCreator in pipeline '%s': No Data Received", ctx.PipelineId())
-	}
-
-	client := ctx.EventClient()
-	if client == nil {
-		return false, fmt.Errorf("function EventCreator in pipeline '%s': EventClient not initialized. Core Data is missing from clients configuration", ctx.PipelineId())
+		return false, fmt.Errorf("function EventWrapper in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
 
 	event := dtos.NewEvent(ew.profileName, ew.deviceName, ew.resourceName)
@@ -119,7 +113,7 @@ func (ew *EventWrapper) Wrap(ctx interfaces.AppFunctionContext, data interface{}
 	ctx.AddValue(interfaces.DEVICENAME, ew.deviceName)
 	ctx.AddValue(interfaces.SOURCENAME, ew.resourceName)
 
-	// need to wrap in Add Event Request for Core Data to process it
+	// need to wrap in Add Event Request for Core Data to process it if published to the MessageBus
 	eventRequest := requests.NewAddEventRequest(event)
 
 	return true, eventRequest

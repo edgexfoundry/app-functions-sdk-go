@@ -256,9 +256,9 @@ func (app *Configurable) PushToCore(parameters map[string]string) interfaces.App
 	return transform.PushToCoreData
 }
 
-// WrapIntoEvent pushes the provided value as an event to CoreData using the device name and reading name that have been
-// set. If validation is turned on in CoreServices then your deviceName and readingName must exist in the CoreMetadata
-// and be properly registered in EdgeX. This function is a configuration function and returns a function pointer.
+// WrapIntoEvent wraps the provided value as an event to CoreData using the configured event/reading metadata that have been
+// set. The new Event/Reading is returned to the next pipeline function. This function is a configuration function and
+// returns a function pointer.
 func (app *Configurable) WrapIntoEvent(parameters map[string]string) interfaces.AppFunction {
 	profileName, ok := parameters[ProfileName]
 	if !ok {
@@ -288,7 +288,7 @@ func (app *Configurable) WrapIntoEvent(parameters map[string]string) interfaces.
 
 	var transform *transforms.EventWrapper
 
-	// Converts to upper case and validates it is a validates ValueType
+	// Converts to upper case and validates it is a valid ValueType
 	valueType, err := common.NormalizeValueType(valueType)
 	if err != nil {
 		app.lc.Error(err.Error())

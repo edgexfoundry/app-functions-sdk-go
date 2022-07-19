@@ -46,7 +46,7 @@ func TestEventWrapper_Wrap(t *testing.T) {
 	}{
 		{"Successful Binary Reading", "MyProfile", "MyDevice", "BinaryEvent", common.ValueTypeBinary, "stuff", true, ""},
 		{"Successful Object Reading", "MyProfile", "MyDevice", "ObjectEvent", common.ValueTypeObject, "", obj, ""},
-		{"Successful Simple Reading", "MyProfile", "MyDevice", "ObjectEvent", common.ValueTypeObject, "", "hello there", ""},
+		{"Successful Simple Reading", "MyProfile", "MyDevice", "ObjectEvent", common.ValueTypeString, "", "hello there", ""},
 	}
 
 	for _, test := range tests {
@@ -59,15 +59,15 @@ func TestEventWrapper_Wrap(t *testing.T) {
 		default:
 			transform = NewEventWrapperSimpleReading(test.ProfileName, test.DeviceName, test.ResourceName, test.ValueType)
 		}
-		expectedBool, expectedInterface := transform.Wrap(ctx, test.Data)
+		actualBool, actualInterface := transform.Wrap(ctx, test.Data)
 		if test.ExpectedError == "" {
-			require.True(t, expectedBool)
+			require.True(t, actualBool)
 			require.Equal(t, "", ctx.ResponseContentType())
 			ctxValues := ctx.GetAllValues()
 			require.Equal(t, test.ProfileName, ctxValues[interfaces.PROFILENAME])
 			require.Equal(t, test.DeviceName, ctxValues[interfaces.DEVICENAME])
 			require.Equal(t, test.ResourceName, ctxValues[interfaces.SOURCENAME])
-			eventRequest := expectedInterface.(requests.AddEventRequest)
+			eventRequest := actualInterface.(requests.AddEventRequest)
 			require.Equal(t, test.DeviceName, eventRequest.Event.DeviceName)
 			require.Equal(t, test.ProfileName, eventRequest.Event.ProfileName)
 			require.Equal(t, test.ResourceName, eventRequest.Event.SourceName)
@@ -86,7 +86,7 @@ func TestEventWrapper_Wrap(t *testing.T) {
 			}
 			return
 		}
-		require.False(t, expectedBool)
-		require.Equal(t, test.ExpectedError, expectedInterface)
+		require.False(t, actualBool)
+		require.Equal(t, test.ExpectedError, actualInterface)
 	}
 }
