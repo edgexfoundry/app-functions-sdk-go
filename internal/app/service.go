@@ -604,6 +604,12 @@ func (svc *Service) StoreSecret(path string, secretData map[string]string) error
 	return secretProvider.StoreSecret(path, secretData)
 }
 
+// SecretProvider returns the SecretProvider instance
+func (svc *Service) SecretProvider() bootstrapInterfaces.SecretProvider {
+	secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)
+	return secretProvider
+}
+
 // LoggingClient returns the Logging client from the dependency injection container
 func (svc *Service) LoggingClient() logger.LoggingClient {
 	return svc.lc

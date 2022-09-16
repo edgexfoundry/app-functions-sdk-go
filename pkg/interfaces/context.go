@@ -72,6 +72,8 @@ type AppFunctionContext interface {
 	// SecretsLastUpdated returns that timestamp for when the secrets in the SecretStore where last updated.
 	// Useful when a connection to external source needs to be redone when the credentials have been updated.
 	SecretsLastUpdated() time.Time
+	// SecretProvider returns the SecretProvider instance
+	SecretProvider() bootstrapInterfaces.SecretProvider
 	// LoggingClient returns the Logger client
 	LoggingClient() logger.LoggingClient
 	// EventClient returns the Event client. Note if Core Data is not specified in the Clients configuration,
