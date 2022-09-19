@@ -79,7 +79,7 @@ type AppFunctionContext interface {
 	// EventClient returns the Event client. Note if Core Data is not specified in the Clients configuration,
 	// this will return nil.
 	EventClient() interfaces.EventClient
-	// CommandClient returns the Command client. Note if Support Command is not specified in the Clients configuration,
+	// CommandClient returns the Command client. Note if Core Command is not specified in the Clients configuration,
 	// this will return nil.
 	CommandClient() interfaces.CommandClient
 	// NotificationClient returns the Notification client. Note if Support Notifications is not specified in the
