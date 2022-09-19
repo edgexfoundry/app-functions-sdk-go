@@ -152,6 +152,12 @@ func (appContext *Context) SecretsLastUpdated() time.Time {
 	return secretProvider.SecretsLastUpdated()
 }
 
+// SecretProvider returns the SecretProvider instance
+func (appContext *Context) SecretProvider() bootstrapInterfaces.SecretProvider {
+	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)
+	return secretProvider
+}
+
 // LoggingClient returns the Logging client from the dependency injection container
 func (appContext *Context) LoggingClient() logger.LoggingClient {
 	return container.LoggingClientFrom(appContext.Dic.Get)

@@ -26,6 +26,7 @@ import (
 	"time"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 
 	v2clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
 	clientMocks "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces/mocks"
@@ -47,11 +48,17 @@ import (
 var target *Context
 var dic *di.Container
 var baseUrl = "http://localhost:"
+var mockSecretProvider interfaces.SecretProvider
 
 func TestMain(m *testing.M) {
+	mockSecretProvider = &mocks.SecretProvider{}
+
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return logger.NewMockClient()
+		},
+		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
+			return mockSecretProvider
 		},
 	})
 	target = NewContext("", dic, "")
@@ -172,6 +179,12 @@ func TestContext_MetricsManager(t *testing.T) {
 
 	actual = target.MetricsManager()
 	assert.NotNil(t, actual)
+}
+
+func TestContext_SecretProvider(t *testing.T) {
+	actual := target.SecretProvider()
+	require.NotNil(t, actual)
+	assert.Equal(t, mockSecretProvider, actual)
 }
 
 func TestContext_LoggingClient(t *testing.T) {

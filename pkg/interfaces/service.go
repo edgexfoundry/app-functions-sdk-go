@@ -136,6 +136,9 @@ type ApplicationService interface {
 	//   - Secure secret provider is not properly initialized
 	//   - Connection issues with Secret Store service.
 	StoreSecret(path string, secretData map[string]string) error // LoggingClient returns the Logger client
+	// SecretProvider returns the SecretProvider instance
+	SecretProvider() bootstrapInterfaces.SecretProvider
+	// LoggingClient returns the Logger client
 	LoggingClient() logger.LoggingClient
 	// EventClient returns the Event client. Note if Core Data is not specified in the Clients configuration,
 	// this will return nil.

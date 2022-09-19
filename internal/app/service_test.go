@@ -23,14 +23,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/mock"
-
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	builtin "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
@@ -38,15 +31,18 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/messagebus"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
+	builtin "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,12 +50,15 @@ var lc logger.LoggingClient
 var dic *di.Container
 var target *Service
 var baseUrl = "http://localhost:"
+var mockSecretProvider bootstrapInterfaces.SecretProvider
 
 func TestMain(m *testing.M) {
 	// No remote and no file results in STDOUT logging only
 	lc = logger.NewMockClient()
 	mockMetricsManager := &mocks.MetricsManager{}
 	mockMetricsManager.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	mockSecretProvider = &mocks.SecretProvider{}
 
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
@@ -70,6 +69,9 @@ func TestMain(m *testing.M) {
 		},
 		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
 			return mockMetricsManager
+		},
+		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
+			return mockSecretProvider
 		},
 	})
 
@@ -932,4 +934,14 @@ func TestService_BuildContext(t *testing.T) {
 
 	require.NotNil(t, castCtx)
 	require.Equal(t, dic, castCtx.Dic)
+}
+
+func TestService_SecretProvider(t *testing.T) {
+	sdk := Service{
+		dic: dic,
+	}
+
+	actual := sdk.SecretProvider()
+	require.NotNil(t, actual)
+	assert.Equal(t, mockSecretProvider, actual)
 }
