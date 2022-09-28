@@ -212,3 +212,13 @@ https://github.com/square/go-jose/blob/v2.6.0/LICENSE
 
 github.com/Microsoft/go-winio (MIT) https://github.com/Microsoft/go-winio
 https://github.com/microsoft/go-winio/blob/master/LICENSE
+
+github.com/nats-io/nats.go (Apache-2.0) https://github.com/nats-io/nats.go
+https://github.com/nats-io/nats.go/blob/main/LICENSE
+
+github.com/nats-io/nkeys (Apache-2.0) https://github.com/nats-io/nkeys
+https://github.com/nats-io/nkeys/blob/master/LICENSE
+
+github.com/nats-io/nuid (Apache-2.0) https://github.com/nats-io/nuid
+https://github.com/nats-io/nuid/blob/master/LICENSE
+
