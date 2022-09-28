@@ -128,7 +128,7 @@ func TestConfigureMQTTClientForAuthWithUsernamePasswordAndCA(t *testing.T) {
 	assert.Equal(t, target.opts.Username, "Username")
 	assert.Equal(t, target.opts.Password, "Password")
 	assert.Nil(t, target.opts.TLSConfig.Certificates)
-	assert.NotNil(t, target.opts.TLSConfig.ClientCAs)
+	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
 }
 
 func TestConfigureMQTTClientForAuthWithCACert(t *testing.T) {
@@ -142,7 +142,7 @@ func TestConfigureMQTTClientForAuthWithCACert(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	assert.NotNil(t, target.opts.TLSConfig.ClientCAs)
+	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
 	assert.Empty(t, target.opts.Username)
 	assert.Empty(t, target.opts.Password)
 	assert.Nil(t, target.opts.TLSConfig.Certificates)
@@ -162,7 +162,7 @@ func TestConfigureMQTTClientForAuthWithClientCert(t *testing.T) {
 	assert.Empty(t, target.opts.Username)
 	assert.Empty(t, target.opts.Password)
 	assert.NotNil(t, target.opts.TLSConfig.Certificates)
-	assert.NotNil(t, target.opts.TLSConfig.ClientCAs)
+	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
 }
 
 func TestConfigureMQTTClientForAuthWithClientCertNoCA(t *testing.T) {
@@ -180,7 +180,7 @@ func TestConfigureMQTTClientForAuthWithClientCertNoCA(t *testing.T) {
 	assert.Empty(t, target.opts.Username)
 	assert.Empty(t, target.opts.Password)
 	assert.NotNil(t, target.opts.TLSConfig.Certificates)
-	assert.Nil(t, target.opts.TLSConfig.ClientCAs)
+	assert.Nil(t, target.opts.TLSConfig.RootCAs)
 }
 func TestConfigureMQTTClientForAuthWithNone(t *testing.T) {
 	target := NewMqttFactory(secretDataProvider, lc, "", "", false)
