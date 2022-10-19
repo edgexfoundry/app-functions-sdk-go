@@ -1,7 +1,7 @@
 test.txt
 debug
 *.exe
-new-app-service
+app-new-service
 .vscode
 coverage.out
 logs/

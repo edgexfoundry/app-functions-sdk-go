@@ -17,6 +17,7 @@
 package functions
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -48,13 +49,13 @@ type Sample struct {
 }
 
 // LogEventDetails is example of processing an Event and passing the original Event to next function in the pipeline
-// For more details on the Context API got here: https://docs.edgexfoundry.org/2.2/microservices/application/ContextAPI/
+// For more details on the Context API got here: https://docs.edgexfoundry.org/latest/microservices/application/ContextAPI/
 func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	lc := ctx.LoggingClient()
 	lc.Debugf("LogEventDetails called in pipeline '%s'", ctx.PipelineId())
 
 	if data == nil {
-		// Go here for details on Error Handle: https://docs.edgexfoundry.org/2.2/microservices/application/ErrorHandling/
+		// Go here for details on Error Handle: https://docs.edgexfoundry.org/latest/microservices/application/ErrorHandling/
 		return false, fmt.Errorf("function LogEventDetails in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
 
@@ -94,6 +95,54 @@ func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interfa
 	// Returning true indicates that the pipeline execution should continue with the next function
 	// using the event passed as input in this case.
 	return true, event
+}
+
+// SendCommand is example of how to use the CommandClient to send commands to devices
+func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+	lc := ctx.LoggingClient()
+	lc.Debugf("SendCommand called in pipeline '%s'", ctx.PipelineId())
+
+	if data == nil {
+		// Go here for details on Error Handle: https://docs.edgexfoundry.org/latest/microservices/application/ErrorHandling/
+		return false, fmt.Errorf("function SendCommand in pipeline '%s': No Data Received", ctx.PipelineId())
+	}
+
+	event, ok := data.(dtos.Event)
+	if !ok {
+		return false, fmt.Errorf("function SendCommand in pipeline '%s', type received is not an Event", ctx.PipelineId())
+	}
+
+	// First get the list of commands available for the Device that this current Event is for
+	response, err := ctx.CommandClient().DeviceCoreCommandsByDeviceName(context.Background(), event.DeviceName)
+	if err != nil {
+		return false, fmt.Errorf("failed to get list of commands for %s device: %v in pipeline '%s'", event.DeviceName, err, ctx.PipelineId())
+	}
+
+	var commandName string
+
+	for _, command := range response.DeviceCoreCommand.CoreCommands {
+		if command.Get {
+			commandName = command.Name
+			break
+		}
+	}
+
+	if len(commandName) == 0 {
+		return false, fmt.Errorf("failed to find a GET command for %s device in pipeline '%s'", event.DeviceName, ctx.PipelineId())
+	}
+
+	pushEvent := "no"    // Don't want the new event pushed
+	returnEvent := "yes" // Do want the new Event return as response to the GET
+
+	// Now send the random GET command for the device
+	eventResponse, err := ctx.CommandClient().IssueGetCommandByName(context.Background(), event.DeviceName, commandName, pushEvent, returnEvent)
+	if err != nil {
+		return false, fmt.Errorf("failed to get Event for commandName %s on %s device: %v in pipeline '%s'", commandName, event.DeviceName, err, ctx.PipelineId())
+	}
+
+	lc.Debugf("SendCommand successfully received new event for commandName %s on %s device in pipeline '%s'", commandName, event.DeviceName, ctx.PipelineId())
+
+	return true, eventResponse.Event
 }
 
 // ConvertEventToXML is example of transforming an Event and passing the transformed data to next function in the pipeline
@@ -162,7 +211,7 @@ func (s *Sample) OutputXML(ctx interfaces.AppFunctionContext, data interface{}) 
 
 	// This sends the XML as a response. i.e. publish for MessageBus/MQTT triggers as configured or
 	// HTTP response to for the HTTP Trigger
-	// For more details on the SetResponseData() function go here: https://docs.edgexfoundry.org/2.2/microservices/application/ContextAPI/#complete
+	// For more details on the SetResponseData() function go here: https://docs.edgexfoundry.org/latest/microservices/application/ContextAPI/#complete
 	ctx.SetResponseData([]byte(xml))
 	ctx.SetResponseContentType(common.ContentTypeXML)
 
