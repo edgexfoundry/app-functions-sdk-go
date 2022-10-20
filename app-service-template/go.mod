@@ -26,7 +26,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.1 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.21 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0-dev.14 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0-dev.23 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0-dev.24 // indirect
 	github.com/edgexfoundry/go-mod-registry/v2 v2.3.0-dev.10 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v2 v2.3.0-dev.8 // indirect
 	github.com/fatih/color v1.9.0 // indirect

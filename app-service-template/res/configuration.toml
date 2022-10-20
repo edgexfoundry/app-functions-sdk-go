@@ -55,7 +55,7 @@ ServerBindAddr = "" # Leave blank so default to Host value unless different valu
 StartupMsg = "app-new-service Application Service has started"
 MaxResultCount = 0 # Not curently used by App Services.
 MaxRequestSize = 0 # Not curently used by App Services.
-RequestTimeout = "30s"
+RequestTimeout = "5s"
 
 # TODO: Remove section if not using HTTPS Webserver. Default protocol is HTTP if section is empty
 [HttpServer]
@@ -120,8 +120,8 @@ TokenFile = "/tmp/edgex/secrets/app-new-service/secrets-token.json"
   # If prefer REST, remove below and uncomment above
   UseMessageBus = true
   [Clients.core-command.Topics]
-  QueryRequestTopic = "edgex/core/commandquery/request"
-  QueryResponseTopic = "edgex/core/commandquery/response/#"
+  QueryRequestTopicPrefix = "edgex/core/commandquery/request"
+  QueryResponseTopic = "edgex/core/commandquery/response"
   CommandRequestTopicPrefix = "edgex/core/command/request"
   CommandResponseTopic = "edgex/core/command/response/#"
 

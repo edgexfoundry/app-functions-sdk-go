@@ -100,7 +100,7 @@ func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interfa
 // SendCommand is example of how to use the CommandClient to send commands to devices
 func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	lc := ctx.LoggingClient()
-	lc.Debugf("SendCommand called in pipeline '%s'", ctx.PipelineId())
+	lc.Debugf("SendCommand function called in pipeline '%s'", ctx.PipelineId())
 
 	if data == nil {
 		// Go here for details on Error Handle: https://docs.edgexfoundry.org/latest/microservices/application/ErrorHandling/
@@ -112,6 +112,8 @@ func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}
 		return false, fmt.Errorf("function SendCommand in pipeline '%s', type received is not an Event", ctx.PipelineId())
 	}
 
+	lc.Debugf("Issuing Command Query for device %s in pipeline '%s'", event.DeviceName, ctx.PipelineId())
+
 	// First get the list of commands available for the Device that this current Event is for
 	response, err := ctx.CommandClient().DeviceCoreCommandsByDeviceName(context.Background(), event.DeviceName)
 	if err != nil {
@@ -119,6 +121,8 @@ func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}
 	}
 
 	var commandName string
+
+	lc.Debugf("Device %s has %d commands to choose from. (in pipeline '%s')", event.DeviceName, len(response.DeviceCoreCommand.CoreCommands), ctx.PipelineId())
 
 	for _, command := range response.DeviceCoreCommand.CoreCommands {
 		if command.Get {
@@ -133,6 +137,8 @@ func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}
 
 	pushEvent := "no"    // Don't want the new event pushed
 	returnEvent := "yes" // Do want the new Event return as response to the GET
+
+	lc.Debugf("Issuing Command %s for device %s in in pipeline '%s'", commandName, event.DeviceName, ctx.PipelineId())
 
 	// Now send the random GET command for the device
 	eventResponse, err := ctx.CommandClient().IssueGetCommandByName(context.Background(), event.DeviceName, commandName, pushEvent, returnEvent)
