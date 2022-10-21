@@ -2,10 +2,6 @@ module github.com/edgexfoundry/app-functions-sdk-go/v2
 
 go 1.18
 
-replace (
-	github.com/edgexfoundry/go-mod-bootstrap/v2 => ../MODS/go-mod-bootstrap
-)
-
 require (
 	bitbucket.org/bertimus9/systemstat v0.5.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.6

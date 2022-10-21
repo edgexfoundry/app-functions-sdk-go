@@ -45,6 +45,8 @@ github.com/diegoholiveira/jsonlogic/v3 v3.2.6 h1:EV607wRY72hT3V90ZOQw+zjXR9KIUV9
 github.com/diegoholiveira/jsonlogic/v3 v3.2.6/go.mod h1:9oE8z9G+0OMxOoLHF3fhek3KuqD5CBqM0B6XFL08MSg=
 github.com/eclipse/paho.mqtt.golang v1.4.1 h1:tUSpviiL5G3P9SZZJPC4ZULZJsxQKXxfENpMvdbAXAI=
 github.com/eclipse/paho.mqtt.golang v1.4.1/go.mod h1:JGt0RsEwEX+Xa/agj90YJ9d9DH2b7upDZMK9HRbFvCA=
+github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.23 h1:Yc3veKQ1Duk0MlqGPmVQXiKfKvbjknOPQjckHn6MeyY=
+github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.23/go.mod h1:D27mjjRoYzpSGpR+SploF5wauAR69knnzGo2A+Za/+g=
 github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0-dev.14 h1:hjAFgpx/e0iLjESYmKQ3oc4hALJ2BD6qpd9Qk8SIV1U=
 github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0-dev.14/go.mod h1:4do/6nXmtMcWoMu4eqKjlr3Ot+l0rF68qOJpZwnN9R8=
 github.com/edgexfoundry/go-mod-core-contracts/v2 v2.3.0-dev.18 h1:Smkhoqq9+XsMcs0B3JokAmIT7hXJy9eQWk6SYk9z4yE=

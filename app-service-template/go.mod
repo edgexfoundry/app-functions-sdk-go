@@ -6,8 +6,6 @@ go 1.18
 
 replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../
 
-replace github.com/edgexfoundry/go-mod-bootstrap/v2 => ../../MODS/go-mod-bootstrap
-
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v2 v2.2.0
 	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.3.0-dev.18
@@ -24,7 +22,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.6 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.1 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.21 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.23 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0-dev.14 // indirect
 	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0-dev.24 // indirect
 	github.com/edgexfoundry/go-mod-registry/v2 v2.3.0-dev.10 // indirect
