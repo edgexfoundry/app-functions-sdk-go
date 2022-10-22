@@ -42,7 +42,7 @@ func TestCreateAndRunService_Success(t *testing.T) {
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
-		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("AddFunctionsPipelineForTopics", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
@@ -115,7 +115,7 @@ func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
 		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
 			setFunctionsPipelineCalled = true
 		})
@@ -148,7 +148,7 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("AddFunctionsPipelineForTopics", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)

@@ -17,14 +17,20 @@
 package functions
 
 import (
+	"errors"
+	"os"
 	"testing"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
+	mocks2 "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/responses"
+	edgexErrors "github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -48,6 +54,8 @@ func TestMain(m *testing.M) {
 	// If more additional dependencies (such as mock clients) are required, then use
 	// NewAppFuncContext(correlationID string, dic *di.Container) and pass in an initialized DIC (dependency injection container)
 	appContext = pkg.NewAppFuncContextForTest(correlationId, lc)
+
+	os.Exit(m.Run())
 }
 
 func TestSample_LogEventDetails(t *testing.T) {
@@ -104,4 +112,86 @@ func createTestEvent(t *testing.T) dtos.Event {
 	}
 
 	return event
+}
+
+func TestSample_SendCommand(t *testing.T) {
+	testEvent := createTestEvent(t)
+
+	validQueryResponse := responses.NewDeviceCoreCommandResponse("", "", 200,
+		dtos.DeviceCoreCommand{
+			DeviceName:  "test",
+			ProfileName: "test",
+			CoreCommands: []dtos.CoreCommand{
+				{
+					Name: "Command1",
+					Get:  true,
+				},
+			},
+		})
+
+	queryResponseNoCommands := validQueryResponse
+	queryResponseNoCommands.DeviceCoreCommand.CoreCommands = []dtos.CoreCommand{}
+
+	responseEvent := createTestEvent(t)
+	responseEvent.SourceName = "Something-Different"
+	validEventResponse := responses.NewEventResponse("", "", 200, responseEvent)
+
+	tests := []struct {
+		Name           string
+		QueryFailed    bool
+		CommandFailed  bool
+		QueryResponse  responses.DeviceCoreCommandResponse
+		ExpectContinue bool
+	}{
+		{"Happy Path", false, false, validQueryResponse, true},
+		{"Command Query Failed", true, false, responses.DeviceCoreCommandResponse{}, false},
+		{"Device Has No Commands", false, false, queryResponseNoCommands, false},
+		{"Command Failed", false, true, validQueryResponse, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+
+			mockContext := &mocks.AppFunctionContext{}
+			mockClient := &mocks2.CommandClient{}
+			mockContext.On("CommandClient").Return(mockClient)
+			mockContext.On("LoggingClient").Return(logger.NewMockClient())
+			mockContext.On("PipelineId").Return("default")
+
+			if test.QueryFailed {
+				mockClient.On("DeviceCoreCommandsByDeviceName", mock.Anything, mock.Anything).Return(test.QueryResponse, edgexErrors.NewCommonEdgeXWrapper(errors.New("failed")))
+			} else {
+				mockClient.On("DeviceCoreCommandsByDeviceName", mock.Anything, mock.Anything).Return(test.QueryResponse, nil)
+			}
+
+			if test.CommandFailed {
+				mockClient.On("IssueGetCommandByName", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, edgexErrors.NewCommonEdgeXWrapper(errors.New("failed")))
+			} else {
+				mockClient.On("IssueGetCommandByName", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&validEventResponse, nil)
+			}
+
+			target := NewSample()
+			actualContinue, result := target.SendCommand(mockContext, testEvent)
+
+			require.Equal(t, test.ExpectContinue, actualContinue)
+
+			if test.QueryFailed || test.CommandFailed {
+				err, ok := result.(error)
+				require.True(t, ok)
+				if test.QueryFailed {
+					assert.Contains(t, err.Error(), "failed to get list of commands")
+					return
+				}
+
+				assert.Contains(t, err.Error(), "failed to get Event for commandName")
+				return
+			}
+
+			if test.ExpectContinue {
+				actualEvent, ok := result.(dtos.Event)
+				require.True(t, ok)
+				assert.NotEqual(t, actualEvent, testEvent)
+			}
+		})
+	}
 }

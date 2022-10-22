@@ -147,6 +147,7 @@ func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}
 	}
 
 	lc.Debugf("SendCommand successfully received new event for commandName %s on %s device in pipeline '%s'", commandName, event.DeviceName, ctx.PipelineId())
+	lc.Debugf("Event returned is %+v", eventResponse.Event)
 
 	return true, eventResponse.Event
 }
