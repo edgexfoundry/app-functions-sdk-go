@@ -105,7 +105,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	err = app.service.SetDefaultFunctionsPipeline(
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
-		sample.SendCommand,
+		sample.SendGetCommand,
 		sample.ConvertEventToXML,
 		sample.OutputXML)
 	if err != nil {

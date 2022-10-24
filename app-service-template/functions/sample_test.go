@@ -114,7 +114,7 @@ func createTestEvent(t *testing.T) dtos.Event {
 	return event
 }
 
-func TestSample_SendCommand(t *testing.T) {
+func TestSample_SendGetCommand(t *testing.T) {
 	testEvent := createTestEvent(t)
 
 	validQueryResponse := responses.NewDeviceCoreCommandResponse("", "", 200,
@@ -171,7 +171,7 @@ func TestSample_SendCommand(t *testing.T) {
 			}
 
 			target := NewSample()
-			actualContinue, result := target.SendCommand(mockContext, testEvent)
+			actualContinue, result := target.SendGetCommand(mockContext, testEvent)
 
 			require.Equal(t, test.ExpectContinue, actualContinue)
 

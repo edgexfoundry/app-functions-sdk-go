@@ -97,19 +97,21 @@ func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interfa
 	return true, event
 }
 
-// SendCommand is example of how to use the CommandClient to send commands to devices
-func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+// SendGetCommand is example of how to use the CommandClient to query available commands
+// and send Get commands to devices. It uses the device from the incoming Event as the target for the commanding and
+// selects the first available Get command from the query response (which is kind of random for this example).
+func (s *Sample) SendGetCommand(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	lc := ctx.LoggingClient()
-	lc.Debugf("SendCommand function called in pipeline '%s'", ctx.PipelineId())
+	lc.Debugf("SendGetCommand function called in pipeline '%s'", ctx.PipelineId())
 
 	if data == nil {
 		// Go here for details on Error Handle: https://docs.edgexfoundry.org/latest/microservices/application/ErrorHandling/
-		return false, fmt.Errorf("function SendCommand in pipeline '%s': No Data Received", ctx.PipelineId())
+		return false, fmt.Errorf("function SendGetCommand in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
 
 	event, ok := data.(dtos.Event)
 	if !ok {
-		return false, fmt.Errorf("function SendCommand in pipeline '%s', type received is not an Event", ctx.PipelineId())
+		return false, fmt.Errorf("function SendGetCommand in pipeline '%s', type received is not an Event", ctx.PipelineId())
 	}
 
 	lc.Debugf("Issuing Command Query for device %s in pipeline '%s'", event.DeviceName, ctx.PipelineId())
@@ -146,7 +148,7 @@ func (s *Sample) SendCommand(ctx interfaces.AppFunctionContext, data interface{}
 		return false, fmt.Errorf("failed to get Event for commandName %s on %s device: %v in pipeline '%s'", commandName, event.DeviceName, err, ctx.PipelineId())
 	}
 
-	lc.Debugf("SendCommand successfully received new event for commandName %s on %s device in pipeline '%s'", commandName, event.DeviceName, ctx.PipelineId())
+	lc.Debugf("SendGetCommand successfully received new event from GET command %s on %s device in pipeline '%s'", commandName, event.DeviceName, ctx.PipelineId())
 	lc.Debugf("Event returned is %+v", eventResponse.Event)
 
 	return true, eventResponse.Event
