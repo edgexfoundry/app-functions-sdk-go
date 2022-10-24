@@ -140,7 +140,9 @@ func (processor *ConfigUpdateProcessor) processConfigChangedPipeline() {
 
 		// Update the pipelines with their new transforms
 		for _, pipeline := range pipelines {
+			// TODO: Look at better way to apply pipeline updates
 			sdk.runtime.SetFunctionsPipelineTransforms(pipeline.Id, pipeline.Transforms)
+			sdk.runtime.SetFunctionsPipelineTopics(pipeline.Id, pipeline.Topics)
 		}
 
 		sdk.LoggingClient().Info("Configurable Pipeline successfully reloaded from new configuration")
