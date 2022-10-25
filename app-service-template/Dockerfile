@@ -38,7 +38,7 @@ FROM alpine:3.16
 # TODO: Change Copyright to your company if open sourcing or remove label
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
   copyright='Copyright (c) 2022: Intel'
-LABEL Name=new-app-service Version=${VERSION}
+LABEL Name=app-new-service Version=${VERSION}
 
 # dumb-init is required as security-bootstrapper uses it in the entrypoint script
 RUN apk add --update --no-cache ca-certificates zeromq dumb-init
@@ -46,10 +46,10 @@ RUN apk add --update --no-cache ca-certificates zeromq dumb-init
 COPY --from=builder /app/Attribution.txt /Attribution.txt
 COPY --from=builder /app/LICENSE /LICENSE
 COPY --from=builder /app/res/ /res/
-COPY --from=builder /app/new-app-service /new-app-service
+COPY --from=builder /app/app-new-service /app-new-service
 
 # TODO: set this port appropriatly as it is in the configuation.toml
 EXPOSE 59740
 
-ENTRYPOINT ["/new-app-service"]
+ENTRYPOINT ["/app-new-service"]
 CMD ["-cp=consul.http://edgex-core-consul:8500", "--registry", "--confdir=/res"]

@@ -21,8 +21,8 @@ import (
 	"os"
 	"reflect"
 
-	"new-app-service/config"
-	"new-app-service/functions"
+	"app-new-service/config"
+	"app-new-service/functions"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	serviceKey = "new-app-service"
+	serviceKey = "app-new-service"
 )
 
 // TODO: Define your app's struct
@@ -44,7 +44,7 @@ type myApp struct {
 }
 
 func main() {
-	// TODO: See https://docs.edgexfoundry.org/2.2/microservices/application/ApplicationServices/
+	// TODO: See https://docs.edgexfoundry.org/latest/microservices/application/ApplicationServices/
 	//       for documentation on application services.
 	app := myApp{}
 	code := app.CreateAndRunAppService(serviceKey, pkg.NewAppService)
@@ -64,7 +64,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 
 	// TODO: Replace with retrieving your custom ApplicationSettings from configuration or
 	//       remove if not using AppSetting configuration section.
-	// For more details see https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#application-settings
+	// For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#application-settings
 	deviceNames, err := app.service.GetAppSettingStrings("DeviceNames")
 	if err != nil {
 		app.lc.Errorf("failed to retrieve DeviceNames from configuration: %s", err.Error())
@@ -72,7 +72,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	}
 
 	// More advance custom structured configuration can be defined and loaded as in this example.
-	// For more details see https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#custom-configuration
+	// For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 	// TODO: Change to use your service's custom configuration struct
 	//       or remove if not using custom configuration capability
 	app.serviceConfig = &config.ServiceConfig{}
@@ -90,7 +90,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 
 	// Custom configuration can be 'writable' or a section of the configuration can be 'writable' when using
 	// the Configuration Provider, aka Consul.
-	// For more details see https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#writable-custom-configuration
+	// For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#writable-custom-configuration
 	// TODO: Remove if not using writable custom configuration
 	if err := app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", app.ProcessConfigUpdates); err != nil {
 		app.lc.Errorf("unable to watch custom writable configuration: %s", err.Error())
@@ -101,10 +101,11 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 
 	// TODO: Replace below functions with built in and/or your custom functions for your use case
 	//       or remove if using Pipeline By Topics below.
-	//       See https://docs.edgexfoundry.org/2.2/microservices/application/BuiltIn/ for list of built-in functions
+	//       See https://docs.edgexfoundry.org/latest/microservices/application/BuiltIn/ for list of built-in functions
 	err = app.service.SetDefaultFunctionsPipeline(
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
+		sample.SendGetCommand,
 		sample.ConvertEventToXML,
 		sample.OutputXML)
 	if err != nil {
@@ -120,7 +121,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	//       Core Data publishes to the 'edgex/events/core/<profile-name>/<device-name>/<source-name>' topic
 	// Note: This example with default above causes Events from Random-Float-Device device to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
-	// See https://docs.edgexfoundry.org/2.2/microservices/application/AdvancedTopics/#pipeline-per-topics for more details.
+	// See https://docs.edgexfoundry.org/latest/microservices/application/AdvancedTopics/#pipeline-per-topics for more details.
 	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/#/#/Random-Float-Device/#"},
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,

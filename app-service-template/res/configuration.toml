@@ -1,5 +1,5 @@
 # TODO: Go here for detailed information on Application Service configuation:
-#       https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/
+#       https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/
 [Writable]
 LogLevel = "INFO"
 
@@ -25,6 +25,10 @@ LogLevel = "INFO"
   Interval = "30s"
   PublishTopicPrefix  = "edgex/telemetry" # /<service-name>/<metric-name> will be added to this Publish Topic prefix
     [Writable.Telemetry.Metrics] # All service's metric names must be present in this list.
+    # TODO: Remove sample custom metric and implement meaningful custom metrics if any needed.
+    # Cusom App Service Metrics
+    EventsConvertedToXML = true
+    # App SDK provided Metrics
     MessagesReceived = true
     InvalidMessagesReceived = true
     PipelineMessagesProcessed = true # Pipeline IDs are added as the tag for the metric for each pipeline defined
@@ -32,8 +36,11 @@ LogLevel = "INFO"
     PipelineProcessingErrors = true # Pipeline IDs are added as the tag for the metric for each pipeline defined
     HttpExportSize = true # Single metric used for all HTTP Exports
     MqttExportSize = true # BrokerAddress and Topic are added as the tag for this metric for each MqttExport defined
-    # TODO: Remove sample custom metric and implement meaningful custom metrics if any needed.
-    EventsConvertedToXML = true
+    # Common Security Service Metrics
+    SecuritySecretsRequested = true
+    SecuritySecretsStored = true
+    SecurityConsulTokensRequested = true
+    SecurityConsulTokenDuration = true
     [Writable.Telemetry.Tags] # Contains the service level tags to be attached to all the service's metrics
 #    Gateway="my-iot-gateway" # Tag must be added here or via Consul Env Override can only chnage existing value, not added new ones.
 
@@ -45,7 +52,7 @@ Host = "localhost"
 #       app-service-configurable profiles/instances, Rules Engine and examples
 Port = 59740
 ServerBindAddr = "" # Leave blank so default to Host value unless different value is needed.
-StartupMsg = "new-app-service Application Service has started"
+StartupMsg = "app-new-service Application Service has started"
 MaxResultCount = 0 # Not curently used by App Services.
 MaxRequestSize = 0 # Not curently used by App Services.
 RequestTimeout = "5s"
@@ -72,7 +79,7 @@ Timeout = "30s"
 #       if not this secion can be removed, but you must make sure EDGEX_SECURITY_SECRET_STORE is set to false
 #       Note is database is running in secure more and you have Store and Forward enable you will need to run this
 #       service in secure mode.
-#       For more deatils about SecretStore: https://docs.edgexfoundry.org/2.2/microservices/security/Ch-SecretStore/
+#       For more deatils about SecretStore: https://docs.edgexfoundry.org/latest/microservices/security/Ch-SecretStore/
 [SecretStore]
 Type = "vault"
 Host = "localhost"
@@ -81,7 +88,7 @@ Path = "appservice/"
 Protocol = "http"
 RootCaCertPath = ""
 ServerName = ""
-TokenFile = "/tmp/edgex/secrets/new-app-service/secrets-token.json"
+TokenFile = "/tmp/edgex/secrets/app-new-service/secrets-token.json"
   [SecretStore.Authentication]
   AuthType = "X-Vault-Token"
   [SecretStore.RuntimeTokenProvider]
@@ -105,11 +112,20 @@ TokenFile = "/tmp/edgex/secrets/new-app-service/secrets-token.json"
   Port = 59881
 
   [Clients.core-command]
-  Protocol = "http"
-  Host = "localhost"
-  Port = 59882
+#  Protocol = "http"
+#  Host = "localhost"
+#  Port = 59882
+  # Choose to use new messaging based communication for Command Client.
+  # Only valid if MessageBus Trigger is used
+  # If prefer REST, remove below and uncomment above
+  UseMessageBus = true
+  [Clients.core-command.Topics]
+  QueryRequestTopicPrefix = "edgex/core/commandquery/request"
+  QueryResponseTopic = "edgex/core/commandquery/response"
+  CommandRequestTopicPrefix = "edgex/core/command/request"
+  CommandResponseTopic = "edgex/core/command/response/#"
 
-  [Clients.support-notifications]
+[Clients.support-notifications]
   Protocol = "http"
   Host = "localhost"
   Port = 59860
@@ -149,7 +165,7 @@ Type="edgex-messagebus"
 #    Protocol = "tcp"
 #    PublishTopic="event-xml"
 #    [Trigger.EdgexMessageBus.Optional]
-#    ClientId ="new-app-service"
+#    ClientId ="app-new-service"
 #    Qos            = "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
 #    KeepAlive      = "10" # Seconds (must be 2 or greater)
 #    Retained       = "false"
@@ -161,15 +177,15 @@ Type="edgex-messagebus"
 
 # TODO: Add custom settings needed by your app service or remove if you don't have any settings.
 # This can be any Key/Value pair you need.
-# For more details see: https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#application-settings
+# For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#application-settings
 # Example that works with devices from the Virtual Device service:
 [ApplicationSettings]
-DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device"
+DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device, sample-numeric"
 
 # TODO: Replace this section with your actual structured custom configuration section
 #       or remove if you don't have a need for structured custom configuration
 # This can be any structure you need, but it can not contain slices. Use a maps instead of slices.
-# For more details see: https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#custom-configuration
+# For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 [AppCustom]
 ResourceNames = "Boolean, Int32, Uint32, Float32, Binary"
 SomeValue = 123

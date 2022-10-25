@@ -19,7 +19,7 @@ package config
 
 // This file contains example of custom configuration that can be loaded from the service's configuration.toml
 // and/or the Configuration Provider, aka Consul (if enabled).
-// For more details see https://docs.edgexfoundry.org/2.2/microservices/application/GeneralAppServiceConfig/#custom-configuration
+// For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 // TODO: Update this configuration as needed for you service's needs and remove this comment
 //       or remove this file if not using custom configuration.
 
