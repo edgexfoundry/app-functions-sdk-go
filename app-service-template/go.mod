@@ -1,8 +1,10 @@
 // TODO: Update the Attrbuition.txt file when adding/removing dependencies
 
-module new-app-service
+module app-new-service
 
 go 1.18
+
+replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v2 v2.2.0
@@ -22,7 +24,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.1 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.23 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0-dev.14 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0-dev.23 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0-dev.24 // indirect
 	github.com/edgexfoundry/go-mod-registry/v2 v2.3.0-dev.10 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v2 v2.3.0-dev.8 // indirect
 	github.com/fatih/color v1.9.0 // indirect
@@ -75,5 +77,3 @@ require (
 	gopkg.in/square/go-jose.v2 v2.4.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../

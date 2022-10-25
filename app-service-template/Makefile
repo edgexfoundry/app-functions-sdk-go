@@ -36,7 +36,7 @@ APPVERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
 # it must first remove the word 'required' so the offset of $2 is the same if there are multiple required modules
 SDKVERSION=$(shell cat ./go.mod | grep 'github.com/edgexfoundry/app-functions-sdk-go/v2 v' | sed 's/require//g' | awk '{print $$2}')
 
-MICROSERVICE=new-app-service
+MICROSERVICE=app-new-service
 GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly
 CGOFLAGS=-ldflags "-linkmode=external -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v2/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly -buildmode=pie
 
@@ -60,9 +60,9 @@ docker:
 	    --build-arg https_proxy \
 		-f Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t edgexfoundry/new-app-service:$(GIT_SHA) \
-		-t edgexfoundry/new-app-service:${APPVERSION}-dev \
-		-t nexus3.edgexfoundry.org:10004/new-app-service:${APPVERSION}-dev \
+		-t edgexfoundry/app-new-service:$(GIT_SHA) \
+		-t edgexfoundry/app-new-service:${APPVERSION}-dev \
+		-t nexus3.edgexfoundry.org:10004/app-new-service:${APPVERSION}-dev \
 		.
 
 # The test-attribution-txt.sh scripts are required for upstreaming to EdgeX Foundry.
