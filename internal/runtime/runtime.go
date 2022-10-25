@@ -119,6 +119,20 @@ func (gr *GolangRuntime) SetFunctionsPipelineTransforms(id string, transforms []
 	}
 }
 
+// SetFunctionsPipelineTopics sets the topics for an existing function pipeline.
+// Non-existent pipelines are ignored
+func (gr *GolangRuntime) SetFunctionsPipelineTopics(id string, topics []string) {
+	pipeline := gr.pipelines[id]
+	if pipeline != nil {
+		gr.isBusyCopying.Lock()
+		pipeline.Topics = topics
+		gr.isBusyCopying.Unlock()
+		gr.lc.Infof("Topics set for `%s` pipeline", id)
+	} else {
+		gr.lc.Warnf("Unable to set topica for `%s` pipeline: Pipeline not found", id)
+	}
+}
+
 // ClearAllFunctionsPipelineTransforms clears the transforms for all existing function pipelines.
 func (gr *GolangRuntime) ClearAllFunctionsPipelineTransforms() {
 	gr.isBusyCopying.Lock()
