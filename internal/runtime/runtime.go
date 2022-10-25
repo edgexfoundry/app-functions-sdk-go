@@ -161,7 +161,7 @@ func (gr *GolangRuntime) addFunctionsPipeline(id string, topics []string, transf
 	gr.isBusyCopying.Unlock()
 
 	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
-	gr.registerPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, pipeline.Id, pipeline.MessageProcessingTime)
+	gr.registerPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, pipeline.Id, pipeline.MessagesProcessed)
 	gr.registerPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, pipeline.Id, pipeline.MessageProcessingTime)
 	gr.registerPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, pipeline.Id, pipeline.ProcessingErrors)
 
