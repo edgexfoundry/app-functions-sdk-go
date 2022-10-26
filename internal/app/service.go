@@ -196,15 +196,6 @@ func (svc *Service) MakeItRun() error {
 	// deferred is a function that needs to be called when services exits.
 	svc.addDeferred(deferred)
 
-	// Now that Command client can use the MessageBus, the client initialization has to occur be after the Trigger is initialized which
-	// creates the MessageBus client if that trigger is selected. Commanding over messaging is only available when the MessageBus Trigger is used.
-	// TODO: In 3.0 the MessagingClient will be created no matter which trigger is selected. Once that is in place, clients initialization
-	//       can go back to being a normally call bootstrap handler
-	success := bootstrapHandlers.NewClientsBootstrap().BootstrapHandler(svc.ctx.appCtx, svc.ctx.appWg, startup.NewStartUpTimer(svc.serviceKey), svc.dic)
-	if !success {
-		return errors.New("failed to initialize Clients")
-	}
-
 	if svc.config.Writable.StoreAndForward.Enabled {
 		svc.startStoreForward()
 	} else {
@@ -531,6 +522,7 @@ func (svc *Service) Initialize() error {
 		svc.dic,
 		true,
 		[]bootstrapInterfaces.BootstrapHandler{
+			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
 			handlers.NewTelemetry().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,
 			bootstrapHandlers.NewServiceMetrics(svc.serviceKey).BootstrapHandler,
