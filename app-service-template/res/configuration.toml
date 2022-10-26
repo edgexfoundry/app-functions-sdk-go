@@ -1,4 +1,4 @@
-# TODO: Go here for detailed information on Application Service configuation:
+# TODO: Go here for detailed information on Application Service configuration:
 #       https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/
 [Writable]
 LogLevel = "INFO"
@@ -26,7 +26,7 @@ LogLevel = "INFO"
   PublishTopicPrefix  = "edgex/telemetry" # /<service-name>/<metric-name> will be added to this Publish Topic prefix
     [Writable.Telemetry.Metrics] # All service's metric names must be present in this list.
     # TODO: Remove sample custom metric and implement meaningful custom metrics if any needed.
-    # Cusom App Service Metrics
+    # Custom App Service Metrics
     EventsConvertedToXML = true
     # App SDK provided Metrics
     MessagesReceived = true
@@ -42,19 +42,19 @@ LogLevel = "INFO"
     SecurityConsulTokensRequested = true
     SecurityConsulTokenDuration = true
     [Writable.Telemetry.Tags] # Contains the service level tags to be attached to all the service's metrics
-#    Gateway="my-iot-gateway" # Tag must be added here or via Consul Env Override can only chnage existing value, not added new ones.
+#    Gateway="my-iot-gateway" # Tag must be added here or via Consul Env Override can only change existing value, not added new ones.
 
 [Service]
 HealthCheckInterval = "10s"
 Host = "localhost"
 # TODO: set this port appropriately,
-#       App service use port assigments 597xx with lower range 00-39 reserved for
+#       App service use port assignments 597xx with lower range 00-39 reserved for
 #       app-service-configurable profiles/instances, Rules Engine and examples
 Port = 59740
 ServerBindAddr = "" # Leave blank so default to Host value unless different value is needed.
 StartupMsg = "app-new-service Application Service has started"
-MaxResultCount = 0 # Not curently used by App Services.
-MaxRequestSize = 0 # Not curently used by App Services.
+MaxResultCount = 0 # Not currently used by App Services.
+MaxRequestSize = 0 # Not currently used by App Services.
 RequestTimeout = "5s"
 
 # TODO: Remove section if not using HTTPS Webserver. Default protocol is HTTP if section is empty
@@ -76,15 +76,15 @@ Port = 6379
 Timeout = "30s"
 
 # TODO: Determine if your service will use secrets in secure mode, i.e. Vault.
-#       if not this secion can be removed, but you must make sure EDGEX_SECURITY_SECRET_STORE is set to false
+#       if not this section can be removed, but you must make sure EDGEX_SECURITY_SECRET_STORE is set to false
 #       Note is database is running in secure more and you have Store and Forward enable you will need to run this
 #       service in secure mode.
-#       For more deatils about SecretStore: https://docs.edgexfoundry.org/latest/microservices/security/Ch-SecretStore/
+#       For more details about SecretStore: https://docs.edgexfoundry.org/latest/microservices/security/Ch-SecretStore/
 [SecretStore]
 Type = "vault"
 Host = "localhost"
 Port = 8200
-Path = "appservice/"
+Path = "app-new-service/"
 Protocol = "http"
 RootCaCertPath = ""
 ServerName = ""
@@ -136,7 +136,7 @@ Type="edgex-messagebus"
     Protocol = "redis"
     PublishTopic="event-xml"
     [Trigger.EdgexMessageBus.Optional]
-    authmode = "usernamepassword"  # requied for redis messagebus (secure or insecure).
+    authmode = "usernamepassword"  # required for redis messagebus (secure or insecure).
     secretname = "redisdb"
 
 # TODO: If using mqtt messagebus, Uncomment this section and remove above [Trigger] section,
@@ -157,7 +157,7 @@ Type="edgex-messagebus"
 #    PublishTopic="event-xml"
 #    [Trigger.EdgexMessageBus.Optional]
 #    ClientId ="app-new-service"
-#    Qos            = "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
+#    Qos            = "0" # Quality of Service values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
 #    KeepAlive      = "10" # Seconds (must be 2 or greater)
 #    Retained       = "false"
 #    AutoReconnect  = "true"
