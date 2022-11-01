@@ -11,6 +11,39 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+## [v2.2.0] Levski - 2022-11-09 (Only compatible with the 2.x releases)
+
+### Features ✨
+
+- NATS MessageBus capability (see [go-mod-messaging](https://github.com/edgexfoundry/go-mod-messaging/blob/main/CHANGELOG.md) )
+- Expose SecretProvider so new APIs are accessible ([#1170](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1170)) ([#930c952](https://github.com/edgexfoundry/app-functions-sdk-go/commits/930c952))
+- Add new transform which wraps data into an Event ([#1154](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1154)) ([#13a0e4a](https://github.com/edgexfoundry/app-functions-sdk-go/commits/13a0e4a))
+- Add InvalidMessagesReceived service metric ([#1123](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1123)) ([#e0accd9](https://github.com/edgexfoundry/app-functions-sdk-go/commits/e0accd9))
+- **metrics:** Add metric to capture MQTT export size in bytes ([#1137](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1137)) ([#08a153b](https://github.com/edgexfoundry/app-functions-sdk-go/commits/08a153b))
+- **metrics:** Add metric to capture HTTP export size in bytes ([#1132](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1132)) ([#ef8b75d](https://github.com/edgexfoundry/app-functions-sdk-go/commits/ef8b75d))
+- **metrics:** Add metric to capture count of errors from function pipelines ([#1133](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1133)) ([#819947f](https://github.com/edgexfoundry/app-functions-sdk-go/commits/819947f))
+
+### Bug Fixes 🐛
+
+- Fix template issues ([#1191](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1191)) ([#b219f0d](https://github.com/edgexfoundry/app-functions-sdk-go/commits/b219f0d))
+- Use correct metric instance when reporting PipelineMessagesProcessed ([#1197](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1197)) ([#cec20cd](https://github.com/edgexfoundry/app-functions-sdk-go/commits/cec20cd))
+- Update Pipeline topics when writable pipeline changed ([#1198](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1198)) ([#bf1cebf](https://github.com/edgexfoundry/app-functions-sdk-go/commits/bf1cebf))
+- When MQTT authmode=cacert, set RootCAs on TLS config ([#1178](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1178)) ([#b027ae0](https://github.com/edgexfoundry/app-functions-sdk-go/commits/b027ae0))
+- **triggers:** Correct term "MQTT" in MessageBus trigger log ([#1126](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1126)) ([#de1c054](https://github.com/edgexfoundry/app-functions-sdk-go/commits/de1c054))
+
+### Documentation 📖
+
+- Update attribution.txt to reference paho license as v2.0 ([#1129](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1129)) ([#95730d3](https://github.com/edgexfoundry/app-functions-sdk-go/commits/95730d3))
+- Fix typo in CommandClient description ([#1173](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1173)) ([#77f92e9](https://github.com/edgexfoundry/app-functions-sdk-go/commits/77f92e9))
+- Correct spelling errors in app template config file ([#1208](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1208)) ([#78eeb4c](https://github.com/edgexfoundry/app-functions-sdk-go/commits/78eeb4c))
+- Updated comments in Telemetry config for App Template ([#1141](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1141)) ([#4db1c5b](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4db1c5b))
+
+### Build 👷
+
+- Publish swagger to 2.3.0 ([#1112](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1112)) ([#f46e129](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f46e129))
+- Optimize test-attribution-txt.sh to use go.mod, not vendor ([#1134](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1134)) ([#4f8232b](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4f8232b))
+- Upgrade to Go 1.18 and alpine 3.16 ([#1146](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1146)) ([#4a1eef6](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4a1eef6))
+
 ## [v2.2.0] Kamakura - 2022-05-11 (Only compatible with the 2.x releases)
 
 ### Features ✨
