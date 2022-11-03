@@ -7,8 +7,8 @@ go 1.18
 replace github.com/edgexfoundry/app-functions-sdk-go/v2 => ../
 
 require (
-	github.com/edgexfoundry/app-functions-sdk-go/v2 v2.2.0
-	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.3.0-dev.19
+	github.com/edgexfoundry/app-functions-sdk-go/v2 v2.3.0
+	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.3.0
 	github.com/google/uuid v1.3.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/stretchr/testify v1.8.0
@@ -22,11 +22,11 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.6 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.1 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0-dev.28 // indirect
-	github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0-dev.15 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0-dev.25 // indirect
-	github.com/edgexfoundry/go-mod-registry/v2 v2.3.0-dev.11 // indirect
-	github.com/edgexfoundry/go-mod-secrets/v2 v2.3.0-dev.11 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0 // indirect
+	github.com/edgexfoundry/go-mod-registry/v2 v2.3.0 // indirect
+	github.com/edgexfoundry/go-mod-secrets/v2 v2.3.0 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
