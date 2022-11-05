@@ -143,6 +143,7 @@ func TestConfigureMQTTClientForAuthWithCACert(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
+	assert.Equal(t, target.opts.Username, "Username")
 	assert.Empty(t, target.opts.Password)
 	assert.Nil(t, target.opts.TLSConfig.Certificates)
 }
@@ -158,6 +159,7 @@ func TestConfigureMQTTClientForAuthWithClientCert(t *testing.T) {
 		CaPemBlock:   []byte(testCACert),
 	})
 	require.NoError(t, err)
+	assert.Equal(t, target.opts.Username, "Username")
 	assert.Empty(t, target.opts.Password)
 	assert.NotNil(t, target.opts.TLSConfig.Certificates)
 	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
@@ -175,6 +177,7 @@ func TestConfigureMQTTClientForAuthWithClientCertNoCA(t *testing.T) {
 	})
 
 	require.NoError(t, err)
+	assert.Equal(t, target.opts.Username, messaging.SecretUsernameKey)
 	assert.Empty(t, target.opts.Password)
 	assert.NotNil(t, target.opts.TLSConfig.Certificates)
 	assert.Nil(t, target.opts.TLSConfig.RootCAs)
