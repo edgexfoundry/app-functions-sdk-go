@@ -20,10 +20,10 @@
 package secure
 
 import (
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"os"
 	"testing"
 
-	"github.com/eclipse/paho.mqtt.golang"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
@@ -143,7 +143,7 @@ func TestConfigureMQTTClientForAuthWithCACert(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
-	assert.Empty(t, target.opts.Username)
+	assert.Equal(t, target.opts.Username, "Username")
 	assert.Empty(t, target.opts.Password)
 	assert.Nil(t, target.opts.TLSConfig.Certificates)
 }
@@ -159,7 +159,7 @@ func TestConfigureMQTTClientForAuthWithClientCert(t *testing.T) {
 		CaPemBlock:   []byte(testCACert),
 	})
 	require.NoError(t, err)
-	assert.Empty(t, target.opts.Username)
+	assert.Equal(t, target.opts.Username, "Username")
 	assert.Empty(t, target.opts.Password)
 	assert.NotNil(t, target.opts.TLSConfig.Certificates)
 	assert.NotNil(t, target.opts.TLSConfig.RootCAs)
@@ -177,7 +177,7 @@ func TestConfigureMQTTClientForAuthWithClientCertNoCA(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	assert.Empty(t, target.opts.Username)
+	assert.Equal(t, target.opts.Username, messaging.SecretUsernameKey)
 	assert.Empty(t, target.opts.Password)
 	assert.NotNil(t, target.opts.TLSConfig.Certificates)
 	assert.Nil(t, target.opts.TLSConfig.RootCAs)

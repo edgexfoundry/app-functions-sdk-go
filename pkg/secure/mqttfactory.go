@@ -82,9 +82,12 @@ func (factory MqttFactory) configureMQTTClientForAuth(secretData *messaging.Secr
 		InsecureSkipVerify: factory.skipCertVerify,
 		MinVersion:         tls.VersionTLS12,
 	}
+	// Username may be required when cert authentication
+	if secretData.Username != "" {
+		factory.opts.SetUsername(secretData.Username)
+	}
 	switch factory.authMode {
 	case messaging.AuthModeUsernamePassword:
-		factory.opts.SetUsername(secretData.Username)
 		factory.opts.SetPassword(secretData.Password)
 	case messaging.AuthModeCert:
 		cert, err = tls.X509KeyPair(secretData.CertPemBlock, secretData.KeyPemBlock)
