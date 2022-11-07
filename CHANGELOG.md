@@ -29,6 +29,7 @@
 - Use correct metric instance when reporting PipelineMessagesProcessed ([#1197](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1197)) ([#cec20cd](https://github.com/edgexfoundry/app-functions-sdk-go/commits/cec20cd))
 - Update Pipeline topics when writable pipeline changed ([#1198](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1198)) ([#bf1cebf](https://github.com/edgexfoundry/app-functions-sdk-go/commits/bf1cebf))
 - When MQTT authmode=cacert, set RootCAs on TLS config ([#1178](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1178)) ([#b027ae0](https://github.com/edgexfoundry/app-functions-sdk-go/commits/b027ae0))
+- Username may be required when MQTT cert authentication ([#1215](https://github.com/edgexfoundry/app-functions-sdk-go/pull/1215)) ([#1bb3010](https://github.com/edgexfoundry/app-functions-sdk-go/commit/1bb3010))
 - **triggers:** Correct term "MQTT" in MessageBus trigger log ([#1126](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1126)) ([#de1c054](https://github.com/edgexfoundry/app-functions-sdk-go/commits/de1c054))
 
 ### Documentation 📖
