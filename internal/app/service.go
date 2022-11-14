@@ -430,6 +430,22 @@ func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, tr
 	return nil
 }
 
+// SetFunctionsPipelineTransforms updates the functions pipeline for the specified id
+func (svc *Service) SetFunctionsPipelineTransforms(id string, transforms ...interfaces.AppFunction) error {
+	if len(transforms) == 0 {
+		return errors.New("no transforms provided to pipeline")
+	}
+
+	svc.runtime.SetFunctionsPipelineTransforms(id, transforms)
+	svc.lc.Debugf("Pipeline '%s' updated with %d transform(s)", id, len(transforms))
+	return nil
+}
+
+// ClearAllFunctionsPipelineTransforms clears all the functions pipelines
+func (svc *Service) ClearAllFunctionsPipelineTransforms() {
+	svc.runtime.ClearAllFunctionsPipelineTransforms()
+}
+
 // RequestTimeout returns the Request Timeout duration that was parsed from the Service.RequestTimeout configuration
 func (svc *Service) RequestTimeout() time.Duration {
 	return svc.requestTimeout

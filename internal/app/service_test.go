@@ -23,6 +23,13 @@ import (
 	"reflect"
 	"testing"
 
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
@@ -32,12 +39,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	builtin "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -372,6 +373,84 @@ func TestService_AddFunctionsPipelineForTopics(t *testing.T) {
 		})
 	}
 }
+
+func TestService_SetFunctionsPipelineTransforms(t *testing.T) {
+	service := Service{
+		lc:      lc,
+		dic:     dic,
+		runtime: runtime.NewGolangRuntime("", nil, dic),
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMessageBus,
+			},
+		},
+	}
+
+	oldTags := builtin.NewTags(nil)
+	newTags := builtin.NewTags(map[string]string{"foo": "bar"})
+
+	oldTransforms := []interfaces.AppFunction{oldTags.AddTags}
+	newTransforms := []interfaces.AppFunction{newTags.AddTags}
+
+	defaultTopics := []string{"#"}
+
+	tests := []struct {
+		name          string
+		id            string
+		trigger       string
+		topics        []string
+		oldTransforms []interfaces.AppFunction
+		newTransforms []interfaces.AppFunction
+		expectError   bool
+	}{
+		{"Success", "121", TriggerTypeMessageBus, defaultTopics, oldTransforms, newTransforms, false},
+		{"No Transforms", "122", TriggerTypeMessageBus, defaultTopics, oldTransforms, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service.config.Trigger.Type = tt.trigger
+
+			err := service.AddFunctionsPipelineForTopics(tt.id, tt.topics, tt.oldTransforms...)
+			require.NoError(t, err)
+
+			err = service.SetFunctionsPipelineTransforms(tt.id, tt.newTransforms...)
+			if tt.expectError {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			actual := service.runtime.GetPipelineById(tt.id)
+			assert.Equal(t, newTransforms, actual.Transforms)
+		})
+	}
+}
+
+func TestService_ClearAllFunctionsPipelineTransforms(t *testing.T) {
+	service := Service{
+		lc:      lc,
+		dic:     dic,
+		runtime: runtime.NewGolangRuntime("", nil, dic),
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMessageBus,
+			},
+		},
+	}
+
+	id := "121"
+	tags := builtin.NewTags(nil)
+	transforms := []interfaces.AppFunction{tags.AddTags, tags.AddTags}
+	defaultTopics := []string{"#"}
+
+	err := service.AddFunctionsPipelineForTopics(id, defaultTopics, transforms...)
+	require.NoError(t, err)
+
+	service.ClearAllFunctionsPipelineTransforms()
+	actual := service.runtime.GetPipelineById(id)
+	assert.Equal(t, []interfaces.AppFunction(nil), actual.Transforms)
+}
+
 func TestApplicationSettings(t *testing.T) {
 	expectedSettingKey := "ApplicationName"
 	expectedSettingValue := "simple-filter-xml"

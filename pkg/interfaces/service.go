@@ -104,6 +104,11 @@ type ApplicationService interface {
 	// so that it matches multiple incoming topics. If just "#" is used for the specified topic it will match all incoming
 	// topics and the specified functions pipeline will execute on every message received.
 	AddFunctionsPipelineForTopics(id string, topic []string, transforms ...AppFunction) error
+	// SetFunctionsPipelineTransforms updates the functions pipeline for the list of Application Functions to be executed
+	// with the specified unique id.
+	SetFunctionsPipelineTransforms(id string, transforms ...AppFunction) error
+	// ClearAllFunctionsPipelineTransforms clears all the functions pipelines
+	ClearAllFunctionsPipelineTransforms()
 	// MakeItRun starts the configured trigger to allow the functions pipeline to execute when the trigger
 	// receives data and starts the internal webserver. This is a long running function which does not return until
 	// the service is stopped or MakeItStop() is called.
