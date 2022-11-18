@@ -143,6 +143,20 @@ func (gr *GolangRuntime) ClearAllFunctionsPipelineTransforms() {
 	gr.isBusyCopying.Unlock()
 }
 
+// RemoveAllFunctionPipelines removes all existing function pipelines
+func (gr *GolangRuntime) RemoveAllFunctionPipelines() {
+	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
+
+	gr.isBusyCopying.Lock()
+	for id := range gr.pipelines {
+		gr.unregisterPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, id)
+		gr.unregisterPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, id)
+		gr.unregisterPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, id)
+		delete(gr.pipelines, id)
+	}
+	gr.isBusyCopying.Unlock()
+}
+
 // AddFunctionsPipeline is thread safe to set transforms
 func (gr *GolangRuntime) AddFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) error {
 	_, exists := gr.pipelines[id]
@@ -176,6 +190,11 @@ func (gr *GolangRuntime) registerPipelineMetric(metricManager bootstrapInterface
 	} else {
 		gr.lc.Infof("%s metric has been registered and will be reported (if enabled)", registeredName)
 	}
+}
+
+func (gr *GolangRuntime) unregisterPipelineMetric(metricManager bootstrapInterfaces.MetricsManager, metricName string, pipelineId string) {
+	registeredName := strings.Replace(metricName, internal.PipelineIdTxt, pipelineId, 1)
+	metricManager.Unregister(registeredName)
 }
 
 // ProcessMessage sends the contents of the message through the functions pipeline
