@@ -37,7 +37,7 @@ const (
 )
 
 type storeForwardInfo struct {
-	runtime *GolangRuntime
+	runtime *AppServiceRuntime
 	dic     *di.Container
 }
 

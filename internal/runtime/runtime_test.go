@@ -74,7 +74,7 @@ func TestProcessMessageBusRequest(t *testing.T) {
 		return true, "Hello"
 	}
 
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{dummyTransform})
 
 	_, decodeErr, _ := runtime.DecodeMessage(context, envelope)
@@ -95,7 +95,7 @@ func TestProcessMessageNoTransforms(t *testing.T) {
 	}
 	context := appfunction.NewContext("testId", dic, "")
 
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
 	require.Nil(t, decodeError)
@@ -128,7 +128,7 @@ func TestProcessMessageOneCustomTransform(t *testing.T) {
 		transform1WasCalled = true
 		return true, "Hello"
 	}
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
@@ -173,7 +173,7 @@ func TestProcessMessageTwoCustomTransforms(t *testing.T) {
 
 		return true, "Hello"
 	}
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1, transform2})
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
@@ -225,7 +225,7 @@ func TestProcessMessageThreeCustomTransformsOneFail(t *testing.T) {
 		require.Equal(t, "Transform1Result", data, "Did not receive result from previous transform")
 		return true, "Hello"
 	}
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1, transform2, transform3})
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
@@ -260,7 +260,7 @@ func TestProcessMessageTransformError(t *testing.T) {
 	context := appfunction.NewContext("testId", dic, "")
 
 	// Let the Runtime know we are sending a RegistryInfo, so it passes it to the first function
-	runtime := NewGolangRuntime("", &config.RegistryInfo{}, dic)
+	runtime := NewAppServiceRuntime("", &config.RegistryInfo{}, dic)
 	// FilterByDeviceName with return an error if it doesn't receive and Event
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transforms.NewFilterFor([]string{"SomeDevice"}).FilterByDeviceName})
 
@@ -330,7 +330,7 @@ func TestProcessMessageJSON(t *testing.T) {
 		return false, nil
 	}
 
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
@@ -372,7 +372,7 @@ func TestProcessMessageCBOR(t *testing.T) {
 		return false, nil
 	}
 
-	runtime := NewGolangRuntime("", nil, dic)
+	runtime := NewAppServiceRuntime("", nil, dic)
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transform1})
 
 	messageData, decodeError, _ := runtime.DecodeMessage(context, envelope)
@@ -445,7 +445,7 @@ func TestDecode_Process_MessageTargetType(t *testing.T) {
 
 			context := appfunction.NewContext("testing", dic, "")
 
-			runtime := NewGolangRuntime("", currentTest.TargetType, dic)
+			runtime := NewAppServiceRuntime("", currentTest.TargetType, dic)
 			runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transforms.NewResponseData().SetResponseData})
 
 			targetData, err, _ := runtime.DecodeMessage(context, envelope)
@@ -484,7 +484,7 @@ func TestExecutePipelinePersist(t *testing.T) {
 		return true, data
 	}
 
-	runtime := NewGolangRuntime(serviceKey, nil, updateDicWithMockStoreClient())
+	runtime := NewAppServiceRuntime(serviceKey, nil, updateDicWithMockStoreClient())
 
 	httpPost := transforms.NewHTTPSender("http://nowhere", "", true).HTTPPost
 	runtime.SetDefaultFunctionsPipeline([]interfaces.AppFunction{transformPassThru, httpPost})
@@ -533,7 +533,7 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 		{"invalid CBOR", cborInvalidPayload, common.ContentTypeCBOR, nil, true},
 	}
 
-	target := GolangRuntime{lc: logger.NewMockClient()}
+	target := AppServiceRuntime{lc: logger.NewMockClient()}
 
 	for _, testCase := range tests {
 		t.Run(testCase.Name, func(t *testing.T) {
@@ -603,7 +603,7 @@ func TestTopicMatches(t *testing.T) {
 }
 
 func TestGetPipelineById(t *testing.T) {
-	target := NewGolangRuntime(serviceKey, nil, dic)
+	target := NewAppServiceRuntime(serviceKey, nil, dic)
 
 	expectedId := "my-pipeline"
 	expectedTopics := []string{"edgex/events/#"}
@@ -636,7 +636,7 @@ func TestGetPipelineById(t *testing.T) {
 }
 
 func TestGetMatchingPipelines(t *testing.T) {
-	target := NewGolangRuntime(serviceKey, nil, dic)
+	target := NewAppServiceRuntime(serviceKey, nil, dic)
 
 	expectedTransforms := []interfaces.AppFunction{
 		transforms.NewResponseData().SetResponseData,
@@ -669,7 +669,7 @@ func TestGetMatchingPipelines(t *testing.T) {
 }
 
 func TestGolangRuntime_GetDefaultPipeline(t *testing.T) {
-	target := NewGolangRuntime(serviceKey, nil, dic)
+	target := NewAppServiceRuntime(serviceKey, nil, dic)
 
 	expectedNilTransformsHash := "Pipeline-functions: "
 	expectedTransforms := []interfaces.AppFunction{
@@ -697,7 +697,7 @@ func TestGolangRuntime_GetDefaultPipeline(t *testing.T) {
 }
 
 func TestGolangRuntime_SetFunctionsPipelineTransforms(t *testing.T) {
-	target := NewGolangRuntime(serviceKey, nil, dic)
+	target := NewAppServiceRuntime(serviceKey, nil, dic)
 
 	id := "my-pipeline"
 	topics := []string{"edgex/events/#"}
@@ -723,7 +723,7 @@ func TestGolangRuntime_SetFunctionsPipelineTransforms(t *testing.T) {
 }
 
 func TestGolangRuntime_ClearAllFunctionsPipelineTransforms(t *testing.T) {
-	target := NewGolangRuntime(serviceKey, nil, dic)
+	target := NewAppServiceRuntime(serviceKey, nil, dic)
 
 	id1 := "pipeline1"
 	id2 := "pipeline2"
