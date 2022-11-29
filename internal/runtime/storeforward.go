@@ -37,7 +37,7 @@ const (
 )
 
 type storeForwardInfo struct {
-	runtime *AppServiceRuntime
+	runtime *FunctionsPipelineRuntime
 	dic     *di.Container
 }
 

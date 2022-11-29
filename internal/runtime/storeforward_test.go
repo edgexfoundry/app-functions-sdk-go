@@ -121,7 +121,7 @@ func TestProcessRetryItems(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			targetTransformWasCalled = false
-			runtime := NewAppServiceRuntime(serviceKey, nil, dic)
+			runtime := NewFunctionPipelineRuntime(serviceKey, nil, dic)
 
 			var pipeline *interfaces.FunctionPipeline
 
@@ -184,7 +184,7 @@ func TestDoStoreAndForwardRetry(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			runtime := NewAppServiceRuntime(serviceKey, nil, updateDicWithMockStoreClient())
+			runtime := NewFunctionPipelineRuntime(serviceKey, nil, updateDicWithMockStoreClient())
 
 			var pipeline *interfaces.FunctionPipeline
 

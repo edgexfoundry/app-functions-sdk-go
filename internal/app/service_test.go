@@ -256,7 +256,7 @@ func TestSetupHTTPTrigger(t *testing.T) {
 		},
 	}
 
-	testRuntime := runtime.NewAppServiceRuntime("", nil, dic)
+	testRuntime := runtime.NewFunctionPipelineRuntime("", nil, dic)
 	testRuntime.SetDefaultFunctionsPipeline(nil)
 
 	sdk.runtime = testRuntime
@@ -276,7 +276,7 @@ func TestSetupMessageBusTrigger(t *testing.T) {
 			},
 		},
 	}
-	testRuntime := runtime.NewAppServiceRuntime("", nil, dic)
+	testRuntime := runtime.NewFunctionPipelineRuntime("", nil, dic)
 	testRuntime.SetDefaultFunctionsPipeline(nil)
 
 	sdk.runtime = testRuntime
@@ -305,7 +305,7 @@ func TestSetDefaultFunctionsPipelineOneTransform(t *testing.T) {
 	service := Service{
 		lc:      lc,
 		dic:     dic,
-		runtime: runtime.NewAppServiceRuntime("", nil, dic),
+		runtime: runtime.NewFunctionPipelineRuntime("", nil, dic),
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeMessageBus,
@@ -324,7 +324,7 @@ func TestService_AddFunctionsPipelineForTopics(t *testing.T) {
 	service := Service{
 		lc:      lc,
 		dic:     dic,
-		runtime: runtime.NewAppServiceRuntime("", nil, dic),
+		runtime: runtime.NewFunctionPipelineRuntime("", nil, dic),
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeMessageBus,
@@ -379,7 +379,7 @@ func TestService_RemoveAllFunctionPipelines(t *testing.T) {
 	service := Service{
 		lc:      lc,
 		dic:     dic,
-		runtime: runtime.NewGolangRuntime("", nil, dic),
+		runtime: runtime.NewFunctionPipelineRuntime("", nil, dic),
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeMessageBus,

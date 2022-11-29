@@ -66,8 +66,8 @@ func NewFunctionPipeline(id string, topics []string, transforms []interfaces.App
 	return pipeline
 }
 
-// AppServiceRuntime represents the golang runtime environment
-type AppServiceRuntime struct {
+// FunctionsPipelineRuntime represents the golang runtime environment for App Services' Functions Pipelines
+type FunctionsPipelineRuntime struct {
 	TargetType    interface{}
 	ServiceKey    string
 	pipelines     map[string]*interfaces.FunctionPipeline
@@ -82,135 +82,135 @@ type MessageError struct {
 	ErrorCode int
 }
 
-// NewAppServiceRuntime creates and initializes the AppServiceRuntime instance
-func NewAppServiceRuntime(serviceKey string, targetType interface{}, dic *di.Container) *AppServiceRuntime {
-	asr := &AppServiceRuntime{
+// NewFunctionPipelineRuntime creates and initializes the AppServiceRuntime instance
+func NewFunctionPipelineRuntime(serviceKey string, targetType interface{}, dic *di.Container) *FunctionsPipelineRuntime {
+	fpr := &FunctionsPipelineRuntime{
 		ServiceKey: serviceKey,
 		TargetType: targetType,
 		dic:        dic,
 		pipelines:  make(map[string]*interfaces.FunctionPipeline),
 	}
 
-	asr.storeForward.dic = dic
-	asr.storeForward.runtime = asr
-	asr.lc = bootstrapContainer.LoggingClientFrom(asr.dic.Get)
+	fpr.storeForward.dic = dic
+	fpr.storeForward.runtime = fpr
+	fpr.lc = bootstrapContainer.LoggingClientFrom(fpr.dic.Get)
 
-	return asr
+	return fpr
 }
 
 // SetDefaultFunctionsPipeline sets the default function pipeline
-func (asr *AppServiceRuntime) SetDefaultFunctionsPipeline(transforms []interfaces.AppFunction) {
-	pipeline := asr.GetDefaultPipeline() // ensures the default pipeline exists
-	asr.SetFunctionsPipelineTransforms(pipeline.Id, transforms)
+func (fpr *FunctionsPipelineRuntime) SetDefaultFunctionsPipeline(transforms []interfaces.AppFunction) {
+	pipeline := fpr.GetDefaultPipeline() // ensures the default pipeline exists
+	fpr.SetFunctionsPipelineTransforms(pipeline.Id, transforms)
 }
 
 // SetFunctionsPipelineTransforms sets the transforms for an existing function pipeline.
 // Non-existent pipelines are ignored
-func (asr *AppServiceRuntime) SetFunctionsPipelineTransforms(id string, transforms []interfaces.AppFunction) {
-	pipeline := asr.pipelines[id]
+func (fpr *FunctionsPipelineRuntime) SetFunctionsPipelineTransforms(id string, transforms []interfaces.AppFunction) {
+	pipeline := fpr.pipelines[id]
 	if pipeline != nil {
-		asr.isBusyCopying.Lock()
+		fpr.isBusyCopying.Lock()
 		pipeline.Transforms = transforms
 		pipeline.Hash = calculatePipelineHash(transforms)
-		asr.isBusyCopying.Unlock()
-		asr.lc.Infof("Transforms set for `%s` pipeline", id)
+		fpr.isBusyCopying.Unlock()
+		fpr.lc.Infof("Transforms set for `%s` pipeline", id)
 	} else {
-		asr.lc.Warnf("Unable to set transforms for `%s` pipeline: Pipeline not found", id)
+		fpr.lc.Warnf("Unable to set transforms for `%s` pipeline: Pipeline not found", id)
 	}
 }
 
 // SetFunctionsPipelineTopics sets the topics for an existing function pipeline.
 // Non-existent pipelines are ignored
-func (asr *AppServiceRuntime) SetFunctionsPipelineTopics(id string, topics []string) {
-	pipeline := asr.pipelines[id]
+func (fpr *FunctionsPipelineRuntime) SetFunctionsPipelineTopics(id string, topics []string) {
+	pipeline := fpr.pipelines[id]
 	if pipeline != nil {
-		asr.isBusyCopying.Lock()
+		fpr.isBusyCopying.Lock()
 		pipeline.Topics = topics
-		asr.isBusyCopying.Unlock()
-		asr.lc.Infof("Topics set for `%s` pipeline", id)
+		fpr.isBusyCopying.Unlock()
+		fpr.lc.Infof("Topics set for `%s` pipeline", id)
 	} else {
-		asr.lc.Warnf("Unable to set topica for `%s` pipeline: Pipeline not found", id)
+		fpr.lc.Warnf("Unable to set topica for `%s` pipeline: Pipeline not found", id)
 	}
 }
 
 // ClearAllFunctionsPipelineTransforms clears the transforms for all existing function pipelines.
-func (asr *AppServiceRuntime) ClearAllFunctionsPipelineTransforms() {
-	asr.isBusyCopying.Lock()
-	for index := range asr.pipelines {
-		asr.pipelines[index].Transforms = nil
-		asr.pipelines[index].Hash = ""
+func (fpr *FunctionsPipelineRuntime) ClearAllFunctionsPipelineTransforms() {
+	fpr.isBusyCopying.Lock()
+	for index := range fpr.pipelines {
+		fpr.pipelines[index].Transforms = nil
+		fpr.pipelines[index].Hash = ""
 	}
-	asr.isBusyCopying.Unlock()
+	fpr.isBusyCopying.Unlock()
 }
 
 // RemoveAllFunctionPipelines removes all existing function pipelines
-func (gr *GolangRuntime) RemoveAllFunctionPipelines() {
-	metricManager := bootstrapContainer.MetricsManagerFrom(gr.dic.Get)
+func (fpr *FunctionsPipelineRuntime) RemoveAllFunctionPipelines() {
+	metricManager := bootstrapContainer.MetricsManagerFrom(fpr.dic.Get)
 
-	gr.isBusyCopying.Lock()
-	for id := range gr.pipelines {
-		gr.unregisterPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, id)
-		gr.unregisterPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, id)
-		gr.unregisterPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, id)
-		delete(gr.pipelines, id)
+	fpr.isBusyCopying.Lock()
+	for id := range fpr.pipelines {
+		fpr.unregisterPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, id)
+		fpr.unregisterPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, id)
+		fpr.unregisterPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, id)
+		delete(fpr.pipelines, id)
 	}
-	gr.isBusyCopying.Unlock()
+	fpr.isBusyCopying.Unlock()
 }
 
 // AddFunctionsPipeline is thread safe to set transforms
-func (asr *AppServiceRuntime) AddFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) error {
-	_, exists := asr.pipelines[id]
+func (fpr *FunctionsPipelineRuntime) AddFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) error {
+	_, exists := fpr.pipelines[id]
 	if exists {
 		return fmt.Errorf("pipeline with Id='%s' already exists", id)
 	}
 
-	_ = asr.addFunctionsPipeline(id, topics, transforms)
+	_ = fpr.addFunctionsPipeline(id, topics, transforms)
 	return nil
 }
 
-func (asr *AppServiceRuntime) addFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) *interfaces.FunctionPipeline {
+func (fpr *FunctionsPipelineRuntime) addFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) *interfaces.FunctionPipeline {
 	pipeline := NewFunctionPipeline(id, topics, transforms)
-	asr.isBusyCopying.Lock()
-	asr.pipelines[id] = &pipeline
-	asr.isBusyCopying.Unlock()
+	fpr.isBusyCopying.Lock()
+	fpr.pipelines[id] = &pipeline
+	fpr.isBusyCopying.Unlock()
 
-	metricManager := bootstrapContainer.MetricsManagerFrom(asr.dic.Get)
-	asr.registerPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, pipeline.Id, pipeline.MessagesProcessed)
-	asr.registerPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, pipeline.Id, pipeline.MessageProcessingTime)
-	asr.registerPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, pipeline.Id, pipeline.ProcessingErrors)
+	metricManager := bootstrapContainer.MetricsManagerFrom(fpr.dic.Get)
+	fpr.registerPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, pipeline.Id, pipeline.MessagesProcessed)
+	fpr.registerPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, pipeline.Id, pipeline.MessageProcessingTime)
+	fpr.registerPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, pipeline.Id, pipeline.ProcessingErrors)
 
 	return &pipeline
 }
 
-func (asr *AppServiceRuntime) registerPipelineMetric(metricManager bootstrapInterfaces.MetricsManager, metricName string, pipelineId string, metric interface{}) {
+func (fpr *FunctionsPipelineRuntime) registerPipelineMetric(metricManager bootstrapInterfaces.MetricsManager, metricName string, pipelineId string, metric interface{}) {
 	registeredName := strings.Replace(metricName, internal.PipelineIdTxt, pipelineId, 1)
 	err := metricManager.Register(registeredName, metric, map[string]string{"pipeline": pipelineId})
 	if err != nil {
-		asr.lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", registeredName, err.Error())
+		fpr.lc.Warnf("Unable to register %s metric. Metric will not be reported : %s", registeredName, err.Error())
 	} else {
-		asr.lc.Infof("%s metric has been registered and will be reported (if enabled)", registeredName)
+		fpr.lc.Infof("%s metric has been registered and will be reported (if enabled)", registeredName)
 	}
 }
 
-func (gr *GolangRuntime) unregisterPipelineMetric(metricManager bootstrapInterfaces.MetricsManager, metricName string, pipelineId string) {
+func (fpr *FunctionsPipelineRuntime) unregisterPipelineMetric(metricManager bootstrapInterfaces.MetricsManager, metricName string, pipelineId string) {
 	registeredName := strings.Replace(metricName, internal.PipelineIdTxt, pipelineId, 1)
 	metricManager.Unregister(registeredName)
 }
 
 // ProcessMessage sends the contents of the message through the functions pipeline
-func (asr *AppServiceRuntime) ProcessMessage(appContext *appfunction.Context, target interface{}, pipeline *interfaces.FunctionPipeline) *MessageError {
+func (fpr *FunctionsPipelineRuntime) ProcessMessage(appContext *appfunction.Context, target interface{}, pipeline *interfaces.FunctionPipeline) *MessageError {
 	if len(pipeline.Transforms) == 0 {
 		err := fmt.Errorf("no transforms configured for pipleline Id='%s'. Please check log for earlier errors loading pipeline", pipeline.Id)
-		asr.logError(err, appContext.CorrelationID())
+		fpr.logError(err, appContext.CorrelationID())
 		return &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}
 	}
 
 	appContext.AddValue(interfaces.PIPELINEID, pipeline.Id)
 
-	asr.lc.Debugf("Pipeline '%s' processing message %d Transforms", pipeline.Id, len(pipeline.Transforms))
+	fpr.lc.Debugf("Pipeline '%s' processing message %d Transforms", pipeline.Id, len(pipeline.Transforms))
 
 	// Make copy of transform functions to avoid disruption of pipeline when updating the pipeline from registry
-	asr.isBusyCopying.Lock()
+	fpr.isBusyCopying.Lock()
 	execPipeline := &interfaces.FunctionPipeline{
 		Id:                    pipeline.Id,
 		Transforms:            make([]interfaces.AppFunction, len(pipeline.Transforms)),
@@ -221,47 +221,47 @@ func (asr *AppServiceRuntime) ProcessMessage(appContext *appfunction.Context, ta
 		ProcessingErrors:      pipeline.ProcessingErrors,
 	}
 	copy(execPipeline.Transforms, pipeline.Transforms)
-	asr.isBusyCopying.Unlock()
+	fpr.isBusyCopying.Unlock()
 
-	return asr.ExecutePipeline(target, appContext, execPipeline, 0, false)
+	return fpr.ExecutePipeline(target, appContext, execPipeline, 0, false)
 }
 
 // DecodeMessage decode the message wrapped in the MessageEnvelope and return the data to be processed.
-func (asr *AppServiceRuntime) DecodeMessage(appContext *appfunction.Context, envelope types.MessageEnvelope) (interface{}, *MessageError, bool) {
+func (fpr *FunctionsPipelineRuntime) DecodeMessage(appContext *appfunction.Context, envelope types.MessageEnvelope) (interface{}, *MessageError, bool) {
 	// Default Target Type for the function pipeline is an Event DTO.
 	// The Event DTO can be wrapped in an AddEventRequest DTO or just be the un-wrapped Event DTO,
 	// which is handled dynamically below.
-	if asr.TargetType == nil {
-		asr.TargetType = &dtos.Event{}
+	if fpr.TargetType == nil {
+		fpr.TargetType = &dtos.Event{}
 	}
 
-	if reflect.TypeOf(asr.TargetType).Kind() != reflect.Ptr {
+	if reflect.TypeOf(fpr.TargetType).Kind() != reflect.Ptr {
 		err := errors.New("TargetType must be a pointer, not a value of the target type")
-		asr.logError(err, envelope.CorrelationID)
+		fpr.logError(err, envelope.CorrelationID)
 		return nil, &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}, false
 	}
 
 	// Must make a copy of the type so that data isn't retained between calls for custom types
-	target := reflect.New(reflect.ValueOf(asr.TargetType).Elem().Type()).Interface()
+	target := reflect.New(reflect.ValueOf(fpr.TargetType).Elem().Type()).Interface()
 
 	switch target.(type) {
 	case *[]byte:
-		asr.lc.Debug("Expecting raw byte data")
+		fpr.lc.Debug("Expecting raw byte data")
 		target = &envelope.Payload
 
 	case *dtos.Event:
-		asr.lc.Debug("Expecting an AddEventRequest or Event DTO")
+		fpr.lc.Debug("Expecting an AddEventRequest or Event DTO")
 
 		// Dynamically process either AddEventRequest or Event DTO
-		event, err := asr.processEventPayload(envelope)
+		event, err := fpr.processEventPayload(envelope)
 		if err != nil {
 			err = fmt.Errorf("unable to process payload %s", err.Error())
-			asr.logError(err, envelope.CorrelationID)
+			fpr.logError(err, envelope.CorrelationID)
 			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
 		}
 
-		if asr.lc.LogLevel() == models.DebugLog {
-			asr.debugLogEvent(event)
+		if fpr.lc.LogLevel() == models.DebugLog {
+			fpr.debugLogEvent(event)
 		}
 
 		appContext.AddValue(interfaces.DEVICENAME, event.DeviceName)
@@ -272,12 +272,12 @@ func (asr *AppServiceRuntime) DecodeMessage(appContext *appfunction.Context, env
 
 	default:
 		customTypeName := di.TypeInstanceToName(target)
-		asr.lc.Debugf("Expecting a custom type of %s", customTypeName)
+		fpr.lc.Debugf("Expecting a custom type of %s", customTypeName)
 
 		// Expecting a custom type so just unmarshal into the target type.
-		if err := asr.unmarshalPayload(envelope, target); err != nil {
+		if err := fpr.unmarshalPayload(envelope, target); err != nil {
 			err = fmt.Errorf("unable to process custom object received of type '%s': %s", customTypeName, err.Error())
-			asr.logError(err, envelope.CorrelationID)
+			fpr.logError(err, envelope.CorrelationID)
 			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
 		}
 	}
@@ -293,7 +293,7 @@ func (asr *AppServiceRuntime) DecodeMessage(appContext *appfunction.Context, env
 	return target, nil, false
 }
 
-func (asr *AppServiceRuntime) ExecutePipeline(
+func (fpr *FunctionsPipelineRuntime) ExecutePipeline(
 	target interface{},
 	appContext *appfunction.Context,
 	pipeline *interfaces.FunctionPipeline,
@@ -327,7 +327,7 @@ func (asr *AppServiceRuntime) ExecutePipeline(
 						common.CorrelationHeader,
 						appContext.CorrelationID())
 					if appContext.RetryData() != nil && !isRetry {
-						asr.storeForward.storeForLaterRetry(appContext.RetryData(), appContext, pipeline, functionIndex)
+						fpr.storeForward.storeForLaterRetry(appContext.RetryData(), appContext, pipeline, functionIndex)
 					}
 
 					pipeline.ProcessingErrors.Inc(1)
@@ -341,26 +341,26 @@ func (asr *AppServiceRuntime) ExecutePipeline(
 	return nil
 }
 
-func (asr *AppServiceRuntime) StartStoreAndForward(
+func (fpr *FunctionsPipelineRuntime) StartStoreAndForward(
 	appWg *sync.WaitGroup,
 	appCtx context.Context,
 	enabledWg *sync.WaitGroup,
 	enabledCtx context.Context,
 	serviceKey string) {
 
-	asr.storeForward.startStoreAndForwardRetryLoop(appWg, appCtx, enabledWg, enabledCtx, serviceKey)
+	fpr.storeForward.startStoreAndForwardRetryLoop(appWg, appCtx, enabledWg, enabledCtx, serviceKey)
 }
 
-func (asr *AppServiceRuntime) processEventPayload(envelope types.MessageEnvelope) (*dtos.Event, error) {
+func (fpr *FunctionsPipelineRuntime) processEventPayload(envelope types.MessageEnvelope) (*dtos.Event, error) {
 
-	asr.lc.Debug("Attempting to process Payload as an AddEventRequest DTO")
+	fpr.lc.Debug("Attempting to process Payload as an AddEventRequest DTO")
 	requestDto := requests.AddEventRequest{}
 
 	// Note that DTO validation is called during the unmarshaling
 	// which results in a KindContractInvalid error
-	requestDtoErr := asr.unmarshalPayload(envelope, &requestDto)
+	requestDtoErr := fpr.unmarshalPayload(envelope, &requestDto)
 	if requestDtoErr == nil {
-		asr.lc.Debug("Using Event DTO from AddEventRequest DTO")
+		fpr.lc.Debug("Using Event DTO from AddEventRequest DTO")
 
 		// Determine that we have an AddEventRequest DTO
 		return &requestDto.Event, nil
@@ -373,13 +373,13 @@ func (asr *AppServiceRuntime) processEventPayload(envelope types.MessageEnvelope
 
 	// KindContractInvalid indicates that we likely don't have an AddEventRequest
 	// so try to process as Event
-	asr.lc.Debug("Attempting to process Payload as an Event DTO")
+	fpr.lc.Debug("Attempting to process Payload as an Event DTO")
 	event := &dtos.Event{}
-	err := asr.unmarshalPayload(envelope, event)
+	err := fpr.unmarshalPayload(envelope, event)
 	if err == nil {
 		err = common.Validate(event)
 		if err == nil {
-			asr.lc.Debug("Using Event DTO received")
+			fpr.lc.Debug("Using Event DTO received")
 			return event, nil
 		}
 	}
@@ -393,7 +393,7 @@ func (asr *AppServiceRuntime) processEventPayload(envelope types.MessageEnvelope
 	return nil, requestDtoErr
 }
 
-func (asr *AppServiceRuntime) unmarshalPayload(envelope types.MessageEnvelope, target interface{}) error {
+func (fpr *FunctionsPipelineRuntime) unmarshalPayload(envelope types.MessageEnvelope, target interface{}) error {
 	var err error
 
 	contentType := strings.Split(envelope.ContentType, ";")[0]
@@ -412,28 +412,28 @@ func (asr *AppServiceRuntime) unmarshalPayload(envelope types.MessageEnvelope, t
 	return err
 }
 
-func (asr *AppServiceRuntime) debugLogEvent(event *dtos.Event) {
-	asr.lc.Debugf("Event Received with ProfileName=%s, DeviceName=%s and ReadingCount=%d",
+func (fpr *FunctionsPipelineRuntime) debugLogEvent(event *dtos.Event) {
+	fpr.lc.Debugf("Event Received with ProfileName=%s, DeviceName=%s and ReadingCount=%d",
 		event.ProfileName,
 		event.DeviceName,
 		len(event.Readings))
 	if len(event.Tags) > 0 {
-		asr.lc.Debugf("Event tags are: [%v]", event.Tags)
+		fpr.lc.Debugf("Event tags are: [%v]", event.Tags)
 	} else {
-		asr.lc.Debug("Event has no tags")
+		fpr.lc.Debug("Event has no tags")
 	}
 
 	for index, reading := range event.Readings {
 		switch strings.ToLower(reading.ValueType) {
 		case strings.ToLower(common.ValueTypeBinary):
-			asr.lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, MediaType=%s and BinaryValue of size=`%d`",
+			fpr.lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, MediaType=%s and BinaryValue of size=`%d`",
 				index+1,
 				reading.ResourceName,
 				reading.ValueType,
 				reading.MediaType,
 				len(reading.BinaryValue))
 		default:
-			asr.lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, Value=`%s`",
+			fpr.lc.Debugf("Reading #%d received with ResourceName=%s, ValueType=%s, Value=`%s`",
 				index+1,
 				reading.ResourceName,
 				reading.ValueType,
@@ -442,26 +442,26 @@ func (asr *AppServiceRuntime) debugLogEvent(event *dtos.Event) {
 	}
 }
 
-func (asr *AppServiceRuntime) logError(err error, correlationID string) {
-	asr.lc.Errorf("%s. %s=%s", err.Error(), common.CorrelationHeader, correlationID)
+func (fpr *FunctionsPipelineRuntime) logError(err error, correlationID string) {
+	fpr.lc.Errorf("%s. %s=%s", err.Error(), common.CorrelationHeader, correlationID)
 }
 
-func (asr *AppServiceRuntime) GetDefaultPipeline() *interfaces.FunctionPipeline {
-	pipeline := asr.pipelines[interfaces.DefaultPipelineId]
+func (fpr *FunctionsPipelineRuntime) GetDefaultPipeline() *interfaces.FunctionPipeline {
+	pipeline := fpr.pipelines[interfaces.DefaultPipelineId]
 	if pipeline == nil {
-		pipeline = asr.addFunctionsPipeline(interfaces.DefaultPipelineId, []string{TopicWildCard}, nil)
+		pipeline = fpr.addFunctionsPipeline(interfaces.DefaultPipelineId, []string{TopicWildCard}, nil)
 	}
 	return pipeline
 }
 
-func (asr *AppServiceRuntime) GetMatchingPipelines(incomingTopic string) []*interfaces.FunctionPipeline {
+func (fpr *FunctionsPipelineRuntime) GetMatchingPipelines(incomingTopic string) []*interfaces.FunctionPipeline {
 	var matches []*interfaces.FunctionPipeline
 
-	if len(asr.pipelines) == 0 {
+	if len(fpr.pipelines) == 0 {
 		return matches
 	}
 
-	for _, pipeline := range asr.pipelines {
+	for _, pipeline := range fpr.pipelines {
 		if topicMatches(incomingTopic, pipeline.Topics) {
 			matches = append(matches, pipeline)
 		}
@@ -470,8 +470,8 @@ func (asr *AppServiceRuntime) GetMatchingPipelines(incomingTopic string) []*inte
 	return matches
 }
 
-func (asr *AppServiceRuntime) GetPipelineById(id string) *interfaces.FunctionPipeline {
-	return asr.pipelines[id]
+func (fpr *FunctionsPipelineRuntime) GetPipelineById(id string) *interfaces.FunctionPipeline {
+	return fpr.pipelines[id]
 }
 
 func topicMatches(incomingTopic string, pipelineTopics []string) bool {
