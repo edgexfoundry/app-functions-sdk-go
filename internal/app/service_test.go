@@ -605,7 +605,7 @@ func TestUseTargetTypeOfByteArrayTrue(t *testing.T) {
 		},
 	}
 
-	_, err := sdk.LoadConfigurablePipeline()
+	_, err := sdk.LoadConfigurableFunctionPipelines()
 	require.NoError(t, err)
 	require.NotNil(t, sdk.targetType)
 	assert.Equal(t, reflect.Ptr, reflect.TypeOf(sdk.targetType).Kind())
@@ -632,7 +632,7 @@ func TestUseTargetTypeOfByteArrayFalse(t *testing.T) {
 		},
 	}
 
-	_, err := sdk.LoadConfigurablePipeline()
+	_, err := sdk.LoadConfigurableFunctionPipelines()
 	require.NoError(t, err)
 	assert.Nil(t, sdk.targetType)
 }

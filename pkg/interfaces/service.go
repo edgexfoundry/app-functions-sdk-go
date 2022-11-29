@@ -167,12 +167,6 @@ type ApplicationService interface {
 	// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
 	// github.com/rcrowley/go-metrics
 	MetricsManager() bootstrapInterfaces.MetricsManager
-	// LoadConfigurablePipeline loads the default function pipeline from configuration.
-	// An error is returned if the configuration is not valid, i.e. missing required function parameters,
-	// invalid function name, etc.
-	// Only useful if pipeline from configuration is always defined in configuration as in App Service Configurable.
-	// Note this API is deprecated, replaced by LoadConfigurableFunctionPipelines and will be removed in a future release
-	LoadConfigurablePipeline() ([]AppFunction, error)
 	// LoadConfigurableFunctionPipelines loads the function pipelines (default and per topic) from configuration.
 	// An error is returned if the configuration is not valid, i.e. missing required function parameters,
 	// invalid function name, etc.
