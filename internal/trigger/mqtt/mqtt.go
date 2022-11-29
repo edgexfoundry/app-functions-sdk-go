@@ -152,15 +152,14 @@ func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
 	topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(config.Trigger.ExternalMqtt.SubscribeTopics, util.SplitComma))
-	qos := config.Trigger.ExternalMqtt.QoS
-
+	topicMap := map[string]byte{}
 	for _, topic := range topics {
-		if token := mqttClient.Subscribe(topic, qos, trigger.messageHandler); token.Wait() && token.Error() != nil {
-			mqttClient.Disconnect(0)
-			lc.Errorf("could not subscribe to topic '%s' for MQTT trigger: %s",
-				topic, token.Error().Error())
-			return
-		}
+		topicMap[topic] = config.Trigger.ExternalMqtt.QoS
+	}
+	if token := mqttClient.SubscribeMultiple(topicMap, trigger.messageHandler); token.Wait() && token.Error() != nil {
+		mqttClient.Disconnect(0)
+		lc.Errorf("could not subscribe to topics '%v' for MQTT trigger: %s \n",
+			topicMap, token.Error().Error())
 	}
 
 	lc.Infof("Subscribed to topic(s) '%s' for MQTT trigger", config.Trigger.ExternalMqtt.SubscribeTopics)
