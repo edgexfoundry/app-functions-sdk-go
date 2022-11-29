@@ -387,11 +387,6 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 	return transforms, nil
 }
 
-// SetFunctionsPipeline has been deprecated and replaced by SetDefaultFunctionsPipeline.
-func (svc *Service) SetFunctionsPipeline(transforms ...interfaces.AppFunction) error {
-	return svc.SetDefaultFunctionsPipeline(transforms...)
-}
-
 // SetDefaultFunctionsPipeline sets the default functions pipeline to the list of specified functions in the order provided.
 func (svc *Service) SetDefaultFunctionsPipeline(transforms ...interfaces.AppFunction) error {
 	if len(transforms) == 0 {

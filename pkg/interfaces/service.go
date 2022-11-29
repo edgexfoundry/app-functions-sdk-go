@@ -91,9 +91,6 @@ type ApplicationService interface {
 	// application setting as a comma separated list. It returns the list of strings.
 	// An error is returned if the specified setting is not found.
 	GetAppSettingStrings(setting string) ([]string, error)
-	// SetFunctionsPipeline has been deprecated (Replaced by SetDefaultFunctionsPipeline) and will be removed in a future release
-	// Functions the same as SetDefaultFunctionsPipeline.
-	SetFunctionsPipeline(transforms ...AppFunction) error
 	// SetDefaultFunctionsPipeline sets the default functions pipeline with the specified list of Application Functions.
 	// This pipeline is executed for all message received from the configured trigger.
 	// Note that the functions are executed in the order provided in the list.
