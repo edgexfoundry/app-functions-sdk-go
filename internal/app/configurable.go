@@ -378,21 +378,6 @@ func (app *Configurable) Encrypt(parameters map[string]string) interfaces.AppFun
 	}
 
 	switch strings.ToLower(algorithm) {
-	case EncryptAES:
-		initVector, ok := parameters[InitVector]
-		if !ok {
-			app.lc.Error("Could not find " + InitVector)
-			return nil
-		}
-
-		//nolint: staticcheck
-		transform := transforms.Encryption{
-			EncryptionKey:        encryptionKey,
-			InitializationVector: initVector,
-			SecretPath:           secretPath,
-			SecretName:           secretName,
-		}
-		return transform.EncryptWithAES
 	case EncryptAES256:
 		if len(secretPath) > 0 && len(secretName) > 0 {
 			protector := transforms.AESProtection{
