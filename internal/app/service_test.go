@@ -23,6 +23,13 @@ import (
 	"reflect"
 	"testing"
 
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
@@ -32,12 +39,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	builtin "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -57,6 +58,7 @@ func TestMain(m *testing.M) {
 	lc = logger.NewMockClient()
 	mockMetricsManager := &mocks.MetricsManager{}
 	mockMetricsManager.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	mockMetricsManager.On("Unregister", mock.Anything)
 
 	mockSecretProvider = &mocks.SecretProvider{}
 
@@ -372,6 +374,32 @@ func TestService_AddFunctionsPipelineForTopics(t *testing.T) {
 		})
 	}
 }
+
+func TestService_RemoveAllFunctionPipelines(t *testing.T) {
+	service := Service{
+		lc:      lc,
+		dic:     dic,
+		runtime: runtime.NewGolangRuntime("", nil, dic),
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMessageBus,
+			},
+		},
+	}
+
+	id := "121"
+	tags := builtin.NewTags(nil)
+	transforms := []interfaces.AppFunction{tags.AddTags, tags.AddTags}
+	defaultTopics := []string{"#"}
+
+	err := service.AddFunctionsPipelineForTopics(id, defaultTopics, transforms...)
+	require.NoError(t, err)
+
+	service.RemoveAllFunctionPipelines()
+	actual := service.runtime.GetPipelineById(id)
+	require.Nil(t, actual)
+}
+
 func TestApplicationSettings(t *testing.T) {
 	expectedSettingKey := "ApplicationName"
 	expectedSettingValue := "simple-filter-xml"

@@ -752,3 +752,36 @@ func TestGolangRuntime_ClearAllFunctionsPipelineTransforms(t *testing.T) {
 	pipeline = target.GetPipelineById(id2)
 	assert.Nil(t, pipeline.Transforms)
 }
+
+func TestGolangRuntime_RemoveAllFunctionPipelines(t *testing.T) {
+	target := NewGolangRuntime(serviceKey, nil, dic)
+
+	id1 := "pipeline1"
+	id2 := "pipeline2"
+	topics := []string{"edgex/events/#"}
+	transforms := []interfaces.AppFunction{
+		transforms.NewResponseData().SetResponseData,
+	}
+
+	target.SetDefaultFunctionsPipeline(transforms)
+	err := target.AddFunctionsPipeline(id1, topics, transforms)
+	require.NoError(t, err)
+	err = target.AddFunctionsPipeline(id2, topics, transforms)
+	require.NoError(t, err)
+
+	pipeline := target.GetDefaultPipeline()
+	require.NotNil(t, pipeline)
+	pipeline = target.GetPipelineById(id1)
+	require.NotNil(t, pipeline)
+	pipeline = target.GetPipelineById(id2)
+	require.NotNil(t, pipeline)
+
+	target.RemoveAllFunctionPipelines()
+
+	pipeline = target.GetDefaultPipeline()
+	require.Nil(t, pipeline.Transforms)
+	pipeline = target.GetPipelineById(id1)
+	assert.Nil(t, pipeline)
+	pipeline = target.GetPipelineById(id2)
+	assert.Nil(t, pipeline)
+}

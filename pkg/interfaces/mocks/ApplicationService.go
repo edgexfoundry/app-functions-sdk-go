@@ -485,6 +485,11 @@ func (_m *ApplicationService) RegistryClient() registry.Client {
 	return r0
 }
 
+// RemoveAllFunctionPipelines provides a mock function with given fields:
+func (_m *ApplicationService) RemoveAllFunctionPipelines() {
+	_m.Called()
+}
+
 // RequestTimeout provides a mock function with given fields:
 func (_m *ApplicationService) RequestTimeout() time.Duration {
 	ret := _m.Called()

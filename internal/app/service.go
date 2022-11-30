@@ -430,6 +430,11 @@ func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, tr
 	return nil
 }
 
+// RemoveAllFunctionPipelines removes all existing function pipelines
+func (svc *Service) RemoveAllFunctionPipelines() {
+	svc.runtime.RemoveAllFunctionPipelines()
+}
+
 // RequestTimeout returns the Request Timeout duration that was parsed from the Service.RequestTimeout configuration
 func (svc *Service) RequestTimeout() time.Duration {
 	return svc.requestTimeout
