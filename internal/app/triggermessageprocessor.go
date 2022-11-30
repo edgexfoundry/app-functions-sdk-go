@@ -41,7 +41,7 @@ import (
 
 type simpleTriggerServiceBinding struct {
 	*Service
-	*runtime.GolangRuntime
+	*runtime.FunctionsPipelineRuntime
 }
 
 func (b *simpleTriggerServiceBinding) SecretProvider() messaging.SecretDataProvider {

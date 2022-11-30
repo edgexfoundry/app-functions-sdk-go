@@ -11,7 +11,7 @@ require (
 	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.3.0
 	github.com/google/uuid v1.3.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 )
 
 require (
@@ -21,7 +21,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.6 // indirect
-	github.com/eclipse/paho.mqtt.golang v1.4.1 // indirect
+	github.com/eclipse/paho.mqtt.golang v1.4.2 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v2 v2.3.0 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v2 v2.3.0 // indirect
 	github.com/edgexfoundry/go-mod-messaging/v2 v2.3.0 // indirect
@@ -63,7 +63,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.1.1 // indirect
-	github.com/stretchr/objx v0.4.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zeebo/errs v1.2.2 // indirect
 	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2 // indirect

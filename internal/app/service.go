@@ -84,7 +84,7 @@ type Service struct {
 	config                     *common.ConfigurationStruct
 	lc                         logger.LoggingClient
 	usingConfigurablePipeline  bool
-	runtime                    *runtime.GolangRuntime
+	runtime                    *runtime.FunctionsPipelineRuntime
 	webserver                  *webserver.WebServer
 	ctx                        contextGroup
 	deferredFunctions          []bootstrap.Deferred
@@ -549,7 +549,7 @@ func (svc *Service) Initialize() error {
 		return fmt.Errorf("unable to parse Service.RequestTimeout configuration as a time duration: %s", err.Error())
 	}
 
-	svc.runtime = runtime.NewGolangRuntime(svc.serviceKey, svc.targetType, svc.dic)
+	svc.runtime = runtime.NewFunctionPipelineRuntime(svc.serviceKey, svc.targetType, svc.dic)
 
 	// Bootstrapping is complete, so now need to retrieve the needed objects from the containers.
 	svc.lc = bootstrapContainer.LoggingClientFrom(svc.dic.Get)
