@@ -337,29 +337,6 @@ func (_m *ApplicationService) LoadConfigurableFunctionPipelines() (map[string]in
 	return r0, r1
 }
 
-// LoadConfigurablePipeline provides a mock function with given fields:
-func (_m *ApplicationService) LoadConfigurablePipeline() ([]func(interfaces.AppFunctionContext, interface{}) (bool, interface{}), error) {
-	ret := _m.Called()
-
-	var r0 []func(interfaces.AppFunctionContext, interface{}) (bool, interface{})
-	if rf, ok := ret.Get(0).(func() []func(interfaces.AppFunctionContext, interface{}) (bool, interface{})); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]func(interfaces.AppFunctionContext, interface{}) (bool, interface{}))
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // LoadCustomConfig provides a mock function with given fields: _a0, sectionName
 func (_m *ApplicationService) LoadCustomConfig(_a0 interfaces.UpdatableConfig, sectionName string) error {
 	ret := _m.Called(_a0, sectionName)

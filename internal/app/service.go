@@ -237,23 +237,6 @@ func (svc *Service) MakeItRun() error {
 	return err
 }
 
-// LoadConfigurablePipeline sets the function pipeline from configuration
-// Note this API has been deprecated, replaced by LoadConfigurableFunctionPipelines and will be removed in a future release
-// TODO: Remove this API in 3.0 release
-func (svc *Service) LoadConfigurablePipeline() ([]interfaces.AppFunction, error) {
-	pipelines, err := svc.LoadConfigurableFunctionPipelines()
-	if err != nil {
-		return nil, err
-	}
-
-	defaultPipeline, found := pipelines[interfaces.DefaultPipelineId]
-	if !found {
-		return nil, fmt.Errorf("default functions pipeline not configured")
-	}
-
-	return defaultPipeline.Transforms, nil
-}
-
 // LoadConfigurableFunctionPipelines return the configured function pipelines (default and per topic) from configuration.
 func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.FunctionPipeline, error) {
 	pipelines := make(map[string]interfaces.FunctionPipeline)
