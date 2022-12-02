@@ -498,7 +498,7 @@ func (svc *Service) Initialize() error {
 		svc.ctx.appCancelCtx,
 		svc.flags,
 		svc.serviceKey,
-		internal.ConfigRegistryStem,
+		commonConstants.ConfigStemApp,
 		svc.config,
 		configUpdated,
 		startupTimer,

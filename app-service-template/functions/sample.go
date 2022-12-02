@@ -55,7 +55,6 @@ func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interfa
 	lc.Debugf("LogEventDetails called in pipeline '%s'", ctx.PipelineId())
 
 	if data == nil {
-		// Go here for details on Error Handle: https://docs.edgexfoundry.org/latest/microservices/application/ErrorHandling/
 		return false, fmt.Errorf("function LogEventDetails in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
 
