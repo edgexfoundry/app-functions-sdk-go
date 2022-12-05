@@ -31,9 +31,6 @@ type TriggerConfig struct {
 	Logger logger.LoggingClient
 	// ContextBuilder contructs a context the trigger can specify for processing the received message
 	ContextBuilder TriggerContextBuilder
-	// MessageProcessor processes a message on the services default pipeline
-	// Deprecated: use MessageReceived for multi-pipeline support
-	MessageProcessor TriggerMessageProcessor
 	// MessageReceived sends a message to the runtime for processing.
 	MessageReceived TriggerMessageHandler
 	// ConfigLoader is a function of type TriggerConfigLoader that can be used to load custom configuration sections for the trigger.s
