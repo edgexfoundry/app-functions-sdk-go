@@ -99,38 +99,6 @@ func NewTriggerMessageProcessor(bnd trigger.ServiceBinding, metricsManager boots
 	return mp
 }
 
-// Process provides runtime orchestration to pass the envelope / context to the pipeline.
-// Deprecated: This does NOT support multi-pipeline usage.  Will send a message to the default pipeline ONLY and throw if not configured.  Use MessageReceived.
-func (mp *triggerMessageProcessor) Process(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope) error {
-	mp.messagesReceived.Inc(1)
-	context, ok := ctx.(*appfunction.Context)
-	if !ok {
-		return fmt.Errorf("App Context must be an instance of internal appfunction.Context. Use NewAppContext to create instance.")
-	}
-
-	defaultPipelines := mp.serviceBinding.GetMatchingPipelines(interfaces.DefaultPipelineId)
-
-	if len(defaultPipelines) != 1 {
-		return fmt.Errorf("TriggerMessageProcessor is deprecated and does not support non-default or multiple pipelines.  Please use TriggerMessageHandler.")
-	}
-
-	targetData, err, isInvalidMessage := mp.serviceBinding.DecodeMessage(context, envelope)
-	if err != nil {
-		if isInvalidMessage {
-			mp.invalidMessagesReceived.Inc(1)
-		}
-		return fmt.Errorf("unable to decode message: %s", err.Err.Error())
-	}
-
-	messageError := mp.serviceBinding.ProcessMessage(context, targetData, defaultPipelines[0])
-	if messageError != nil {
-		// ProcessMessage logs the error, so no need to log it here.
-		return messageError.Err
-	}
-
-	return nil
-}
-
 // MessageReceived provides runtime orchestration to pass the envelope / context to configured pipeline(s) along with a response callback to execute on each completion.
 func (mp *triggerMessageProcessor) MessageReceived(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope, responseHandler interfaces.PipelineResponseHandler) error {
 	mp.messagesReceived.Inc(1)
