@@ -24,6 +24,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/secret"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/startup"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
@@ -89,7 +90,8 @@ func (vv *VersionValidator) BootstrapHandler(
 		return false
 	}
 
-	client := clients.NewCommonClient(val.Url())
+	jwtSecretProvider := secret.NewJWTSecretProvider(bootstrapContainer.SecretProviderFrom(dic.Get))
+	client := clients.NewCommonClient(val.Url(), jwtSecretProvider)
 
 	var response commonDtos.VersionResponse
 	var err error
