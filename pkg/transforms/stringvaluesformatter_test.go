@@ -17,8 +17,8 @@
 package transforms
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"

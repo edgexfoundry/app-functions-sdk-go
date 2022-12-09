@@ -21,11 +21,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 )
 
 const (
@@ -441,7 +441,6 @@ func (app *Configurable) HTTPExport(parameters map[string]string) interfaces.App
 	}
 }
 
-//
 // MQTTExport will send data from the previous function to the specified Endpoint via MQTT publish. If no previous function exists,
 // then the event that triggered the pipeline will be used.
 // This function is a configuration function and returns a function pointer.

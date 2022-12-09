@@ -20,15 +20,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/startup"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	clients "github.com/edgexfoundry/go-mod-core-contracts/v2/clients/http"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/startup"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
 )
 
 const (
