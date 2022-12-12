@@ -37,11 +37,8 @@ import (
 	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mocks"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
-
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/requests"
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
 	"github.com/stretchr/testify/assert"
@@ -51,7 +48,8 @@ import (
 // Note the constant TriggerTypeMessageBus can not be used due to cyclic imports
 const TriggerTypeMessageBus = "EDGEX-MESSAGEBUS"
 
-var addEventRequest = createTestEventRequest()
+// TODO: resolve test failure in the Remove ZMQ PR
+// var addEventRequest = createTestEventRequest()
 
 var dic *di.Container
 
@@ -65,12 +63,13 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func createTestEventRequest() requests.AddEventRequest {
+// TODO: resolve test failure in the Remove ZMQ PR
+/*func createTestEventRequest() requests.AddEventRequest {
 	event := dtos.NewEvent("thermostat", "LivingRoomThermostat", "temperature")
 	_ = event.AddSimpleReading("temperature", common.ValueTypeInt64, int64(38))
 	request := requests.NewAddEventRequest(event)
 	return request
-}
+}*/
 
 // TODO: resolve test failure in the Remove ZMQ PR
 /*func TestInitializeNotSecure(t *testing.T) {
@@ -373,7 +372,8 @@ func TestInitializeBadConfiguration(t *testing.T) {
 	}
 }*/
 
-type mockBackgroundMessage struct {
+// TODO: resolve test failure in the Remove ZMQ PR
+/*type mockBackgroundMessage struct {
 	DeliverToTopic string
 	Payload        types.MessageEnvelope
 }
@@ -384,7 +384,7 @@ func (bg mockBackgroundMessage) Topic() string {
 
 func (bg mockBackgroundMessage) Message() types.MessageEnvelope {
 	return bg.Payload
-}
+}*/
 
 func TestTrigger_responseHandler(t *testing.T) {
 	const topicWithPlaceholder = "/topic/with/{ph}/placeholder"
