@@ -22,17 +22,17 @@ import (
 	"strings"
 )
 
-//SplitComma - use custom split func, on commas, instead of .Split to eliminate empty values (i.e Test,,,)
+// SplitComma - use custom split func, on commas, instead of .Split to eliminate empty values (i.e Test,,,)
 func SplitComma(c rune) bool {
 	return c == ','
 }
 
-//SplitColon - use custom split func, on colons, instead of .Split to eliminate empty values (i.e Test,,,)
+// SplitColon - use custom split func, on colons, instead of .Split to eliminate empty values (i.e Test,,,)
 func SplitColon(c rune) bool {
 	return c == ':'
 }
 
-//DeleteEmptyAndTrim removes empty strings from a slice
+// DeleteEmptyAndTrim removes empty strings from a slice
 func DeleteEmptyAndTrim(s []string) []string {
 	var r []string
 	for _, str := range s {
@@ -44,7 +44,7 @@ func DeleteEmptyAndTrim(s []string) []string {
 	return r
 }
 
-//CoerceType will accept a string, []byte, or json.Marshaller type and convert it to a []byte for use and consistency in the SDK
+// CoerceType will accept a string, []byte, or json.Marshaller type and convert it to a []byte for use and consistency in the SDK
 func CoerceType(param interface{}) ([]byte, error) {
 	var data []byte
 	var err error

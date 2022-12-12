@@ -68,15 +68,9 @@ func (_m *StoreClient) Store(o interfaces.StoredObject) (string, error) {
 	ret := _m.Called(o)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(interfaces.StoredObject) string); ok {
-		r0 = rf(o)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
 	var r1 error
-	if rf, ok := ret.Get(1).(func(interfaces.StoredObject) error); ok {
-		r1 = rf(o)
+	if rf, ok := ret.Get(0).(func(interfaces.StoredObject) (string, error)); ok {
+		r0, r1 = rf(o)
 	} else {
 		r1 = ret.Error(1)
 	}

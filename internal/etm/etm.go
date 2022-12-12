@@ -1,7 +1,7 @@
 // Package etm provides a set of Encrypt-Then-MAC AEAD implementations, which
 // combine block ciphers like AES with HMACs.
 //
-// AEADs
+// # AEADs
 //
 // An AEAD (Authenticated Encryption with Associated Data) construction provides
 // a unified API for sealing messages in a way which provides both
@@ -15,48 +15,47 @@
 // By rejecting ciphertexts which have been modified, these types of attacks are
 // eliminated.
 //
-// Constructions
+// # Constructions
 //
 // This package implements one of five proposed standards:
 //
-//		AEAD_AES_256_CBC_HMAC_SHA_512
+//	AEAD_AES_256_CBC_HMAC_SHA_512
 //
 // Four proposed standards were removed because they aren't used here:
 //
-//		AEAD_AES_128_CBC_HMAC_SHA_256
-//		AEAD_AES_192_CBC_HMAC_SHA_384
-//		AEAD_AES_256_CBC_HMAC_SHA_384
-//		AEAD_AES_128_CBC_HMAC_SHA1
+//	AEAD_AES_128_CBC_HMAC_SHA_256
+//	AEAD_AES_192_CBC_HMAC_SHA_384
+//	AEAD_AES_256_CBC_HMAC_SHA_384
+//	AEAD_AES_128_CBC_HMAC_SHA1
 //
 // All constructions combine AES in CBC mode with an HMAC, but vary in the
 // degree of security offered and the amount of overhead required. See
 // http://tools.ietf.org/html/draft-mcgrew-aead-aes-cbc-hmac-sha2-02 for full
 // technical details.
 //
-// AES-128-CBC-HMAC-SHA-256
+// # AES-128-CBC-HMAC-SHA-256
 //
 // AEAD_AES_128_CBC_HMAC_SHA_256 requires a 32-byte key, provides 128 bits of
 // security for both confidentiality and integrity, and adds up to 56 bytes of
 // overhead per message.
 //
-// AES-192-CBC-HMAC-SHA-384
+// # AES-192-CBC-HMAC-SHA-384
 //
 // AEAD_AES_192_CBC_HMAC_SHA_384 requires a 48-byte key, provides 192 bits of
 // security for both confidentiality and integrity, and adds up to 64 bytes of
 // overhead per message.
 //
-// AES-256-CBC-HMAC-SHA-384
+// # AES-256-CBC-HMAC-SHA-384
 //
 // AEAD_AES_256_CBC_HMAC_SHA_384 requires a 56-byte key, provides 256 bits of
 // security for confidentiality, provides 192 bits of security for integrity, and
 // adds up to 64 bytes of overhead per message.
 //
-// AES-256-CBC-HMAC-SHA-512
+// # AES-256-CBC-HMAC-SHA-512
 //
 // AEAD_AES_256_CBC_HMAC_SHA_512 requires a 64-byte key, provides 256 bits of
 // security for both confidentiality and integrity, and adds up to 72 bytes of
 // overhead per message.
-//
 package etm
 
 import (
