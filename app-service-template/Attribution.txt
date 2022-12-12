@@ -24,13 +24,13 @@ https://github.com/edgexfoundry/go-mod-registry/blob/main/LICENSE
 edgexfoundry/go-mod-messaging (Apache 2.0) https://github.com/edgexfoundry/go-mod-messaging/v3
 https://github.com/edgexfoundry/go-mod-messaging/blob/main/LICENSE
 
-edgexfoundry/go-mod-secrets (Apache 2.0) https://github.com/edgexfoundry/go-mod-secrets/v2
+edgexfoundry/go-mod-secrets (Apache 2.0) https://github.com/edgexfoundry/go-mod-secrets/v3
 https://github.com/edgexfoundry/go-mod-secrets/blob/main/LICENSE
 
 edgexfoundry/go-mod-secrets (Apache 2.0) https://github.com/edgexfoundry/go-mod-bootstrap/v3
 https://github.com/edgexfoundry/go-mod-bootstrap/blob/main/LICENSE
 
-edgexfoundry/go-mod-secrets (Apache 2.0) https://github.com/edgexfoundry/go-mod-configuration/v2
+edgexfoundry/go-mod-secrets (Apache 2.0) https://github.com/edgexfoundry/go-mod-configuration/v3
 https://github.com/edgexfoundry/go-mod-configuration/blob/main/LICENSE
 
 BurntSushi/toml (MIT) https://github.com/BurntSushi/toml
