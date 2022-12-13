@@ -21,8 +21,6 @@ import (
 )
 
 const (
-	ConfigRegistryStem = "edgex/appservices/"
-
 	ApiTriggerRoute   = common.ApiBase + "/trigger"
 	ApiAddSecretRoute = common.ApiBase + "/secret"
 )
