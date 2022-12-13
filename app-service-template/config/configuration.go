@@ -29,9 +29,10 @@ import (
 )
 
 // TODO: Define your structured custom configuration types. Must be wrapped with an outer struct with
-//       single element that matches the top level custom configuration element in your configuration.toml file,
-//       'AppCustom' in this example. Replace this example with your configuration structure or
-//       remove this file if not using structured custom configuration.
+//
+//	single element that matches the top level custom configuration element in your configuration.toml file,
+//	'AppCustom' in this example. Replace this example with your configuration structure or
+//	remove this file if not using structured custom configuration.
 type ServiceConfig struct {
 	AppCustom AppCustomConfig
 }

@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	types "github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+	types "github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 	mock "github.com/stretchr/testify/mock"
 )
 

@@ -24,11 +24,11 @@ import (
 	"app-new-service/config"
 	"app-new-service/functions"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/transforms"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 )
 
 const (

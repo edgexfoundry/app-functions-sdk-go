@@ -19,8 +19,8 @@ package transforms
 import (
 	"fmt"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
 )
 
 // ResponseData houses transform for outputting data to configured trigger response, i.e. message bus

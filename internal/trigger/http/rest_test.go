@@ -24,21 +24,21 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/http/mocks"
-	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger/mocks"
-	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces/mocks"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/runtime"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/http/mocks"
+	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mocks"
+	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces/mocks"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/stretchr/testify/assert"
 )
 

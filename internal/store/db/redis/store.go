@@ -19,13 +19,13 @@ package redis
 import (
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"sync"
 	"time"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/store/db/redis/models"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/redis/models"
 
-	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v2/config"
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -43,10 +43,10 @@ type Client struct {
 
 // Store persists a stored object to the data store. Three ("Three shall be the number thou shalt
 // count, and the number of the counting shall be three") keys are used:
-// * the object id to point to a STRING which is the marshalled JSON.
-// * the object AppServiceKey to point to a SET containing all object ids associated with this
-//   app service. Note the key is prefixed to avoid key collisions.
-// * the object id to point to a HASH which contains the object AppServiceKey.
+//   - the object id to point to a STRING which is the marshalled JSON.
+//   - the object AppServiceKey to point to a SET containing all object ids associated with this
+//     app service. Note the key is prefixed to avoid key collisions.
+//   - the object id to point to a HASH which contains the object AppServiceKey.
 func (c Client) Store(o interfaces.StoredObject) (string, error) {
 	err := o.ValidateContract(false)
 	if err != nil {

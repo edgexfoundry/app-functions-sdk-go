@@ -24,19 +24,19 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-messaging/v2/messaging"
-	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/go-mod-messaging/v3/messaging"
+	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
-	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/trigger"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
+	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
 )
 
 // Trigger implements Trigger to support MessageBusData

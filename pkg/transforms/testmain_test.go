@@ -20,18 +20,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/interfaces/mocks"
-	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces/mocks"
+	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 )
 
 var lc logger.LoggingClient

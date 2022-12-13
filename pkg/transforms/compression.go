@@ -24,12 +24,12 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/util"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 )
 
 type Compression struct {

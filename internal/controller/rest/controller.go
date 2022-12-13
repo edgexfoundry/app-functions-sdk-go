@@ -21,20 +21,20 @@ import (
 	"net/http"
 	"strings"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/di"
-	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v2/dtos/common"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/bootstrap/container"
-	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/telemetry"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
+	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/telemetry"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
-	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/errors"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/errors"
 
 	"github.com/gorilla/mux"
 )

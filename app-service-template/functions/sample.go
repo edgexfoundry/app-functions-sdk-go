@@ -24,10 +24,10 @@ import (
 
 	gometrics "github.com/rcrowley/go-metrics"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 )
 
 // TODO: Remove sample metric and implement meaningful metrics if any needed.

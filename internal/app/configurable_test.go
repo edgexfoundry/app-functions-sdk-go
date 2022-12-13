@@ -21,7 +21,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 
 	"github.com/stretchr/testify/assert"
 )

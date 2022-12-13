@@ -18,15 +18,15 @@
 package trigger
 
 import (
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/messaging"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 
-	"github.com/edgexfoundry/go-mod-messaging/v2/pkg/types"
+	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/internal/runtime"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/runtime"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 )
 
 type ServiceBinding interface {
