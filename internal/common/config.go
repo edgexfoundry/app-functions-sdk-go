@@ -47,6 +47,8 @@ type ConfigurationStruct struct {
 	Service bootstrapConfig.ServiceInfo
 	// HttpServer contains the configuration for the HTTP Server
 	HttpServer HttpConfig
+	// MessageBus contains the configuration for connecting to the EdgeX MessageBus
+	MessageBus bootstrapConfig.MessageBusInfo
 	// Trigger contains the configuration for the Function Pipeline Trigger
 	Trigger TriggerInfo
 	// ApplicationSettings contains the custom configuration for the Application service
@@ -64,8 +66,6 @@ type TriggerInfo struct {
 	// Type of trigger to start pipeline
 	// enum: http, edgex-messagebus, or external-mqtt
 	Type string
-	// Used when Type=edgex-messagebus
-	EdgexMessageBus MessageBusConfig
 	// Used when Type=external-mqtt
 	ExternalMqtt ExternalMqttConfig
 }
@@ -81,44 +81,6 @@ type HttpConfig struct {
 	HTTPSCertName string
 	// HTTPSKeyName is name of the HTTPS key in the secret store
 	HTTPSKeyName string
-}
-
-// MessageBusConfig defines the messaging information need to connect to the MessageBus
-// in a publish-subscribe pattern
-type MessageBusConfig struct {
-	// SubscribeHost contains the connection information for subscribing to the MessageBus
-	SubscribeHost SubscribeHostInfo
-	// PublishHost contains the connection information for a publishing to the MessageBus
-	PublishHost PublishHostInfo
-	// Type indicates the message queue platform being used. eg. "redis", "mqtt", "nats-core" or "nats-jetstream"
-	Type string
-	// Optional contains all other properties of MessageBus that is specific to
-	// certain concrete implementation like MQTT's QoS, for example
-	Optional map[string]string
-}
-
-// SubscribeHostInfo is the host information for connecting and subscribing to the MessageBus
-type SubscribeHostInfo struct {
-	// Host is the hostname or IP address of the messaging broker, if applicable.
-	Host string
-	// Port defines the port on which to access the message queue.
-	Port int
-	// Protocol indicates the protocol to use when accessing the message queue.
-	Protocol string
-	// SubscribeTopics is a comma separated list of topics in which to subscribe
-	SubscribeTopics string
-}
-
-// PublishHostInfo is the host information for connecting and publishing to the MessageBus
-type PublishHostInfo struct {
-	// Host is the hostname or IP address of the messaging broker, if applicable.
-	Host string
-	// Port defines the port on which to access the message queue.
-	Port int
-	// Protocol indicates the protocol to use when accessing the message queue.
-	Protocol string
-	// PublishTopic is the topic in which to publish pipeline output (if any)
-	PublishTopic string
 }
 
 // ExternalMqttConfig contains the MQTT broker configuration for MQTT Trigger
@@ -235,6 +197,7 @@ func (c *ConfigurationStruct) GetBootstrap() bootstrapConfig.BootstrapConfigurat
 		Service:     c.transformToBootstrapServiceInfo(),
 		Registry:    c.Registry,
 		SecretStore: c.SecretStore,
+		MessageBus:  c.MessageBus,
 	}
 }
 
@@ -251,11 +214,6 @@ func (c *ConfigurationStruct) GetRegistryInfo() bootstrapConfig.RegistryInfo {
 // GetInsecureSecrets returns the service's InsecureSecrets.
 func (c *ConfigurationStruct) GetInsecureSecrets() bootstrapConfig.InsecureSecrets {
 	return c.Writable.InsecureSecrets
-}
-
-// GetMessageBusInfo returns dummy MessageBusInfo since SDK doesn't use MessageBusInfo
-func (c *ConfigurationStruct) GetMessageBusInfo() bootstrapConfig.MessageBusInfo {
-	return bootstrapConfig.MessageBusInfo{}
 }
 
 // GetTelemetryInfo returns the service's Telemetry settings.

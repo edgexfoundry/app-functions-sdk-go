@@ -24,16 +24,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/edgexfoundry/go-mod-messaging/v3/messaging"
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
-	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
@@ -44,6 +43,7 @@ type Trigger struct {
 	messageProcessor trigger.MessageProcessor
 	serviceBinding   trigger.ServiceBinding
 	topics           []types.TopicChannel
+	publishTopic     string
 	client           messaging.MessageClient
 	dic              *di.Container
 }
@@ -63,30 +63,21 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
 
-	lc.Infof("Initializing Message Bus Trigger for '%s'", config.Trigger.EdgexMessageBus.Type)
+	lc.Infof("Initializing EdgeX Message Bus Trigger for '%s'", config.MessageBus.Type)
 
-	clientConfig := trigger.createMessagingClientConfig(config.Trigger.EdgexMessageBus)
-
-	if err := trigger.setOptionalAuthData(&clientConfig, lc); err != nil {
-		return nil, err
+	trigger.client = container.MessagingClientFrom(trigger.dic.Get)
+	if trigger.client == nil {
+		return nil, errors.New("unable to find MessageBus Client. Make sure it is configured properly")
 	}
 
-	trigger.client, err = messaging.NewMessageClient(clientConfig)
-	if err != nil {
-		return nil, err
+	subscribeTopics, exists := config.MessageBus.Topics[internal.MessageBusSubscribeTopics]
+	if !exists {
+		return nil, fmt.Errorf("missing '%s' from 'MessageBus.Topics' configuration", internal.MessageBusSubscribeTopics)
 	}
 
-	trigger.dic.Update(di.ServiceConstructorMap{
-		container.MessagingClientName: func(get di.Get) interface{} {
-			return trigger.client
-		},
-	})
-
-	subscribeTopics := strings.TrimSpace(config.Trigger.EdgexMessageBus.SubscribeHost.SubscribeTopics)
-
+	subscribeTopics = strings.TrimSpace(subscribeTopics)
 	if len(subscribeTopics) == 0 {
-		// Still allows subscribing to blank topic to receive all messages
-		trigger.topics = append(trigger.topics, types.TopicChannel{Topic: subscribeTopics, Messages: make(chan types.MessageEnvelope)})
+		return nil, fmt.Errorf("'%s' can not be an empty string. Must contain one or more topic seperated by commas", internal.MessageBusSubscribeTopics)
 	} else {
 		topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(subscribeTopics, util.SplitComma))
 		for _, topic := range topics {
@@ -101,20 +92,16 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 		return nil, err
 	}
 
-	lc.Infof("Subscribing to topic(s): '%s' @ %s://%s:%d",
-		subscribeTopics,
-		config.Trigger.EdgexMessageBus.SubscribeHost.Protocol,
-		config.Trigger.EdgexMessageBus.SubscribeHost.Host,
-		config.Trigger.EdgexMessageBus.SubscribeHost.Port)
+	lc.Infof("Subscribing to topic(s): '%s'", subscribeTopics)
 
-	publishTopic := config.Trigger.EdgexMessageBus.PublishHost.PublishTopic
+	publishTopic, exists := config.MessageBus.Topics[internal.MessageBusPublishTopic]
 
-	if len(config.Trigger.EdgexMessageBus.PublishHost.Host) > 0 {
-		lc.Infof("Publishing to topic: '%s' @ %s://%s:%d",
-			publishTopic,
-			config.Trigger.EdgexMessageBus.PublishHost.Protocol,
-			config.Trigger.EdgexMessageBus.PublishHost.Host,
-			config.Trigger.EdgexMessageBus.PublishHost.Port)
+	if exists {
+		trigger.publishTopic = strings.TrimSpace(publishTopic)
+		if len(trigger.publishTopic) == 0 {
+			return nil, fmt.Errorf("'%s' can not be an empty string. Must contain conatin a single non-empty topic", internal.MessageBusPublishTopic)
+		}
+		lc.Infof("Publishing to topic: '%s'", trigger.publishTopic)
 	}
 
 	// Need to have a go func for each subscription, so we know with topic the data was received for.
@@ -204,13 +191,12 @@ func (trigger *Trigger) messageHandler(logger logger.LoggingClient, _ types.Topi
 func (trigger *Trigger) responseHandler(appContext interfaces.AppFunctionContext, pipeline *interfaces.FunctionPipeline) error {
 	if appContext.ResponseData() != nil {
 		lc := trigger.serviceBinding.LoggingClient()
-		config := trigger.serviceBinding.Config()
 
-		publishTopic, err := appContext.ApplyValues(config.Trigger.EdgexMessageBus.PublishHost.PublishTopic)
+		publishTopic, err := appContext.ApplyValues(trigger.publishTopic)
 
 		if err != nil {
 			lc.Errorf("MessageBus Trigger: Unable to format output topic '%s' for pipeline '%s': %s",
-				config.Trigger.EdgexMessageBus.PublishHost.PublishTopic,
+				trigger.publishTopic,
 				pipeline.Id,
 				err.Error())
 			return err
@@ -249,75 +235,5 @@ func (trigger *Trigger) responseHandler(appContext interfaces.AppFunctionContext
 			len(appContext.ResponseData()))
 		lc.Tracef("MessageBus Trigger published message: %s=%s", common.CorrelationHeader, appContext.CorrelationID())
 	}
-	return nil
-}
-
-func (_ *Trigger) createMessagingClientConfig(localConfig sdkCommon.MessageBusConfig) types.MessageBusConfig {
-	clientConfig := types.MessageBusConfig{
-		PublishHost: types.HostInfo{
-			Host:     localConfig.PublishHost.Host,
-			Port:     localConfig.PublishHost.Port,
-			Protocol: localConfig.PublishHost.Protocol,
-		},
-		SubscribeHost: types.HostInfo{
-			Host:     localConfig.SubscribeHost.Host,
-			Port:     localConfig.SubscribeHost.Port,
-			Protocol: localConfig.SubscribeHost.Protocol,
-		},
-		Type:     localConfig.Type,
-		Optional: deepCopy(localConfig.Optional),
-	}
-
-	return clientConfig
-}
-
-func deepCopy(target map[string]string) map[string]string {
-	result := make(map[string]string)
-	for key, value := range target {
-		result[key] = value
-	}
-	return result
-}
-
-func (trigger *Trigger) setOptionalAuthData(messageBusConfig *types.MessageBusConfig, lc logger.LoggingClient) error {
-	authMode := strings.ToLower(strings.TrimSpace(messageBusConfig.Optional[bootstrapMessaging.AuthModeKey]))
-	if len(authMode) == 0 || authMode == bootstrapMessaging.AuthModeNone {
-		return nil
-	}
-
-	secretName := messageBusConfig.Optional[bootstrapMessaging.SecretNameKey]
-
-	lc.Infof("Setting options for secure MessageBus with AuthMode='%s' and SecretName='%s", authMode, secretName)
-
-	secretProvider := trigger.serviceBinding.SecretProvider()
-	if secretProvider == nil {
-		return errors.New("secret provider is missing. Make sure it is specified to be used in bootstrap.Run()")
-	}
-
-	secretData, err := bootstrapMessaging.GetSecretData(authMode, secretName, secretProvider)
-	if err != nil {
-		return fmt.Errorf("unable to get Secret Data for secure message bus: %w", err)
-	}
-
-	if err := bootstrapMessaging.ValidateSecretData(authMode, secretName, secretData); err != nil {
-		return fmt.Errorf("secret Data for secure message bus invalid: %w", err)
-	}
-
-	if messageBusConfig.Optional == nil {
-		messageBusConfig.Optional = map[string]string{}
-	}
-
-	// Since already validated, these are the only modes that can be set at this point.
-	switch authMode {
-	case bootstrapMessaging.AuthModeUsernamePassword:
-		messageBusConfig.Optional[bootstrapMessaging.OptionsUsernameKey] = secretData.Username
-		messageBusConfig.Optional[bootstrapMessaging.OptionsPasswordKey] = secretData.Password
-	case bootstrapMessaging.AuthModeCert:
-		messageBusConfig.Optional[bootstrapMessaging.OptionsCertPEMBlockKey] = string(secretData.CertPemBlock)
-		messageBusConfig.Optional[bootstrapMessaging.OptionsKeyPEMBlockKey] = string(secretData.KeyPemBlock)
-	case bootstrapMessaging.AuthModeCA:
-		messageBusConfig.Optional[bootstrapMessaging.OptionsCaPEMBlockKey] = string(secretData.CaPemBlock)
-	}
-
 	return nil
 }

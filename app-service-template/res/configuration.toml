@@ -121,50 +121,60 @@ TokenFile = "/tmp/edgex/secrets/app-new-service/secrets-token.json"
   Host = "localhost"
   Port = 59860
 
-[Trigger]
-Type="edgex-messagebus"
-  [Trigger.EdgexMessageBus]
-  Type = "redis"
-    [Trigger.EdgexMessageBus.SubscribeHost]
-    Host = "localhost"
-    Port = 6379
-    Protocol = "redis"
-    SubscribeTopics="edgex/events/#"
-    [Trigger.EdgexMessageBus.PublishHost]   # TODO: Remove if service is NOT publishing back to the message bus
-    Host = "localhost"
-    Port = 6379
-    Protocol = "redis"
-    PublishTopic="event-xml"
-    [Trigger.EdgexMessageBus.Optional]
-    authmode = "usernamepassword"  # required for redis messagebus (secure or insecure).
-    secretname = "redisdb"
+[MessageBus]
+Disabled = false  # TODO: set to true if not using edgex-messagebus Trigger below and don't want Metrics or Commands via MessageBus
+Protocol = "redis"
+Host = "localhost"
+Port = 6379
+Type = "redis"
+AuthMode = "usernamepassword"  # required for redis messagebus (secure or insecure).
+SecretName = "redisdb"
+  [MessageBus.Topics]
+  SubscribeTopics = "edgex/events/#"
+  PublishTopic="event-xml"
+  [MessageBus.Optional]
+  # Default MQTT Specific options that need to be here to enable evnironment variable overrides of them
+  ClientId ="app-new-service"
+  Qos =  "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
+  KeepAlive = "10" # Seconds (must be 2 or greater)
+  Retained = "false"
+  AutoReconnect = "true"
+  ConnectTimeout = "5" # Seconds
+  SkipCertVerify = "false"
+  # Additional Default NATS Specific options that need to be here to enable evnironment variable overrides of them
+  Format = "nats"
+  RetryOnFailedConnect = "true"
+  QueueGroup = ""
+  Durable = ""
+  AutoProvision = "true"
+  Deliver = "new"
+  DefaultPubRetryAttempts = "2"
+  Subject = "edgex/#" # Required for NATS Jetstram only for stream autoprovsioning
 
-# TODO: If using mqtt messagebus, Uncomment this section and remove above [Trigger] section,
+# TODO: If using mqtt messagebus, Uncomment this section and remove above [MessageBus] section,
 #       Otherwise remove this commented out block
-#[Trigger]
-#Type="edgex-messagebus"
-#  [Trigger.EdgexMessageBus]
-#  Type = "mqtt"
-#    [Trigger.EdgexMessageBus.SubscribeHost]
-#    Host = "localhost"
-#    Port = 1883
-#    Protocol = "tcp"
-#    SubscribeTopics="events, edgex/events/#"
-#    [Trigger.EdgexMessageBus.PublishHost]   # TODO: Remove if service is NOT publishing back to the message bus
-#    Host = "localhost"
-#    Port = 1883
-#    Protocol = "tcp"
-#    PublishTopic="event-xml"
-#    [Trigger.EdgexMessageBus.Optional]
-#    ClientId ="app-new-service"
-#    Qos            = "0" # Quality of Service values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
-#    KeepAlive      = "10" # Seconds (must be 2 or greater)
-#    Retained       = "false"
-#    AutoReconnect  = "true"
-#    ConnectTimeout = "30" # Seconds
-#    SkipCertVerify = "false"
-#    authmode = "none"  # change to "usernamepassword", "clientcert", or "cacert" for secure MQTT messagebus.
-#    secretname = "mqtt-bus"
+#[MessageBus]
+#Protocol = "tcp"
+#Host = "localhost"
+#Port = 1883
+#Type = "mqtt"
+#AuthMode = "none"  # required for redis messagebus (secure or insecure).
+#SecretName = "mqtt-bus"
+#  [MessageBus.Topics]
+#  SubscribeTopics = "edgex/events/#"
+#  PublishTopic="event-xml"
+#  [MessageBus.Optional]
+#  ClientId ="app-new-service"
+#  Qos =  "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
+#  KeepAlive = "10" # Seconds (must be 2 or greater)
+#  Retained = "false"
+#  AutoReconnect = "true"
+#  ConnectTimeout = "5" # Seconds
+#  SkipCertVerify = "false"
+
+[Trigger]
+# Note that the MessaegBus connection above is used by edgex-messagebus trigger
+Type="edgex-messagebus"
 
 # TODO: Add custom settings needed by your app service or remove if you don't have any settings.
 # This can be any Key/Value pair you need.
