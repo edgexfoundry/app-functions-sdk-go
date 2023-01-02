@@ -16,13 +16,7 @@
 
 .PHONY: build test clean docker
 
-GO=CGO_ENABLED=1 go
-
-# see https://shibumi.dev/posts/hardening-executables
-CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2"
-CGO_CFLAGS="-O2 -pipe -fno-plt"
-CGO_CXXFLAGS="-O2 -pipe -fno-plt"
-CGO_LDFLAGS="-Wl,-O1,–sort-common,–as-needed,-z,relro,-z,now"
+GO=go
 
 GOTESTFLAGS?=-race
 
@@ -38,7 +32,6 @@ SDKVERSION=$(shell cat ./go.mod | grep 'github.com/edgexfoundry/app-functions-sd
 
 MICROSERVICE=app-new-service
 GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v3/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v3/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly
-CGOFLAGS=-ldflags "-linkmode=external -X github.com/edgexfoundry/app-functions-sdk-go/v3/internal.SDKVersion=$(SDKVERSION) -X github.com/edgexfoundry/app-functions-sdk-go/v3/internal.ApplicationVersion=$(APPVERSION)" -trimpath -mod=readonly -buildmode=pie
 
 # TODO: uncomment and remove default once files are in a Github repository or
 #       remove totally including usage below
@@ -46,7 +39,7 @@ CGOFLAGS=-ldflags "-linkmode=external -X github.com/edgexfoundry/app-functions-s
 GIT_SHA=no-sha
 
 build: tidy
-	$(GO) build $(CGOFLAGS) -o $(MICROSERVICE)
+	$(GO) build $(GOFLAGS) -o $(MICROSERVICE)
 
 tidy:
 	go mod tidy

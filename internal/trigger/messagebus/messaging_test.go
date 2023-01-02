@@ -20,13 +20,15 @@ package messagebus
 import (
 	"context"
 	"fmt"
+	"os"
+	"sync"
+	"testing"
+
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	bootstrapMocks "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
 	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"os"
-	"sync"
-	"testing"
+	"github.com/stretchr/testify/require"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/messagebus/mocks"
 	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces/mocks"
@@ -42,14 +44,10 @@ import (
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // Note the constant TriggerTypeMessageBus can not be used due to cyclic imports
 const TriggerTypeMessageBus = "EDGEX-MESSAGEBUS"
-
-// TODO: resolve test failure in the Remove ZMQ PR
-// var addEventRequest = createTestEventRequest()
 
 var dic *di.Container
 
@@ -63,33 +61,23 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// TODO: resolve test failure in the Remove ZMQ PR
-/*func createTestEventRequest() requests.AddEventRequest {
-	event := dtos.NewEvent("thermostat", "LivingRoomThermostat", "temperature")
-	_ = event.AddSimpleReading("temperature", common.ValueTypeInt64, int64(38))
-	request := requests.NewAddEventRequest(event)
-	return request
-}*/
-
-// TODO: resolve test failure in the Remove ZMQ PR
-/*func TestInitializeNotSecure(t *testing.T) {
-
+func TestInitializeNotSecure(t *testing.T) {
 	config := sdkCommon.ConfigurationStruct{
 		Trigger: sdkCommon.TriggerInfo{
 			Type: TriggerTypeMessageBus,
 			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "zero",
+				Type: "redis",
 
 				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "*",
-					Port:         5563,
-					Protocol:     "tcp",
+					Host:         "localhost",
+					Port:         6379,
+					Protocol:     "redis",
 					PublishTopic: "publish",
 				},
 				SubscribeHost: sdkCommon.SubscribeHostInfo{
 					Host:            "localhost",
-					Port:            5563,
-					Protocol:        "tcp",
+					Port:            6379,
+					Protocol:        "redis",
 					SubscribeTopics: "events",
 				},
 			},
@@ -111,7 +99,7 @@ func TestMain(m *testing.M) {
 	assert.Equal(t, 1, len(trigger.topics))
 	assert.Equal(t, "events", trigger.topics[0].Topic)
 	assert.NotNil(t, trigger.topics[0].Messages)
-}*/
+}
 
 func TestInitializeSecure(t *testing.T) {
 	secretName := "redisdb"
@@ -174,19 +162,7 @@ func TestInitializeBadConfiguration(t *testing.T) {
 			Type: TriggerTypeMessageBus,
 
 			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "aaaa", //as type is not "zero", should return an error on client initialization
-				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "*",
-					Port:         5568,
-					Protocol:     "tcp",
-					PublishTopic: "publish",
-				},
-				SubscribeHost: sdkCommon.SubscribeHostInfo{
-					Host:            "localhost",
-					Port:            5568,
-					Protocol:        "tcp",
-					SubscribeTopics: "events",
-				},
+				Type: "aaaa", //as type is not valid, should return an error on client initialization
 			},
 		},
 	}
@@ -203,188 +179,6 @@ func TestInitializeBadConfiguration(t *testing.T) {
 	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
 	assert.Error(t, err)
 }
-
-// TODO: resolve test failure in the Remove ZMQ PR
-/*func TestInitializeAndProcessEvent(t *testing.T) {
-
-	config := sdkCommon.ConfigurationStruct{
-		Trigger: sdkCommon.TriggerInfo{
-			Type: TriggerTypeMessageBus,
-			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "zero",
-				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "*",
-					Port:         5566,
-					Protocol:     "tcp",
-					PublishTopic: "",
-				},
-				SubscribeHost: sdkCommon.SubscribeHostInfo{
-					Host:            "localhost",
-					Port:            5564,
-					Protocol:        "tcp",
-					SubscribeTopics: "",
-				},
-			},
-		},
-	}
-
-	expectedCorrelationID := "123"
-
-	messageProcessed := make(chan bool, 1)
-
-	expectedContext := appfunction.NewContext(uuid.NewString(), nil, "")
-
-	serviceBinding := &triggerMocks.ServiceBinding{}
-	serviceBinding.On("Config").Return(&config)
-	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
-	serviceBinding.On("BuildContext", mock.Anything).Return(expectedContext)
-
-	messageProcessor := &triggerMocks.MessageProcessor{}
-	messageProcessor.On("MessageReceived", expectedContext, mock.Anything, mock.AnythingOfType("interfaces.PipelineResponseHandler")).Return(func(interfaces.AppFunctionContext, types.MessageEnvelope, interfaces.PipelineResponseHandler) error {
-		messageProcessed <- true
-		return nil
-	})
-	messageProcessor.On("ReceivedInvalidMessage")
-
-	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
-
-	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
-	require.NoError(t, err)
-
-	payload, err := json.Marshal(addEventRequest)
-	require.NoError(t, err)
-
-	message := types.MessageEnvelope{
-		CorrelationID: expectedCorrelationID,
-		Payload:       payload,
-		ContentType:   common.ContentTypeJSON,
-	}
-
-	testClientConfig := types.MessageBusConfig{
-		PublishHost: types.HostInfo{
-			Host:     "*",
-			Port:     5564,
-			Protocol: "tcp",
-		},
-		Type: "zero",
-	}
-
-	testClient, err := messaging.NewMessageClient(testClientConfig)
-	require.NoError(t, err, "Unable to create to publisher")
-
-	err = testClient.Publish(message, "") //transform1 should be called after this executes
-	require.NoError(t, err, "Failed to publish message")
-
-	select {
-	case <-messageProcessed:
-		// do nothing, just need to fall out.
-	case <-time.After(5 * time.Second):
-		require.Fail(t, "Message never processed")
-	}
-}*/
-
-// TODO: resolve test failure in the Remove ZMQ PR
-/*func TestInitializeAndProcessBackgroundMessage(t *testing.T) {
-
-	config := sdkCommon.ConfigurationStruct{
-		Trigger: sdkCommon.TriggerInfo{
-			Type: TriggerTypeMessageBus,
-			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "zero",
-				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "*",
-					Port:         5588,
-					Protocol:     "tcp",
-					PublishTopic: "PublishTopic",
-				},
-				SubscribeHost: sdkCommon.SubscribeHostInfo{
-					Host:            "localhost",
-					Port:            5590,
-					Protocol:        "tcp",
-					SubscribeTopics: "SubscribeTopic",
-				},
-			},
-		},
-	}
-
-	expectedCorrelationID := "123"
-
-	expectedPayload := []byte(`{"id":"5888dea1bd36573f4681d6f9","origin":1471806386919,"pushed":0,"device":"livingroomthermostat","readings":[{"id":"5888dea0bd36573f4681d6f8","created":1485364896983,"modified":1485364896983,"origin":1471806386919,"pushed":0,"name":"temperature","value":"38","device":"livingroomthermostat"}]}`)
-
-	serviceBinding := &triggerMocks.ServiceBinding{}
-	serviceBinding.On("Config").Return(&config)
-	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
-
-	messageProcessor := &triggerMocks.MessageProcessor{}
-	messageProcessor.On("ReceivedInvalidMessage")
-
-	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
-
-	testClientConfig := types.MessageBusConfig{
-		SubscribeHost: types.HostInfo{
-			Host:     "localhost",
-			Port:     5588,
-			Protocol: "tcp",
-		},
-		PublishHost: types.HostInfo{
-			Host:     "*",
-			Port:     5590,
-			Protocol: "tcp",
-		},
-		Type: "zero",
-	}
-	testClient, err := messaging.NewMessageClient(testClientConfig) //new client to publish & subscribe
-	require.NoError(t, err, "Failed to create test client")
-
-	backgroundTopic := uuid.NewString()
-
-	testTopics := []types.TopicChannel{{Topic: backgroundTopic, Messages: make(chan types.MessageEnvelope)}}
-	testMessageErrors := make(chan error)
-
-	err = testClient.Subscribe(testTopics, testMessageErrors) //subscribe in order to receive transformed output to the bus
-	require.NoError(t, err)
-
-	background := make(chan interfaces.BackgroundMessage)
-
-	_, err = trigger.Initialize(&sync.WaitGroup{}, context.Background(), background)
-	require.NoError(t, err)
-
-	background <- mockBackgroundMessage{
-		Payload: types.MessageEnvelope{
-			CorrelationID: expectedCorrelationID,
-			Payload:       expectedPayload,
-			ContentType:   common.ContentTypeJSON,
-		},
-		DeliverToTopic: backgroundTopic,
-	}
-
-	receiveMessage := true
-
-	for receiveMessage {
-		select {
-		case msgErr := <-testMessageErrors:
-			receiveMessage = false
-			assert.Error(t, msgErr)
-		case msgs := <-testTopics[0].Messages:
-			receiveMessage = false
-			assert.Equal(t, expectedPayload, msgs.Payload)
-		}
-	}
-}*/
-
-// TODO: resolve test failure in the Remove ZMQ PR
-/*type mockBackgroundMessage struct {
-	DeliverToTopic string
-	Payload        types.MessageEnvelope
-}
-
-func (bg mockBackgroundMessage) Topic() string {
-	return bg.DeliverToTopic
-}
-
-func (bg mockBackgroundMessage) Message() types.MessageEnvelope {
-	return bg.Payload
-}*/
 
 func TestTrigger_responseHandler(t *testing.T) {
 	const topicWithPlaceholder = "/topic/with/{ph}/placeholder"
