@@ -18,12 +18,13 @@ ARCH=$(shell uname -m)
 
 .PHONY: test
 
-GO=go
-
 GOTESTFLAGS?=-race
 
 build:
 	make -C ./app-service-template build
+
+docker:
+	make -C ./app-service-template docker
 
 lint:
 	@which golangci-lint >/dev/null || echo "WARNING: go linter not installed. To install, run\n  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$$(go env GOPATH)/bin v1.46.2"
@@ -36,10 +37,10 @@ test-template:
 	make -C ./app-service-template test
 
 test-sdk:
-	$(GO) test $(GOTESTFLAGS) -coverprofile=coverage.out ./...
+	go test $(GOTESTFLAGS) -coverprofile=coverage.out ./...
 
 vet:
-	$(GO) vet ./...
+	go vet ./...
 
 fmt:
 	gofmt -l $$(find . -type f -name '*.go'| grep -v "/vendor/")
@@ -49,4 +50,4 @@ test: build test-template test-sdk vet fmt lint
 
 vendor:
 	make -C ./app-service-template vendor
-	$(GO) mod vendor
+	go mod vendor
