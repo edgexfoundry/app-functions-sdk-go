@@ -87,9 +87,6 @@ https://github.com/mitchellh/reflectwalk/blob/master/LICENSE
 mitchellh/go-homedir (MIT) https://github.com/mitchellh/go-homedir
 https://github.com/mitchellh/go-homedir/blob/master/LICENSE
 
-pebbe/zmq4 (BSD-2) https://github.com/pebbe/zmq4
-https://github.com/pebbe/zmq4/blob/master/LICENSE.txt
-
 pelletier/go-toml (MIT) https://github.com/pelletier/go-toml
 https://github.com/pelletier/go-toml/blob/master/LICENSE
 

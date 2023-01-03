@@ -19,7 +19,7 @@
 ARG BASE=golang:1.18-alpine3.16
 FROM ${BASE} AS builder
 
-ARG ALPINE_PKG_BASE="make git gcc libc-dev libsodium-dev zeromq-dev"
+ARG ALPINE_PKG_BASE="make git"
 ARG ALPINE_PKG_EXTRA=""
 
 RUN apk add --update --no-cache ${ALPINE_PKG_BASE} ${ALPINE_PKG_EXTRA}
@@ -40,7 +40,7 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
 LABEL Name=app-new-service Version=${VERSION}
 
 # dumb-init is required as security-bootstrapper uses it in the entrypoint script
-RUN apk add --update --no-cache ca-certificates zeromq dumb-init
+RUN apk add --update --no-cache ca-certificates dumb-init
 
 COPY --from=builder /app/Attribution.txt /Attribution.txt
 COPY --from=builder /app/LICENSE /LICENSE

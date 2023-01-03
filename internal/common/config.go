@@ -90,7 +90,7 @@ type MessageBusConfig struct {
 	SubscribeHost SubscribeHostInfo
 	// PublishHost contains the connection information for a publishing to the MessageBus
 	PublishHost PublishHostInfo
-	// Type indicates the message queue platform being used. eg. "redis", "mqtt" or "zero"
+	// Type indicates the message queue platform being used. eg. "redis", "mqtt", "nats-core" or "nats-jetstream"
 	Type string
 	// Optional contains all other properties of MessageBus that is specific to
 	// certain concrete implementation like MQTT's QoS, for example
