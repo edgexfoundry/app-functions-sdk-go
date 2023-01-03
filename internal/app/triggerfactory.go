@@ -91,11 +91,10 @@ func (svc *Service) RegisterCustomTriggerFactory(name string,
 		messageProcessor := NewTriggerMessageProcessor(serviceBinding, svc.MetricsManager())
 
 		cfg := interfaces.TriggerConfig{
-			Logger:           sdk.lc,
-			ContextBuilder:   serviceBinding.BuildContext,
-			MessageProcessor: messageProcessor.Process,
-			MessageReceived:  messageProcessor.MessageReceived,
-			ConfigLoader:     serviceBinding.LoadCustomConfig,
+			Logger:          sdk.lc,
+			ContextBuilder:  serviceBinding.BuildContext,
+			MessageReceived: messageProcessor.MessageReceived,
+			ConfigLoader:    serviceBinding.LoadCustomConfig,
 		}
 
 		return factory(cfg)

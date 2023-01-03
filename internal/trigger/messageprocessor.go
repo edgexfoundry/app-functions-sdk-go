@@ -24,9 +24,6 @@ import (
 )
 
 type MessageProcessor interface {
-	// Process provides runtime orchestration to pass the envelope / context to the pipeline.
-	// Deprecated: will throw if multiple pipelines are configured for a message.  Use MessageReceived.
-	Process(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope) error
 	// MessageReceived provides runtime orchestration to pass the envelope / context to configured pipeline(s)
 	MessageReceived(ctx interfaces.AppFunctionContext, envelope types.MessageEnvelope, outputHandler interfaces.PipelineResponseHandler) error
 	// ReceivedInvalidMessage is called when an invalid message is received so the metrics counter can be incremented.
