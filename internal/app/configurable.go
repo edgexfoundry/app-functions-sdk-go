@@ -73,7 +73,6 @@ const (
 	Algorithm           = "algorithm"
 	CompressGZIP        = "gzip"
 	CompressZLIB        = "zlib"
-	EncryptAES          = "aes"
 	EncryptAES256       = "aes256"
 	Mode                = "mode"
 	BatchByCount        = "bycount"
@@ -390,9 +389,8 @@ func (app *Configurable) Encrypt(parameters map[string]string) interfaces.AppFun
 		return nil
 	default:
 		app.lc.Errorf(
-			"Invalid encryption algorithm '%s'. Must be one of '%s', '%s",
+			"Invalid encryption algorithm '%s'. Must be '%s",
 			algorithm,
-			EncryptAES,
 			EncryptAES256)
 		return nil
 	}

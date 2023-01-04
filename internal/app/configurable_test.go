@@ -374,29 +374,15 @@ func TestAddTags(t *testing.T) {
 func TestEncrypt(t *testing.T) {
 	configurable := Configurable{lc: lc}
 
-	key := "xyz12345"
-	vector := "1243565"
-	secretsPath := "/aes"
-	secretName := "myKey"
-
 	tests := []struct {
-		Name          string
-		Algorithm     string
-		EncryptionKey string
-		InitVector    string
-		SecretPath    string
-		SecretName    string
-		ExpectNil     bool
+		Name       string
+		Algorithm  string
+		SecretPath string
+		SecretName string
+		ExpectNil  bool
 	}{
-		{"Good - Key & vector ", EncryptAES, key, vector, "", "", false},
-		{"Good - Secrets & vector", "aEs", "", vector, secretsPath, secretName, false},
-		{"Bad - No algorithm ", "", key, "", "", "", true},
-		{"Bad - No vector ", EncryptAES, key, "", "", "", true},
-		{"Bad - No Key or secrets ", EncryptAES, "", vector, "", "", true},
-		{"Bad - Missing secretPath", EncryptAES, "", vector, "", secretName, true},
-		{"Bad - Missing secretName", EncryptAES, "", vector, secretsPath, "", true},
-		{"AES256 - Bad - No secrets ", EncryptAES256, "", "", "", "", true},
-		{"AES256 - good - secrets", EncryptAES256, "", "", uuid.NewString(), uuid.NewString(), false},
+		{"AES256 - Bad - No secrets ", EncryptAES256, "", "", true},
+		{"AES256 - good - secrets", EncryptAES256, uuid.NewString(), uuid.NewString(), false},
 	}
 
 	for _, testCase := range tests {
@@ -404,12 +390,6 @@ func TestEncrypt(t *testing.T) {
 			params := make(map[string]string)
 			if len(testCase.Algorithm) > 0 {
 				params[Algorithm] = testCase.Algorithm
-			}
-			if len(testCase.EncryptionKey) > 0 {
-				params[EncryptionKey] = testCase.EncryptionKey
-			}
-			if len(testCase.InitVector) > 0 {
-				params[InitVector] = testCase.InitVector
 			}
 			if len(testCase.SecretPath) > 0 {
 				params[SecretPath] = testCase.SecretPath

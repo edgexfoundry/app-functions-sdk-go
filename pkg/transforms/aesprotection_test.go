@@ -31,7 +31,7 @@ import (
 	"testing"
 )
 
-const(
+const (
 	plainString = "This is the test string used for testing"
 )
 
