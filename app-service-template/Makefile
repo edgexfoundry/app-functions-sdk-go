@@ -16,8 +16,6 @@
 
 .PHONY: build test clean docker
 
-GO=go
-
 GOTESTFLAGS?=-race
 
 # VERSION file is not needed for local development, In the CI/CD pipeline, a temporary VERSION file is written
@@ -38,8 +36,10 @@ GOFLAGS=-ldflags "-X github.com/edgexfoundry/app-functions-sdk-go/v3/internal.SD
 #GIT_SHA=$(shell git rev-parse HEAD)
 GIT_SHA=no-sha
 
+# CGO is enabled by default and causes docker builds to fail due to no gcc,
+# but is required for test with -race, so must disable it for the builds only
 build: tidy
-	$(GO) build $(GOFLAGS) -o $(MICROSERVICE)
+	CGO_ENABLED=0 go build $(GOFLAGS) -o $(MICROSERVICE)
 
 tidy:
 	go mod tidy
@@ -61,8 +61,8 @@ docker:
 # The test-attribution-txt.sh scripts are required for upstreaming to EdgeX Foundry.
 # TODO: Remove bin folder and reference to script below if NOT upstreaming to EdgeX Foundry.
 test:
-	$(GO) test $(GOTESTFLAGS) -coverprofile=coverage.out ./...
-	$(GO) vet ./...
+	go test $(GOTESTFLAGS) -coverprofile=coverage.out ./...
+	go vet ./...
 	gofmt -l $$(find . -type f -name '*.go'| grep -v "/vendor/")
 	[ "`gofmt -l $$(find . -type f -name '*.go'| grep -v "/vendor/")`" = "" ]
 	./bin/test-attribution-txt.sh
@@ -71,4 +71,4 @@ clean:
 	rm -f $(MICROSERVICE)
 
 vendor:
-	$(GO) mod vendor
+	go mod vendor
