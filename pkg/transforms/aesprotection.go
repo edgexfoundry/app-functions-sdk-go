@@ -100,7 +100,7 @@ func (protection *AESProtection) getKey(ctx interfaces.AppFunctionContext) ([]by
 	if len(protection.SecretPath) != 0 && len(protection.SecretName) != 0 {
 		// Note secrets are cached so this call doesn't result in unneeded calls to SecretStore Service and
 		// the cache is invalidated when StoreSecrets is used.
-		secretData, err := ctx.GetSecret(protection.SecretPath, protection.SecretName)
+		secretData, err := ctx.SecretProvider().GetSecret(protection.SecretPath, protection.SecretName)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"unable to retieve encryption key at secret path=%s and name=%s in pipeline '%s'",

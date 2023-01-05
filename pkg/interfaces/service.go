@@ -124,10 +124,6 @@ type ApplicationService interface {
 	// asynchronously to the Edgex MessageBus on the specified topic.
 	// Not valid for use with the HTTP or External MQTT triggers
 	AddBackgroundPublisherWithTopic(capacity int, topic string) (BackgroundPublisher, error)
-	// GetSecret returns the secret data from the secret store (secure or insecure) for the specified path.
-	// An error is returned if the path is not found or any of the keys (if specified) are not found.
-	// Omit keys if all secret data for the specified path is required.
-	GetSecret(path string, keys ...string) (map[string]string, error)
 	// StoreSecret stores the specified secret data into the secret store (secure only) for the specified path
 	// An error is returned if:
 	//   - Specified secret data is empty
