@@ -487,20 +487,6 @@ func (_m *ApplicationService) SetDefaultFunctionsPipeline(transforms ...func(int
 	return r0
 }
 
-// StoreSecret provides a mock function with given fields: path, secretData
-func (_m *ApplicationService) StoreSecret(path string, secretData map[string]string) error {
-	ret := _m.Called(path, secretData)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, map[string]string) error); ok {
-		r0 = rf(path, secretData)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // SubscriptionClient provides a mock function with given fields:
 func (_m *ApplicationService) SubscriptionClient() clientsinterfaces.SubscriptionClient {
 	ret := _m.Called()

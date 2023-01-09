@@ -124,13 +124,6 @@ type ApplicationService interface {
 	// asynchronously to the Edgex MessageBus on the specified topic.
 	// Not valid for use with the HTTP or External MQTT triggers
 	AddBackgroundPublisherWithTopic(capacity int, topic string) (BackgroundPublisher, error)
-	// StoreSecret stores the specified secret data into the secret store (secure only) for the specified path
-	// An error is returned if:
-	//   - Specified secret data is empty
-	//   - Not using the secure secret store, i.e. not valid with InsecureSecrets configuration
-	//   - Secure secret provider is not properly initialized
-	//   - Connection issues with Secret Store service.
-	StoreSecret(path string, secretData map[string]string) error // LoggingClient returns the Logger client
 	// SecretProvider returns the SecretProvider instance
 	SecretProvider() bootstrapInterfaces.SecretProvider
 	// LoggingClient returns the Logger client
