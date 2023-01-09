@@ -575,12 +575,6 @@ func (svc *Service) ListenForCustomConfigChanges(configToWatch interface{}, sect
 	return nil
 }
 
-// GetSecret retrieves secret data from the secret store at the specified path.
-func (svc *Service) GetSecret(path string, keys ...string) (map[string]string, error) {
-	secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)
-	return secretProvider.GetSecret(path, keys...)
-}
-
 // StoreSecret stores the secret data to a secret store at the specified path.
 func (svc *Service) StoreSecret(path string, secretData map[string]string) error {
 	secretProvider := bootstrapContainer.SecretProviderFrom(svc.dic.Get)

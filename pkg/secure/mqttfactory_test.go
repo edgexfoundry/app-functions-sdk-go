@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 
 	ctx := appfunction.NewContext("123", dic, "")
 
-	secretDataProvider = ctx
+	secretDataProvider = ctx.SecretProvider()
 	lc = ctx.LoggingClient()
 
 	os.Exit(m.Run())

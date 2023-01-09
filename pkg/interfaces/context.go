@@ -65,10 +65,6 @@ type AppFunctionContext interface {
 	// SetRetryData set the data that is to be retried later as part of the Store and Forward capability.
 	// Used when there was failure sending the data to an external source.
 	SetRetryData(data []byte)
-	// GetSecret returns the secret data from the secret store (secure or insecure) for the specified path.
-	// An error is returned if the path is not found or any of the keys (if specified) are not found.
-	// Omit keys if all secret data for the specified path is required.
-	GetSecret(path string, keys ...string) (map[string]string, error)
 	// SecretsLastUpdated returns that timestamp for when the secrets in the SecretStore where last updated.
 	// Useful when a connection to external source needs to be redone when the credentials have been updated.
 	SecretsLastUpdated() time.Time

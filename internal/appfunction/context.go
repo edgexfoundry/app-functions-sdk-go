@@ -140,12 +140,6 @@ func (appContext *Context) RetryData() []byte {
 	return appContext.retryData
 }
 
-// GetSecret returns the secret data from the secret store (secure or insecure) for the specified path.
-func (appContext *Context) GetSecret(path string, keys ...string) (map[string]string, error) {
-	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)
-	return secretProvider.GetSecret(path, keys...)
-}
-
 // SecretsLastUpdated returns that timestamp for when the secrets in the SecretStore where last updated.
 func (appContext *Context) SecretsLastUpdated() time.Time {
 	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)

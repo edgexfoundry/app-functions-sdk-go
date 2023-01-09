@@ -170,7 +170,7 @@ func (sender HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data interf
 	}
 	var theSecrets map[string]string
 	if usingSecrets {
-		theSecrets, err = ctx.GetSecret(sender.secretPath, sender.secretName)
+		theSecrets, err = ctx.SecretProvider().GetSecret(sender.secretPath, sender.secretName)
 		if err != nil {
 			return false, err
 		}

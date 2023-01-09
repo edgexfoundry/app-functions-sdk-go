@@ -282,27 +282,6 @@ func TestContext_RetryData(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestContext_GetSecret(t *testing.T) {
-	// setup mock secret client
-	expected := map[string]string{
-		"username": "TEST_USER",
-		"password": "TEST_PASS",
-	}
-
-	mockSecretProvider := &mocks.SecretProvider{}
-	mockSecretProvider.On("GetSecret", "mqtt").Return(expected, nil)
-
-	dic.Update(di.ServiceConstructorMap{
-		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
-			return mockSecretProvider
-		},
-	})
-
-	actual, err := target.GetSecret("mqtt")
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
-}
-
 func TestContext_SecretsLastUpdated(t *testing.T) {
 	expected := time.Now()
 	mockSecretProvider := &mocks.SecretProvider{}
