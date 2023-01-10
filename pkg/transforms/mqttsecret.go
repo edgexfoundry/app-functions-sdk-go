@@ -106,7 +106,8 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 
 	// If the conditions changed while waiting for the lock, i.e. other thread completed the initialization,
 	// then skip doing anything
-	if sender.client != nil && !sender.secretsLastRetrieved.Before(ctx.SecretsLastUpdated()) {
+	secretProvider := ctx.SecretProvider()
+	if sender.client != nil && !sender.secretsLastRetrieved.Before(secretProvider.SecretsLastUpdated()) {
 		return nil
 	}
 
@@ -178,7 +179,8 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		return false, err
 	}
 	// if we haven't initialized the client yet OR the cache has been invalidated (due to new/updated secrets) we need to (re)initialize the client
-	if sender.client == nil || sender.secretsLastRetrieved.Before(ctx.SecretsLastUpdated()) {
+	secretProvider := ctx.SecretProvider()
+	if sender.client == nil || sender.secretsLastRetrieved.Before(secretProvider.SecretsLastUpdated()) {
 		err := sender.initializeMQTTClient(ctx)
 		if err != nil {
 			return false, err

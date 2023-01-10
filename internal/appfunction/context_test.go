@@ -293,7 +293,7 @@ func TestContext_SecretsLastUpdated(t *testing.T) {
 		},
 	})
 
-	actual := target.SecretsLastUpdated()
+	actual := target.SecretProvider().SecretsLastUpdated()
 	assert.Equal(t, expected, actual)
 }
 
