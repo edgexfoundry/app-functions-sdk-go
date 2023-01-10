@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
@@ -138,12 +137,6 @@ func (appContext *Context) SetRetryData(payload []byte) {
 // so it is internal SDK use only
 func (appContext *Context) RetryData() []byte {
 	return appContext.retryData
-}
-
-// SecretsLastUpdated returns that timestamp for when the secrets in the SecretStore where last updated.
-func (appContext *Context) SecretsLastUpdated() time.Time {
-	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)
-	return secretProvider.SecretsLastUpdated()
 }
 
 // SecretProvider returns the SecretProvider instance

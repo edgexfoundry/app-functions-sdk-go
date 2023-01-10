@@ -17,8 +17,6 @@
 package interfaces
 
 import (
-	"time"
-
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
@@ -65,9 +63,6 @@ type AppFunctionContext interface {
 	// SetRetryData set the data that is to be retried later as part of the Store and Forward capability.
 	// Used when there was failure sending the data to an external source.
 	SetRetryData(data []byte)
-	// SecretsLastUpdated returns that timestamp for when the secrets in the SecretStore where last updated.
-	// Useful when a connection to external source needs to be redone when the credentials have been updated.
-	SecretsLastUpdated() time.Time
 	// SecretProvider returns the SecretProvider instance
 	SecretProvider() bootstrapInterfaces.SecretProvider
 	// LoggingClient returns the Logger client
