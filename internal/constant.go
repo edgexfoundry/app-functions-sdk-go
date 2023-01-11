@@ -41,6 +41,8 @@ const (
 	PipelineProcessingErrorsName      = "PipelineProcessingErrors-" + PipelineIdTxt
 	HttpExportSizeName                = "HttpExportSize"
 	MqttExportSizeName                = "MqttExportSize"
+	MessageBusSubscribeTopics         = "SubscribeTopics"
+	MessageBusPublishTopic            = "PublishTopic"
 )
 
 // MetricsReservoirSize is the default Metrics Sample Reservoir size

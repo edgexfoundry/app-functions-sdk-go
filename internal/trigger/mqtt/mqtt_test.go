@@ -18,6 +18,8 @@ package mqtt
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mocks"
@@ -31,7 +33,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewTrigger(t *testing.T) {
@@ -100,7 +101,7 @@ func TestTrigger_responseHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			serviceBinding := &triggerMocks.ServiceBinding{}
 
-			serviceBinding.On("Config").Return(&sdkCommon.ConfigurationStruct{Trigger: sdkCommon.TriggerInfo{EdgexMessageBus: sdkCommon.MessageBusConfig{PublishHost: sdkCommon.PublishHostInfo{PublishTopic: tt.fields.publishTopic}}}})
+			serviceBinding.On("Config").Return(&sdkCommon.ConfigurationStruct{Trigger: sdkCommon.TriggerInfo{ExternalMqtt: sdkCommon.ExternalMqttConfig{PublishTopic: tt.fields.publishTopic}}})
 			serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
 			ctx := &interfaceMocks.AppFunctionContext{}

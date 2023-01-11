@@ -127,7 +127,7 @@ func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, 
 // AddBackgroundPublisher will create a channel of provided capacity to be
 // consumed by the MessageBus output and return a publisher that writes to it
 func (svc *Service) AddBackgroundPublisher(capacity int) (interfaces.BackgroundPublisher, error) {
-	topic := svc.config.Trigger.EdgexMessageBus.PublishHost.PublishTopic
+	topic := svc.config.MessageBus.Topics[internal.MessageBusPublishTopic]
 
 	if topic == "" {
 		return nil, errors.New("no publish topic configured for messagebus, background publishing unavailable")
@@ -505,6 +505,7 @@ func (svc *Service) Initialize() error {
 		svc.dic,
 		true,
 		[]bootstrapInterfaces.BootstrapHandler{
+			bootstrapHandlers.MessagingBootstrapHandler,
 			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
 			handlers.NewTelemetry().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,

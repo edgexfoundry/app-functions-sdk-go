@@ -24,11 +24,10 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	bootstrapMocks "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
-	bootstrapMessaging "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"github.com/stretchr/testify/require"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/messagebus/mocks"
 	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces/mocks"
@@ -44,6 +43,7 @@ import (
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Note the constant TriggerTypeMessageBus can not be used due to cyclic imports
@@ -52,35 +52,34 @@ const TriggerTypeMessageBus = "EDGEX-MESSAGEBUS"
 var dic *di.Container
 
 func TestMain(m *testing.M) {
+	mockMessageClient := &mocks.MessageClient{}
+	mockMessageClient.On("Connect").Return(nil)
+	mockMessageClient.On("Subscribe", mock.Anything, mock.Anything).Return(nil)
+
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return logger.NewMockClient()
+		},
+		bootstrapContainer.MessagingClientName: func(get di.Get) interface{} {
+			return mockMessageClient
 		},
 	})
 
 	os.Exit(m.Run())
 }
 
-func TestInitializeNotSecure(t *testing.T) {
+func TestInitialize(t *testing.T) {
+
 	config := sdkCommon.ConfigurationStruct{
+		MessageBus: bootstrapConfig.MessageBusInfo{
+			Topics: map[string]string{
+				internal.MessageBusSubscribeTopics: "events",
+				internal.MessageBusPublishTopic:    "publish",
+			},
+		},
+
 		Trigger: sdkCommon.TriggerInfo{
 			Type: TriggerTypeMessageBus,
-			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "redis",
-
-				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "localhost",
-					Port:         6379,
-					Protocol:     "redis",
-					PublishTopic: "publish",
-				},
-				SubscribeHost: sdkCommon.SubscribeHostInfo{
-					Host:            "localhost",
-					Port:            6379,
-					Protocol:        "redis",
-					SubscribeTopics: "events",
-				},
-			},
 		},
 	}
 
@@ -99,71 +98,13 @@ func TestInitializeNotSecure(t *testing.T) {
 	assert.Equal(t, 1, len(trigger.topics))
 	assert.Equal(t, "events", trigger.topics[0].Topic)
 	assert.NotNil(t, trigger.topics[0].Messages)
-}
-
-func TestInitializeSecure(t *testing.T) {
-	secretName := "redisdb"
-
-	config := sdkCommon.ConfigurationStruct{
-		Trigger: sdkCommon.TriggerInfo{
-			Type: TriggerTypeMessageBus,
-			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "redis",
-
-				PublishHost: sdkCommon.PublishHostInfo{
-					Host:         "localhost",
-					Port:         6379,
-					Protocol:     "redis",
-					PublishTopic: "publish",
-				},
-				SubscribeHost: sdkCommon.SubscribeHostInfo{
-					Host:            "localhost",
-					Port:            6379,
-					Protocol:        "redis",
-					SubscribeTopics: "events",
-				},
-				Optional: map[string]string{
-					bootstrapMessaging.AuthModeKey:   bootstrapMessaging.AuthModeUsernamePassword,
-					bootstrapMessaging.SecretNameKey: secretName,
-				},
-			},
-		},
-	}
-
-	mock := bootstrapMocks.SecretProvider{}
-	mock.On("GetSecret", secretName).Return(map[string]string{
-		bootstrapMessaging.SecretUsernameKey: "user",
-		bootstrapMessaging.SecretPasswordKey: "password",
-	}, nil)
-
-	serviceBinding := &triggerMocks.ServiceBinding{}
-	serviceBinding.On("Config").Return(&config)
-	serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
-	serviceBinding.On("SecretProvider").Return(&mock)
-
-	messageProcessor := &triggerMocks.MessageProcessor{}
-	messageProcessor.On("ReceivedInvalidMessage")
-
-	trigger := NewTrigger(serviceBinding, messageProcessor, dic)
-
-	_, err := trigger.Initialize(&sync.WaitGroup{}, context.Background(), nil)
-	require.NoError(t, err)
-	assert.NotNil(t, trigger.client, "Expected client to be set")
-	assert.Equal(t, 1, len(trigger.topics))
-	assert.Equal(t, "events", trigger.topics[0].Topic)
-	assert.NotNil(t, trigger.topics[0].Messages)
-	assert.Empty(t, config.Trigger.EdgexMessageBus.Optional[bootstrapMessaging.SecretPasswordKey])
 }
 
 func TestInitializeBadConfiguration(t *testing.T) {
 
 	config := sdkCommon.ConfigurationStruct{
 		Trigger: sdkCommon.TriggerInfo{
-			Type: TriggerTypeMessageBus,
-
-			EdgexMessageBus: sdkCommon.MessageBusConfig{
-				Type: "aaaa", //as type is not valid, should return an error on client initialization
-			},
+			Type: "junk",
 		},
 	}
 
@@ -270,8 +211,6 @@ func TestTrigger_responseHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			serviceBinding := &triggerMocks.ServiceBinding{}
-
-			serviceBinding.On("Config").Return(&sdkCommon.ConfigurationStruct{Trigger: sdkCommon.TriggerInfo{EdgexMessageBus: sdkCommon.MessageBusConfig{PublishHost: sdkCommon.PublishHostInfo{PublishTopic: tt.fields.publishTopic}}}})
 			serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
 			ctx := &interfaceMocks.AppFunctionContext{}
@@ -283,6 +222,7 @@ func TestTrigger_responseHandler(t *testing.T) {
 
 			trigger := &Trigger{
 				serviceBinding:   serviceBinding,
+				publishTopic:     tt.fields.publishTopic,
 				messageProcessor: &triggerMocks.MessageProcessor{},
 				client:           client,
 			}

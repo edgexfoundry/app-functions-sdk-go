@@ -26,6 +26,7 @@ import (
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
@@ -122,15 +123,16 @@ func TestAddBackgroundPublisherNoTopic(t *testing.T) {
 func TestAddBackgroundPublisherMessageBus(t *testing.T) {
 	sdk := Service{
 		config: &common.ConfigurationStruct{
-			Trigger: common.TriggerInfo{
-				Type: TriggerTypeMessageBus,
-				EdgexMessageBus: common.MessageBusConfig{
-					PublishHost: common.PublishHostInfo{
-						PublishTopic: "topic",
-					},
+			MessageBus: config.MessageBusInfo{
+				Topics: map[string]string{
+					"PublishTopic": "topic",
 				},
 			},
-		}}
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMessageBus,
+			},
+		},
+	}
 
 	p, err := sdk.AddBackgroundPublisher(1)
 
@@ -144,7 +146,7 @@ func TestAddBackgroundPublisherMessageBus(t *testing.T) {
 
 	require.NotNil(t, pub.output, "publisher should have an output channel set")
 	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
-	require.Equal(t, sdk.config.Trigger.EdgexMessageBus.PublishHost.PublishTopic, pub.topic)
+	require.Equal(t, sdk.config.MessageBus.Topics["PublishTopic"], pub.topic)
 
 	// compare addresses since types will not match
 	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
@@ -154,15 +156,14 @@ func TestAddBackgroundPublisherMessageBus(t *testing.T) {
 func TestAddBackgroundPublisher_Arbitrary(t *testing.T) {
 	sdk := Service{
 		config: &common.ConfigurationStruct{
+			MessageBus: config.MessageBusInfo{
+				Topics: map[string]string{"PublishTopic": "topic"},
+			},
 			Trigger: common.TriggerInfo{
 				Type: "NOT MQTT OR HTTP",
-				EdgexMessageBus: common.MessageBusConfig{
-					PublishHost: common.PublishHostInfo{
-						PublishTopic: "topic",
-					},
-				},
 			},
-		}}
+		},
+	}
 
 	p, err := sdk.AddBackgroundPublisher(1)
 
@@ -176,7 +177,7 @@ func TestAddBackgroundPublisher_Arbitrary(t *testing.T) {
 
 	require.NotNil(t, pub.output, "publisher should have an output channel set")
 	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
-	require.Equal(t, sdk.config.Trigger.EdgexMessageBus.PublishHost.PublishTopic, pub.topic)
+	require.Equal(t, sdk.config.MessageBus.Topics["PublishTopic"], pub.topic)
 
 	// compare addresses since types will not match
 	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
@@ -212,11 +213,6 @@ func TestAddBackgroundPublisher_MQTT(t *testing.T) {
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeMQTT,
-				EdgexMessageBus: common.MessageBusConfig{
-					PublishHost: common.PublishHostInfo{
-						PublishTopic: "topic",
-					},
-				},
 			},
 		}}
 
@@ -231,11 +227,6 @@ func TestAddBackgroundPublisher_HTTP(t *testing.T) {
 		config: &common.ConfigurationStruct{
 			Trigger: common.TriggerInfo{
 				Type: TriggerTypeHTTP,
-				EdgexMessageBus: common.MessageBusConfig{
-					PublishHost: common.PublishHostInfo{
-						PublishTopic: "topic",
-					},
-				},
 			},
 		}}
 
