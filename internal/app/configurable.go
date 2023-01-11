@@ -666,7 +666,7 @@ func (app *Configurable) AddTags(parameters map[string]string) interfaces.AppFun
 		return nil
 	}
 
-	transform := transforms.NewGenericTags(tags)
+	transform := transforms.NewTags(tags)
 	return transform.AddTags
 }
 
