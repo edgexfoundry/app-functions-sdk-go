@@ -29,22 +29,8 @@ type Tags struct {
 	tags map[string]interface{}
 }
 
-// NewTags creates, initializes and returns a new instance of Tags using string values
-// This factory method is Deprecated. Use NewGenericTags which allows generic interface values
-func NewTags(tags map[string]string) Tags {
-	newTags := Tags{
-		tags: make(map[string]interface{}),
-	}
-
-	for tag, value := range tags {
-		newTags.tags[tag] = value
-	}
-
-	return newTags
-}
-
 // NewGenericTags creates, initializes and returns a new instance of Tags using generic interface values
-func NewGenericTags(tags map[string]interface{}) Tags {
+func NewTags(tags map[string]interface{}) Tags {
 	return Tags{
 		tags: tags,
 	}

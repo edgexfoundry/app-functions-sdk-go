@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var stringTagsToAdd = map[string]string{
+var stringTagsToAdd = map[string]interface{}{
 	"GatewayId": "HoustonStore000123",
 	"Latitude":  "29.630771",
 	"Longitude": "-95.377603",
@@ -56,14 +56,14 @@ func TestTags_AddTags(t *testing.T) {
 	tests := []struct {
 		Name          string
 		FunctionInput interface{}
-		TagsToAdd     map[string]string
+		TagsToAdd     map[string]interface{}
 		Expected      map[string]interface{}
 		ErrorExpected bool
 		ErrorContains string
 	}{
 		{"Happy path - no existing Event tags", dtos.Event{}, stringTagsToAdd, expectedStringTags, false, ""},
 		{"Happy path - Event has existing tags", eventWithExistingTags, stringTagsToAdd, expectedAllStringTagsAdded, false, ""},
-		{"Happy path - No tags added", eventWithExistingTags, map[string]string{}, eventWithExistingTags.Tags, false, ""},
+		{"Happy path - No tags added", eventWithExistingTags, map[string]interface{}{}, eventWithExistingTags.Tags, false, ""},
 		{"Error - No data", nil, nil, nil, true, "No Data Received"},
 		{"Error - Input not event", "Not an Event", nil, nil, true, "type received is not an Event"},
 	}
@@ -142,7 +142,7 @@ func TestTags_AddGenericTags(t *testing.T) {
 			var continuePipeline bool
 			var result interface{}
 
-			target := NewGenericTags(testCase.TagsToAdd)
+			target := NewTags(testCase.TagsToAdd)
 
 			if testCase.FunctionInput != nil {
 				continuePipeline, result = target.AddTags(ctx, testCase.FunctionInput)
