@@ -29,7 +29,7 @@ type Tags struct {
 	tags map[string]interface{}
 }
 
-// NewGenericTags creates, initializes and returns a new instance of Tags using generic interface values
+// NewTags creates, initializes and returns a new instance of Tags using generic interface values
 func NewTags(tags map[string]interface{}) Tags {
 	return Tags{
 		tags: tags,
