@@ -269,8 +269,8 @@ func TestProcessMessageTransformError(t *testing.T) {
 	msgErr := runtime.ProcessMessage(context, messageData, runtime.GetDefaultPipeline())
 
 	require.NotNil(t, msgErr, "Expected an error")
-	require.Error(t, msgErr.Err, "Expected an error")
-	assert.Contains(t, msgErr.Err.Error(), expectedError)
+	require.Error(t, msgErr, "Expected an error")
+	assert.Contains(t, msgErr.Error(), expectedError)
 	assert.Equal(t, expectedErrorCode, msgErr.ErrorCode)
 
 	assertReceivedTopicSet(t, context, envelope)
@@ -449,7 +449,7 @@ func TestDecode_Process_MessageTargetType(t *testing.T) {
 			targetData, err, _ := runtime.DecodeMessage(context, envelope)
 			if currentTest.ErrorExpected {
 				assert.NotNil(t, err, fmt.Sprintf("expected an error for test '%s'", currentTest.Name))
-				assert.Error(t, err.Err, fmt.Sprintf("expected an error for test '%s'", currentTest.Name))
+				assert.Error(t, err, fmt.Sprintf("expected an error for test '%s'", currentTest.Name))
 				return
 			} else {
 				require.Nil(t, err, fmt.Sprintf("unexpected error for test '%s'", currentTest.Name))

@@ -82,6 +82,10 @@ type MessageError struct {
 	ErrorCode int
 }
 
+func (merr *MessageError) Error() string {
+	return merr.Err.Error()
+}
+
 // NewFunctionPipelineRuntime creates and initializes the AppServiceRuntime instance
 func NewFunctionPipelineRuntime(serviceKey string, targetType interface{}, dic *di.Container) *FunctionsPipelineRuntime {
 	fpr := &FunctionsPipelineRuntime{
