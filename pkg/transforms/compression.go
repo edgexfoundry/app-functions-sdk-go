@@ -38,8 +38,8 @@ type Compression struct {
 }
 
 // NewCompression creates, initializes and returns a new instance of Compression
-func NewCompression() Compression {
-	return Compression{}
+func NewCompression() *Compression {
+	return &Compression{}
 }
 
 // CompressWithGZIP compresses data received as either a string,[]byte, or json.Marshaller using gzip algorithm

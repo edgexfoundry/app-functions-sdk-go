@@ -30,8 +30,8 @@ type Tags struct {
 }
 
 // NewTags creates, initializes and returns a new instance of Tags using generic interface values
-func NewTags(tags map[string]interface{}) Tags {
-	return Tags{
+func NewTags(tags map[string]interface{}) *Tags {
+	return &Tags{
 		tags: tags,
 	}
 }

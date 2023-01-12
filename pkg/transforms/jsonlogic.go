@@ -35,14 +35,14 @@ type JSONLogic struct {
 }
 
 // NewJSONLogic creates, initializes and returns a new instance of HTTPSender
-func NewJSONLogic(rule string) JSONLogic {
-	return JSONLogic{
+func NewJSONLogic(rule string) *JSONLogic {
+	return &JSONLogic{
 		Rule: rule,
 	}
 }
 
 // Evaluate ...
-func (logic JSONLogic) Evaluate(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+func (logic *JSONLogic) Evaluate(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	if data == nil {
 		// We didn't receive a result
 		return false, fmt.Errorf("function Evaluate in pipeline '%s': No Data Received", ctx.PipelineId())

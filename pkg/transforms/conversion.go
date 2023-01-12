@@ -31,13 +31,13 @@ type Conversion struct {
 }
 
 // NewConversion creates, initializes and returns a new instance of Conversion
-func NewConversion() Conversion {
-	return Conversion{}
+func NewConversion() *Conversion {
+	return &Conversion{}
 }
 
 // TransformToXML transforms an EdgeX event to XML.
 // It will return an error and stop the pipeline if a non-edgex event is received or if no data is received.
-func (f Conversion) TransformToXML(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, stringType interface{}) {
+func (f *Conversion) TransformToXML(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, stringType interface{}) {
 	if data == nil {
 		return false, fmt.Errorf("function TransformToXML in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
@@ -59,7 +59,7 @@ func (f Conversion) TransformToXML(ctx interfaces.AppFunctionContext, data inter
 
 // TransformToJSON transforms an EdgeX event to JSON.
 // It will return an error and stop the pipeline if a non-edgex event is received or if no data is received.
-func (f Conversion) TransformToJSON(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, stringType interface{}) {
+func (f *Conversion) TransformToJSON(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, stringType interface{}) {
 	if data == nil {
 		return false, fmt.Errorf("function TransformToJSON in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
