@@ -67,7 +67,7 @@ func TestFilter_FilterByProfileName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			var filter Filter
+			var filter *Filter
 			if test.FilterOut {
 				filter = NewFilterOut(test.Filters)
 			} else {
@@ -117,7 +117,7 @@ func TestFilter_FilterByDeviceName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			var filter Filter
+			var filter *Filter
 			if test.FilterOut {
 				filter = NewFilterOut(test.Filters)
 			} else {
@@ -167,7 +167,7 @@ func TestFilter_FilterBySourceName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			var filter Filter
+			var filter *Filter
 			if test.FilterOut {
 				filter = NewFilterOut(test.Filters)
 			} else {
@@ -247,7 +247,7 @@ func TestFilter_FilterByResourceName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			var filter Filter
+			var filter *Filter
 			if test.FilterOut {
 				filter = NewFilterOut(test.Filters)
 			} else {

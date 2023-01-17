@@ -34,20 +34,20 @@ type Filter struct {
 
 // NewFilterFor creates, initializes and returns a new instance of Filter
 // that defaults FilterOut to false, so it is filtering for specified values
-func NewFilterFor(filterValues []string) Filter {
-	return Filter{FilterValues: filterValues, FilterOut: false}
+func NewFilterFor(filterValues []string) *Filter {
+	return &Filter{FilterValues: filterValues, FilterOut: false}
 }
 
 // NewFilterOut creates, initializes and returns a new instance of Filter
 // that defaults FilterOut to true, so it is filtering out specified values
-func NewFilterOut(filterValues []string) Filter {
-	return Filter{FilterValues: filterValues, FilterOut: true}
+func NewFilterOut(filterValues []string) *Filter {
+	return &Filter{FilterValues: filterValues, FilterOut: true}
 }
 
 // FilterByProfileName filters based on the specified Device Profile, aka Class of Device.
 // If FilterOut is false, it filters out those Events not associated with the specified Device Profile listed in FilterValues.
 // If FilterOut is true, it out those Events that are associated with the specified Device Profile listed in FilterValues.
-func (f Filter) FilterByProfileName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
+func (f *Filter) FilterByProfileName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
 	f.ctx = ctx
 	event, err := f.setupForFiltering("FilterByProfileName", "ProfileName", ctx.LoggingClient(), data)
 	if err != nil {
@@ -66,7 +66,7 @@ func (f Filter) FilterByProfileName(ctx interfaces.AppFunctionContext, data inte
 // FilterByDeviceName filters based on the specified Device Names, aka Instance of a Device.
 // If FilterOut is false, it filters out those Events not associated with the specified Device Names listed in FilterValues.
 // If FilterOut is true, it out those Events that are associated with the specified Device Names listed in FilterValues.
-func (f Filter) FilterByDeviceName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
+func (f *Filter) FilterByDeviceName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
 	f.ctx = ctx
 	event, err := f.setupForFiltering("FilterByDeviceName", "DeviceName", ctx.LoggingClient(), data)
 	if err != nil {
@@ -84,7 +84,7 @@ func (f Filter) FilterByDeviceName(ctx interfaces.AppFunctionContext, data inter
 // FilterBySourceName filters based on the specified Source for the Event, aka resource or command name.
 // If FilterOut is false, it filters out those Events not associated with the specified Source listed in FilterValues.
 // If FilterOut is true, it out those Events that are associated with the specified Source listed in FilterValues.
-func (f Filter) FilterBySourceName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
+func (f *Filter) FilterBySourceName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
 	f.ctx = ctx
 	event, err := f.setupForFiltering("FilterBySourceName", "SourceName", ctx.LoggingClient(), data)
 	if err != nil {
@@ -103,7 +103,7 @@ func (f Filter) FilterBySourceName(ctx interfaces.AppFunctionContext, data inter
 // If FilterOut is false, it filters out those Event Readings not associated with the specified Resource Names listed in FilterValues.
 // If FilterOut is true, it out those Event Readings that are associated with the specified Resource Names listed in FilterValues.
 // This function will return an error and stop the pipeline if a non-edgex event is received or if no data is received.
-func (f Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
+func (f *Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data interface{}) (continuePipeline bool, result interface{}) {
 	f.ctx = ctx
 	existingEvent, err := f.setupForFiltering("FilterByResourceName", "ResourceName", ctx.LoggingClient(), data)
 	if err != nil {
@@ -166,7 +166,7 @@ func (f Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data int
 	return false, nil
 }
 
-func (f Filter) setupForFiltering(funcName string, filterProperty string, lc logger.LoggingClient, data interface{}) (*dtos.Event, error) {
+func (f *Filter) setupForFiltering(funcName string, filterProperty string, lc logger.LoggingClient, data interface{}) (*dtos.Event, error) {
 	mode := "For"
 	if f.FilterOut {
 		mode = "Out"
@@ -185,7 +185,7 @@ func (f Filter) setupForFiltering(funcName string, filterProperty string, lc log
 	return &event, nil
 }
 
-func (f Filter) doEventFilter(filterProperty string, value string, lc logger.LoggingClient) bool {
+func (f *Filter) doEventFilter(filterProperty string, value string, lc logger.LoggingClient) bool {
 	// No names to filter for, so pass events through rather than filtering them all out.
 	if len(f.FilterValues) == 0 {
 		return true

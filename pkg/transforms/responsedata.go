@@ -29,13 +29,13 @@ type ResponseData struct {
 }
 
 // NewResponseData creates, initializes and returns a new instance of ResponseData
-func NewResponseData() ResponseData {
-	return ResponseData{}
+func NewResponseData() *ResponseData {
+	return &ResponseData{}
 }
 
 // SetResponseData sets the response data to that passed in from the previous function.
 // It will return an error and stop the pipeline if the input data is not of type []byte, string or json.Marshaller
-func (f ResponseData) SetResponseData(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+func (f *ResponseData) SetResponseData(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 
 	ctx.LoggingClient().Debugf("Setting response data in pipeline '%s'", ctx.PipelineId())
 

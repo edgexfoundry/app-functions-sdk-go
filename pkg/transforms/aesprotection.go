@@ -36,8 +36,8 @@ type AESProtection struct {
 
 // NewAESProtection creates, initializes and returns a new instance of AESProtection configured
 // to retrieve the encryption key from the Secret Store
-func NewAESProtection(secretPath string, secretName string) AESProtection {
-	return AESProtection{
+func NewAESProtection(secretPath string, secretName string) *AESProtection {
+	return &AESProtection{
 		SecretPath: secretPath,
 		SecretName: secretName,
 	}
@@ -46,7 +46,7 @@ func NewAESProtection(secretPath string, secretName string) AESProtection {
 // Encrypt encrypts a string, []byte, or json.Marshaller type using AES 256 encryption.
 // It also signs the data using a SHA512 hash.
 // It will return a Base64 encode []byte of the encrypted data.
-func (protection AESProtection) Encrypt(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+func (protection *AESProtection) Encrypt(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	if data == nil {
 		return false, fmt.Errorf("function Encrypt in pipeline '%s': No Data Received", ctx.PipelineId())
 	}
