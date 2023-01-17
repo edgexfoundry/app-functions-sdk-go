@@ -221,7 +221,7 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 		sender.httpSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
 		metricsManger := ctx.MetricsManager()
 		if metricsManger != nil {
-			metricName := fmt.Sprintf("%s-%s", internal.MqttExportSizeName, sender.url)
+			metricName := fmt.Sprintf("%s-%s", internal.HttpExportSizeName, sender.url)
 
 			err = metricsManger.Register(metricName, sender.httpSizeMetrics, map[string]string{"url": sender.url})
 		} else {
