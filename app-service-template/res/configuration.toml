@@ -75,31 +75,6 @@ Host = "localhost"
 Port = 6379
 Timeout = "30s"
 
-# TODO: Determine if your service will use secrets in secure mode, i.e. Vault.
-#       if not this section can be removed, but you must make sure EDGEX_SECURITY_SECRET_STORE is set to false
-#       Note is database is running in secure more and you have Store and Forward enable you will need to run this
-#       service in secure mode.
-#       For more details about SecretStore: https://docs.edgexfoundry.org/latest/microservices/security/Ch-SecretStore/
-[SecretStore]
-Type = "vault"
-Host = "localhost"
-Port = 8200
-Path = "app-new-service/"
-Protocol = "http"
-RootCaCertPath = ""
-ServerName = ""
-TokenFile = "/tmp/edgex/secrets/app-new-service/secrets-token.json"
-  [SecretStore.Authentication]
-  AuthType = "X-Vault-Token"
-  [SecretStore.RuntimeTokenProvider]
-  Enabled = false
-  Protocol = "https"
-  Host = "localhost"
-  Port = 59841
-  TrustDomain = "edgexfoundry.org"
-  EndpointSocket = "/tmp/edgex/secrets/spiffe/public/api.sock"
-  RequiredSecrets = "redisdb"
-
 [Clients]
   [Clients.core-data]
   Protocol = "http"

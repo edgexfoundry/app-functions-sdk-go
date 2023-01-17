@@ -57,8 +57,6 @@ type ConfigurationStruct struct {
 	Clients map[string]bootstrapConfig.ClientInfo
 	// Database contains the configuration for connection to the Database
 	Database interfaces.DatabaseInfo
-	// SecretStore contains the configuration for connection to the Secret Store when in secure mode
-	SecretStore bootstrapConfig.SecretStoreInfo
 }
 
 // TriggerInfo contains Metadata associated with each Trigger
@@ -193,11 +191,10 @@ func (c *ConfigurationStruct) UpdateWritableFromRaw(rawWritable interface{}) boo
 // GetBootstrap returns the configuration elements required by the bootstrap.
 func (c *ConfigurationStruct) GetBootstrap() bootstrapConfig.BootstrapConfiguration {
 	return bootstrapConfig.BootstrapConfiguration{
-		Clients:     c.Clients,
-		Service:     c.transformToBootstrapServiceInfo(),
-		Registry:    c.Registry,
-		SecretStore: c.SecretStore,
-		MessageBus:  c.MessageBus,
+		Clients:    c.Clients,
+		Service:    c.transformToBootstrapServiceInfo(),
+		Registry:   c.Registry,
+		MessageBus: c.MessageBus,
 	}
 }
 

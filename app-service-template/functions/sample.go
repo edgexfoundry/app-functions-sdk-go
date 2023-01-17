@@ -1,6 +1,6 @@
 // TODO: Change Copyright to your company if open sourcing or remove header
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -136,8 +136,8 @@ func (s *Sample) SendGetCommand(ctx interfaces.AppFunctionContext, data interfac
 		return false, fmt.Errorf("failed to find a GET command for %s device in pipeline '%s'", event.DeviceName, ctx.PipelineId())
 	}
 
-	pushEvent := "no"    // Don't want the new event pushed
-	returnEvent := "yes" // Do want the new Event return as response to the GET
+	pushEvent := false  // Don't want the new event pushed
+	returnEvent := true // Do want the new Event return as response to the GET
 
 	lc.Debugf("Issuing Command %s for device %s in in pipeline '%s'", commandName, event.DeviceName, ctx.PipelineId())
 
