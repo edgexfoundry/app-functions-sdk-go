@@ -87,9 +87,18 @@ Timeout = "30s"
   Port = 59881
 
   [Clients.core-command]
-  Protocol = "http"
-  Host = "localhost"
-  Port = 59882
+  #  Protocol = "http"
+  #  Host = "localhost"
+  #  Port = 59882
+  # Choose to use new messaging based communication for Command Client.
+  # Only valid if MessageBus Trigger is used
+  # If prefer REST, remove below and uncomment above
+  UseMessageBus = true
+  [Clients.core-command.Topics]
+  QueryRequestTopicPrefix = "edgex/core/commandquery/request"
+  QueryResponseTopic = "edgex/core/commandquery/response"
+  CommandRequestTopicPrefix = "edgex/core/command/request"
+  CommandResponseTopic = "edgex/core/command/response/#"
 
 [Clients.support-notifications]
   Protocol = "http"
