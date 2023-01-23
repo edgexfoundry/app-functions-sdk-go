@@ -53,8 +53,8 @@ func TestTags_AddTags(t *testing.T) {
 	tests := []struct {
 		Name          string
 		FunctionInput interface{}
-		TagsToAdd     map[string]interface{}
-		Expected      map[string]interface{}
+		TagsToAdd     dtos.Tags
+		Expected      dtos.Tags
 		ErrorExpected bool
 		ErrorContains string
 	}{
