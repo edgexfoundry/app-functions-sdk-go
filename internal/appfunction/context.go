@@ -32,8 +32,6 @@ import (
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/requests"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 )
@@ -199,17 +197,6 @@ func (appContext *Context) AddValue(key string, value string) {
 // RemoveValue deletes a value stored in the context at the given key
 func (appContext *Context) RemoveValue(key string) {
 	delete(appContext.contextData, strings.ToLower(key))
-}
-
-// PushToCore pushes a new event to Core Data.
-func (appContext *Context) PushToCore(event dtos.Event) (common.BaseWithIdResponse, error) {
-	client := appContext.EventClient()
-	if client == nil {
-		return common.BaseWithIdResponse{}, errors.New("EventClient not initialized. Core Metadata is missing from clients configuration")
-	}
-
-	request := requests.NewAddEventRequest(event)
-	return client.Add(context.Background(), request)
 }
 
 // GetDeviceResource retrieves the DeviceResource for given profileName and resourceName.

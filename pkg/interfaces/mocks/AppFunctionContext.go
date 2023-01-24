@@ -6,8 +6,6 @@ import (
 	bootstrapinterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
 	clientsinterfaces "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 
-	common "github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
-
 	dtos "github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 
 	interfaces "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -290,27 +288,6 @@ func (_m *AppFunctionContext) PipelineId() string {
 	}
 
 	return r0
-}
-
-// PushToCore provides a mock function with given fields: event
-func (_m *AppFunctionContext) PushToCore(event dtos.Event) (common.BaseWithIdResponse, error) {
-	ret := _m.Called(event)
-
-	var r0 common.BaseWithIdResponse
-	if rf, ok := ret.Get(0).(func(dtos.Event) common.BaseWithIdResponse); ok {
-		r0 = rf(event)
-	} else {
-		r0 = ret.Get(0).(common.BaseWithIdResponse)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(dtos.Event) error); ok {
-		r1 = rf(event)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // RemoveValue provides a mock function with given fields: key
