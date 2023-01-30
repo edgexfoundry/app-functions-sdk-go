@@ -21,7 +21,6 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
 )
 
 const (
@@ -91,8 +90,6 @@ type AppFunctionContext interface {
 	// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
 	// github.com/rcrowley/go-metrics
 	MetricsManager() bootstrapInterfaces.MetricsManager
-	// PushToCore pushes a new event to Core Data.
-	PushToCore(event dtos.Event) (common.BaseWithIdResponse, error)
 	// GetDeviceResource retrieves the DeviceResource for given profileName and resourceName.
 	// Resources retrieved are cached so multiple calls for same profileName and resourceName don't result in multiple
 	// unneeded HTTP calls to Core Metadata

@@ -404,7 +404,7 @@ func TestEncrypt(t *testing.T) {
 	}
 }
 
-func TestConfigurable_PushToCore(t *testing.T) {
+func TestConfigurable_WrapIntoEvent(t *testing.T) {
 	configurable := Configurable{lc: lc}
 
 	profileName := "MyProfile"
@@ -457,7 +457,7 @@ func TestConfigurable_PushToCore(t *testing.T) {
 				params[MediaType] = *testCase.MediaType
 			}
 
-			transform := configurable.PushToCore(params)
+			transform := configurable.WrapIntoEvent(params)
 			assert.Equal(t, testCase.ExpectNil, transform == nil)
 		})
 	}

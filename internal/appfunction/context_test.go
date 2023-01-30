@@ -32,8 +32,6 @@ import (
 	clientMocks "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
-	commonDtos "github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/responses"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
@@ -418,34 +416,6 @@ func TestContext_ApplyValues_MissingPlaceholder(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, fmt.Sprintf("failed to replace all context placeholders in input ('%s-%s-{key3}' after replacements)", data["key1"], data["key2"]), err.Error())
 	require.Equal(t, "", res)
-}
-
-func TestContext_PushToCore(t *testing.T) {
-	mockClient := clientMocks.EventClient{}
-	mockClient.On("Add", mock.Anything, mock.Anything).Return(commonDtos.BaseWithIdResponse{}, nil)
-	dic.Update(di.ServiceConstructorMap{
-		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
-			return &mockClient
-		},
-	})
-
-	event := dtos.NewEvent("MyProfile", "MyDevice", "MyResource")
-	err := event.AddSimpleReading("MyResource", common.ValueTypeInt32, int32(1234))
-	require.NoError(t, err)
-
-	_, err = target.PushToCore(event)
-	require.NoError(t, err)
-}
-
-func TestContext_PushToCore_error(t *testing.T) {
-	dic.Update(di.ServiceConstructorMap{
-		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
-			return nil
-		},
-	})
-
-	_, err := target.PushToCore(dtos.Event{})
-	require.Error(t, err)
 }
 
 func TestContext_GetDeviceResource(t *testing.T) {
