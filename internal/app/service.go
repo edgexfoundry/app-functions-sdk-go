@@ -61,8 +61,12 @@ import (
 )
 
 const (
-	envProfile    = "EDGEX_PROFILE"
-	envServiceKey = "EDGEX_SERVICE_KEY"
+	envProfile       = "EDGEX_PROFILE"
+	envServiceKey    = "EDGEX_SERVICE_KEY"
+	rawTargetType    = "raw"
+	metricTargetType = "metric"
+	eventTargetType  = "event"
+	emptyTargetType  = ""
 )
 
 // NewService create, initializes and returns new instance of app.Service which implements the
@@ -245,17 +249,15 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 
 	svc.targetType = nil
 
-	if svc.config.Writable.Pipeline.UseTargetTypeOfByteArray &&
-		svc.config.Writable.Pipeline.UseTargetTypeOfMetric {
-		return nil, errors.New("can not have Pipeline UseTargetTypeOfByteArray and UseTargetTypeOfMetric both set to true")
-	}
-
-	if svc.config.Writable.Pipeline.UseTargetTypeOfByteArray {
+	switch strings.ToLower(strings.TrimSpace(svc.config.Writable.Pipeline.TargetType)) {
+	case rawTargetType:
 		svc.targetType = &[]byte{}
-	}
-
-	if svc.config.Writable.Pipeline.UseTargetTypeOfMetric {
+	case metricTargetType:
 		svc.targetType = &dtos.Metric{}
+	case emptyTargetType, eventTargetType:
+		svc.targetType = &dtos.Event{}
+	default:
+		return nil, fmt.Errorf("pipline TargetType of '%s' is not supported", svc.config.Writable.Pipeline.TargetType)
 	}
 
 	configurable := reflect.ValueOf(NewConfigurable(svc.lc))

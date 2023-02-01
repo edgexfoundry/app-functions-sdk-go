@@ -30,6 +30,7 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
@@ -604,56 +605,56 @@ func TestLoadConfigurableFunctionPipelinesNumFunctions(t *testing.T) {
 	assert.Equal(t, expectedTransformsCount, len(pipeline.Transforms))
 }
 
-func TestUseTargetTypeOfByteArrayTrue(t *testing.T) {
+func TestTargetType(t *testing.T) {
 	functions := make(map[string]common.PipelineFunction)
 	functions["Compress"] = common.PipelineFunction{
 		Parameters: map[string]string{Algorithm: CompressGZIP},
 	}
 	functions["SetResponseData"] = common.PipelineFunction{}
+	tests := []struct {
+		name               string
+		targetTypeName     string
+		expectedTargetType interface{}
+		expectErr          bool
+	}{
+		{"raw", rawTargetType, &[]byte{}, false},
+		{"metric", metricTargetType, &dtos.Metric{}, false},
+		{"event", eventTargetType, &dtos.Event{}, false},
+		{"empty", emptyTargetType, &dtos.Event{}, false},
+		{"raW wrong case", "raW", &[]byte{}, false},
+		{"eveNt wrong case", "eveNt", &dtos.Event{}, false},
+		{"meTric wrong case", "meTric", &dtos.Metric{}, false},
+		{"wrong value", "meric", nil, true},
+	}
 
-	sdk := Service{
-		lc: lc,
-		config: &common.ConfigurationStruct{
-			Writable: common.WritableInfo{
-				Pipeline: common.PipelineInfo{
-					ExecutionOrder:           "Compress, SetResponseData",
-					UseTargetTypeOfByteArray: true,
-					Functions:                functions,
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sdk := Service{
+				lc: lc,
+				config: &common.ConfigurationStruct{
+					Writable: common.WritableInfo{
+						Pipeline: common.PipelineInfo{
+							ExecutionOrder: "Compress, SetResponseData",
+							TargetType:     test.targetTypeName,
+							Functions:      functions,
+						},
+					},
 				},
-			},
-		},
+			}
+
+			_, err := sdk.LoadConfigurableFunctionPipelines()
+			if (err != nil) != test.expectErr {
+				t.Errorf("sdk.LoadConfigurableFunctionPipelines() error = %v, wantErr %v", err, test.expectErr)
+				return
+			}
+			if sdk.targetType != nil {
+				assert.Equal(t, reflect.Ptr, reflect.TypeOf(sdk.targetType).Kind())
+				assert.Equal(t, test.expectedTargetType, sdk.targetType)
+			}
+
+		})
 	}
 
-	_, err := sdk.LoadConfigurableFunctionPipelines()
-	require.NoError(t, err)
-	require.NotNil(t, sdk.targetType)
-	assert.Equal(t, reflect.Ptr, reflect.TypeOf(sdk.targetType).Kind())
-	assert.Equal(t, reflect.TypeOf([]byte{}).Kind(), reflect.TypeOf(sdk.targetType).Elem().Kind())
-}
-
-func TestUseTargetTypeOfByteArrayFalse(t *testing.T) {
-	functions := make(map[string]common.PipelineFunction)
-	functions["Compress"] = common.PipelineFunction{
-		Parameters: map[string]string{Algorithm: CompressGZIP},
-	}
-	functions["SetResponseData"] = common.PipelineFunction{}
-
-	sdk := Service{
-		lc: lc,
-		config: &common.ConfigurationStruct{
-			Writable: common.WritableInfo{
-				Pipeline: common.PipelineInfo{
-					ExecutionOrder:           "Compress, SetResponseData",
-					UseTargetTypeOfByteArray: false,
-					Functions:                functions,
-				},
-			},
-		},
-	}
-
-	_, err := sdk.LoadConfigurableFunctionPipelines()
-	require.NoError(t, err)
-	assert.Nil(t, sdk.targetType)
 }
 
 func TestSetServiceKey(t *testing.T) {
