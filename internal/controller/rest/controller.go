@@ -28,7 +28,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/telemetry"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
@@ -100,24 +99,6 @@ func (c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
 
 	response := commonDtos.NewConfigResponse(fullConfig, c.serviceName)
 	c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
-}
-
-// Metrics handles the request to the /metrics endpoint, memory and cpu utilization stats
-// It returns a response as specified by the V2 API swagger in openapi/v2
-func (c *Controller) Metrics(writer http.ResponseWriter, request *http.Request) {
-	t := telemetry.NewSystemUsage()
-	metrics := commonDtos.Metrics{
-		MemAlloc:       t.Memory.Alloc,
-		MemFrees:       t.Memory.Frees,
-		MemLiveObjects: t.Memory.LiveObjects,
-		MemMallocs:     t.Memory.Mallocs,
-		MemSys:         t.Memory.Sys,
-		MemTotalAlloc:  t.Memory.TotalAlloc,
-		CpuBusyAvg:     uint8(t.CpuBusyAvg),
-	}
-
-	response := commonDtos.NewMetricsResponse(metrics, c.serviceName)
-	c.sendResponse(writer, request, common.ApiMetricsRoute, response, http.StatusOK)
 }
 
 // AddSecret handles the request to add App Service exclusive secret to the Secret Store
