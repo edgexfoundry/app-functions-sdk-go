@@ -116,7 +116,6 @@ type contextGroup struct {
 func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
 	if route == commonConstants.ApiPingRoute ||
 		route == commonConstants.ApiConfigRoute ||
-		route == commonConstants.ApiMetricsRoute ||
 		route == commonConstants.ApiVersionRoute ||
 		route == internal.ApiTriggerRoute {
 		return errors.New("route is reserved")
@@ -507,7 +506,6 @@ func (svc *Service) Initialize() error {
 		[]bootstrapInterfaces.BootstrapHandler{
 			bootstrapHandlers.MessagingBootstrapHandler,
 			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
-			handlers.NewTelemetry().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,
 			bootstrapHandlers.NewServiceMetrics(svc.serviceKey).BootstrapHandler,
 		},

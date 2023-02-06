@@ -1,5 +1,3 @@
-bitbucket.org/bertimus9/systemstat v0.5.0 h1:n0aLnh2Jo4nBUBym9cE5PJDG8GT6g+4VuS2Ya2jYYpA=
-bitbucket.org/bertimus9/systemstat v0.5.0/go.mod h1:EkUWPp8lKFPMXP8vnbpT5JDI0W/sTiLZAvN8ONWErHY=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/Microsoft/go-winio v0.6.0 h1:slsWYD/zyx7lCXoZVlvQrj0hPTM1HI4+v1sIda2yDvg=
 github.com/Microsoft/go-winio v0.6.0/go.mod h1:cTAf44im0RAYeL23bpB+fzCyDH2MJiz2BO69KH/soAE=

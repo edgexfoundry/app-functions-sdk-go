@@ -1,8 +1,5 @@
 The following open source projects are referenced by app-service-configurable:
 
-bertimus9/systemstat (MIT) https://bitbucket.org/bertimus9/systemstat
-https://bitbucket.org/bertimus9/systemstat/src/master/LICENSE
-
 armon/go-metrics (MIT) https://github.com/armon/go-metrics
 https://github.com/armon/go-metrics/blob/master/LICENSE
 

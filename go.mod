@@ -3,7 +3,6 @@ module github.com/edgexfoundry/app-functions-sdk-go/v3
 go 1.18
 
 require (
-	bitbucket.org/bertimus9/systemstat v0.5.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.6
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.11

@@ -87,7 +87,6 @@ func (webserver *WebServer) ConfigureStandardRoutes() {
 
 	router.HandleFunc(common.ApiPingRoute, controller.Ping).Methods(http.MethodGet)
 	router.HandleFunc(common.ApiVersionRoute, controller.Version).Methods(http.MethodGet)
-	router.HandleFunc(common.ApiMetricsRoute, controller.Metrics).Methods(http.MethodGet)
 	router.HandleFunc(common.ApiConfigRoute, controller.Config).Methods(http.MethodGet)
 	router.HandleFunc(internal.ApiAddSecretRoute, controller.AddSecret).Methods(http.MethodPost)
 
