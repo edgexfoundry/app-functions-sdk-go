@@ -120,11 +120,8 @@ type PipelineInfo struct {
 	ExecutionOrder string
 	// PerTopicPipelines is a collection of pipelines that only execute if the incoming topic matched the pipelines configured topic
 	PerTopicPipelines map[string]TopicPipeline
-	// UseTargetTypeOfByteArray indicates if raw []byte type is to be used for the TargetType
-	UseTargetTypeOfByteArray bool
-	// TODO: for 3.0 rework this to be a single TargetType with empty, "raw" and "metric" as to allowed values
-	// UseTargetTypeOfMetric indicates the Dtos.Metric is to be used for the TargetType
-	UseTargetTypeOfMetric bool
+	// TargetType indicates if raw, []byte type, or metric, Dtos.Metric, is to be used for the TargetType
+	TargetType string
 	// Functions is a collection of pipeline functions with configured parameters to be used in the ExecutionOrder of one
 	// of the configured pipelines (default or pre topic)
 	Functions map[string]PipelineFunction
