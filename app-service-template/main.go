@@ -122,7 +122,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	// Note: This example with default above causes Events from Random-Float-Device device to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
 	// See https://docs.edgexfoundry.org/latest/microservices/application/AdvancedTopics/#pipeline-per-topics for more details.
-	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/#/#/Random-Float-Device/#"},
+	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/+/+/Random-Float-Device/#"},
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
 		sample.ConvertEventToXML,
@@ -133,7 +133,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	}
 	// Note: This example with default above causes Events from Int32 source to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
-	err = app.service.AddFunctionsPipelineForTopics("Int32s", []string{"edgex/events/#/#/#/Int32"},
+	err = app.service.AddFunctionsPipelineForTopics("Int32s", []string{"edgex/events/+/+/+/Int32"},
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
 		sample.ConvertEventToXML,

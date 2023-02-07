@@ -1,5 +1,6 @@
 // Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
+// Copyright (C) 2023 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -561,29 +562,29 @@ func TestTopicMatches(t *testing.T) {
 		{"Match - Default all", incomingTopic, []string{TopicWildCard}, true},
 		{"Match - Not First Topic", incomingTopic, []string{"not-edgex/#", TopicWildCard}, true},
 		{"Match - Exact", incomingTopic, []string{incomingTopic}, true},
-		{"Match - Any Profile for Device and Source", incomingTopic, []string{"edgex/events/#/D/S"}, true},
-		{"Match - Any Profile for Device and Source", incomingTopic, []string{"edgex/events/#/D/S"}, true},
-		{"Match - Any Device for Profile and Source", incomingTopic, []string{"edgex/events/P/#/S"}, true},
+		{"Match - Any Profile for Device and Source", incomingTopic, []string{"edgex/events/+/D/S"}, true},
+		{"Match - Any Profile for Device and Source", incomingTopic, []string{"edgex/events/+/D/S"}, true},
+		{"Match - Any Device for Profile and Source", incomingTopic, []string{"edgex/events/P/+/S"}, true},
 		{"Match - Any Source for Profile and Device", incomingTopic, []string{"edgex/events/P/D/#"}, true},
 		{"Match - All Events ", incomingTopic, []string{"edgex/events/#"}, true},
 		{"Match - First Topic Deeper ", incomingTopic, []string{"edgex/events/P/D/S/Z", "edgex/events/#"}, true},
 		{"Match - All Devices and Sources for Profile ", incomingTopic, []string{"edgex/events/P/#"}, true},
 		{"Match - All Sources for Profile and Device ", incomingTopic, []string{"edgex/events/P/D/#"}, true},
-		{"Match - All Sources for a Device for any Profile ", incomingTopic, []string{"edgex/events/#/D/#"}, true},
-		{"Match - Source for any Profile and any Device ", incomingTopic, []string{"edgex/events/#/#/S"}, true},
-		{"NoMatch - SourceX for any Profile and any Device ", incomingTopic, []string{"edgex/events/#/#/Sx"}, false},
-		{"NoMatch - All Sources for DeviceX and any Profile ", incomingTopic, []string{"edgex/events/#/Dx/#"}, false},
+		{"Match - All Sources for a Device for any Profile ", incomingTopic, []string{"edgex/events/+/D/#"}, true},
+		{"Match - Source for any Profile and any Device ", incomingTopic, []string{"edgex/events/+/+/S"}, true},
+		{"NoMatch - SourceX for any Profile and any Device ", incomingTopic, []string{"edgex/events/+/+/Sx"}, false},
+		{"NoMatch - All Sources for DeviceX and any Profile ", incomingTopic, []string{"edgex/events/+/Dx/#"}, false},
 		{"NoMatch - All Sources for ProfileX and Device ", incomingTopic, []string{"edgex/events/Px/D/#"}, false},
 		{"NoMatch - All Sources for Profile and DeviceX ", incomingTopic, []string{"edgex/events/P/Dx/#"}, false},
 		{"NoMatch - All Sources for ProfileX and DeviceX ", incomingTopic, []string{"edgex/events/Px/Dx/#"}, false},
 		{"NoMatch - All Devices and Sources for ProfileX ", incomingTopic, []string{"edgex/events/Px/#"}, false},
-		{"NoMatch - Any Profile for DeviceX and Source", incomingTopic, []string{"edgex/events/#/Dx/S"}, false},
-		{"NoMatch - Any Profile for DeviceX and Source", incomingTopic, []string{"edgex/events/#/Dx/S"}, false},
-		{"NoMatch - Any Profile for Device and SourceX", incomingTopic, []string{"edgex/events/#/D/Sx"}, false},
-		{"NoMatch - Any Profile for DeviceX and SourceX", incomingTopic, []string{"edgex/events/#/Dx/Sx"}, false},
-		{"NoMatch - Any Device for Profile and SourceX", incomingTopic, []string{"edgex/events/P/#/Sx"}, false},
-		{"NoMatch - Any Device for ProfileX and Source", incomingTopic, []string{"edgex/events/Px/#/S"}, false},
-		{"NoMatch - Any Device for ProfileX and SourceX", incomingTopic, []string{"edgex/events/Px/#/Sx"}, false},
+		{"NoMatch - Any Profile for DeviceX and Source", incomingTopic, []string{"edgex/events/+/Dx/S"}, false},
+		{"NoMatch - Any Profile for DeviceX and Source", incomingTopic, []string{"edgex/events/+/Dx/S"}, false},
+		{"NoMatch - Any Profile for Device and SourceX", incomingTopic, []string{"edgex/events/+/D/Sx"}, false},
+		{"NoMatch - Any Profile for DeviceX and SourceX", incomingTopic, []string{"edgex/events/+/Dx/Sx"}, false},
+		{"NoMatch - Any Device for Profile and SourceX", incomingTopic, []string{"edgex/events/P/+/Sx"}, false},
+		{"NoMatch - Any Device for ProfileX and Source", incomingTopic, []string{"edgex/events/Px/+/S"}, false},
+		{"NoMatch - Any Device for ProfileX and SourceX", incomingTopic, []string{"edgex/events/Px/+/Sx"}, false},
 		{"NoMatch - Any Source for ProfileX and Device", incomingTopic, []string{"edgex/events/Px/D/#"}, false},
 		{"NoMatch - Any Source for Profile and DeviceX", incomingTopic, []string{"edgex/events/P/Dx/#"}, false},
 		{"NoMatch - Any Source for ProfileX and DeviceX", incomingTopic, []string{"edgex/events/Px/Dx/#"}, false},
@@ -638,7 +639,7 @@ func TestGetMatchingPipelines(t *testing.T) {
 		transforms.NewResponseData().SetResponseData,
 	}
 
-	err := target.AddFunctionsPipeline("one", []string{"edgex/events/#/D1/#"}, expectedTransforms)
+	err := target.AddFunctionsPipeline("one", []string{"edgex/events/+/D1/#"}, expectedTransforms)
 	require.NoError(t, err)
 	err = target.AddFunctionsPipeline("two", []string{"edgex/events/P1/#"}, expectedTransforms)
 	require.NoError(t, err)

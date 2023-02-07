@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
+// Copyright (C) 2023 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,8 +49,9 @@ import (
 )
 
 const (
-	TopicWildCard       = "#"
-	TopicLevelSeparator = "/"
+	TopicWildCard            = "#"
+	TopicSingleLevelWildcard = "+"
+	TopicLevelSeparator      = "/"
 )
 
 func NewFunctionPipeline(id string, topics []string, transforms []interfaces.AppFunction) interfaces.FunctionPipeline {
@@ -484,7 +486,7 @@ func topicMatches(incomingTopic string, pipelineTopics []string) bool {
 			return true
 		}
 
-		wildcardCount := strings.Count(pipelineTopic, TopicWildCard)
+		wildcardCount := strings.Count(pipelineTopic, TopicWildCard) + strings.Count(pipelineTopic, TopicSingleLevelWildcard)
 		switch wildcardCount {
 		case 0:
 			if incomingTopic == pipelineTopic {
@@ -501,6 +503,8 @@ func topicMatches(incomingTopic string, pipelineTopics []string) bool {
 			for index, level := range pipelineLevels {
 				if level == TopicWildCard {
 					incomingLevels[index] = TopicWildCard
+				} else if level == TopicSingleLevelWildcard {
+					incomingLevels[index] = TopicSingleLevelWildcard
 				}
 			}
 
