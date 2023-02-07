@@ -2,17 +2,12 @@ module github.com/edgexfoundry/app-functions-sdk-go/v3
 
 go 1.18
 
-replace (
-	github.com/edgexfoundry/go-mod-core-contracts/v3 => ../../MODS/go-mod-core-contracts
-	github.com/edgexfoundry/go-mod-messaging/v3 => ../MODS/go-mod-messaging
-)
-
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.6
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.11
-	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.6
-	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.6
+	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.9
+	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.7
 	github.com/edgexfoundry/go-mod-registry/v3 v3.0.0-dev.3
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/gomodule/redigo v1.8.9
