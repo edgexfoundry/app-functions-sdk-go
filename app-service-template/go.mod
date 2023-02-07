@@ -10,7 +10,7 @@ replace github.com/edgexfoundry/app-functions-sdk-go/v3 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v3 v3.0.0-dev.9
-	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.6
+	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.9
 	github.com/google/uuid v1.3.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/stretchr/testify v1.8.1
@@ -25,16 +25,16 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.2 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.11 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v3 v3.0.0-dev.2 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.6 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.7 // indirect
 	github.com/edgexfoundry/go-mod-registry/v3 v3.0.0-dev.3 // indirect
-	github.com/edgexfoundry/go-mod-secrets/v3 v3.0.0-dev.2 // indirect
+	github.com/edgexfoundry/go-mod-secrets/v3 v3.0.0-dev.5 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
-	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-playground/validator/v10 v10.11.1 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/go-redis/redis/v7 v7.3.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect

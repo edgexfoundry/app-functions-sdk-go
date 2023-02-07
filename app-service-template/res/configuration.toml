@@ -95,10 +95,9 @@ Timeout = "30s"
   # If prefer REST, remove below and uncomment above
   UseMessageBus = true
   [Clients.core-command.Topics]
-  QueryRequestTopicPrefix = "edgex/core/commandquery/request"
-  QueryResponseTopic = "edgex/core/commandquery/response"
+  CommandQueryRequestTopicPrefix = "edgex/core/commandquery/request"
   CommandRequestTopicPrefix = "edgex/core/command/request"
-  CommandResponseTopic = "edgex/core/command/response/#"
+  ResponseTopicPrefix = "edgex/response"
 
 [Clients.support-notifications]
   Protocol = "http"
@@ -172,7 +171,7 @@ DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInte
 # This can be any structure you need, but it can not contain slices. Use a maps instead of slices.
 # For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 [AppCustom]
-ResourceNames = "Boolean, Int32, Uint32, Float32, Binary"
+ResourceNames = "Boolean, Int32, Uint32, Float32, Binary, Switch"
 SomeValue = 123
   [AppCustom.SomeService]
   Host = "localhost"
