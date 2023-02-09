@@ -3,7 +3,7 @@ module github.com/edgexfoundry/app-functions-sdk-go/v3
 go 1.18
 
 require (
-	github.com/diegoholiveira/jsonlogic/v3 v3.2.6
+	github.com/diegoholiveira/jsonlogic/v3 v3.2.7
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.11
 	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.9
