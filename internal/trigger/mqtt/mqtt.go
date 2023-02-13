@@ -74,11 +74,11 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 	config := trigger.serviceBinding.Config()
 
 	brokerConfig := config.Trigger.ExternalMqtt
-	topics := config.Trigger.ExternalMqtt.SubscribeTopics
+	topics := config.Trigger.SubscribeTopics
 
 	trigger.qos = brokerConfig.QoS
 	trigger.retain = brokerConfig.Retain
-	trigger.publishTopic = config.Trigger.ExternalMqtt.PublishTopic
+	trigger.publishTopic = config.Trigger.PublishTopic
 
 	lc.Info("Initializing MQTT Trigger")
 
@@ -151,7 +151,7 @@ func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
 	// Convenience short cuts
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
-	topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(config.Trigger.ExternalMqtt.SubscribeTopics, util.SplitComma))
+	topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(config.Trigger.SubscribeTopics, util.SplitComma))
 	topicMap := map[string]byte{}
 	for _, topic := range topics {
 		topicMap[topic] = config.Trigger.ExternalMqtt.QoS
@@ -162,7 +162,7 @@ func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
 			topicMap, token.Error().Error())
 	}
 
-	lc.Infof("Subscribed to topic(s) '%s' for MQTT trigger", config.Trigger.ExternalMqtt.SubscribeTopics)
+	lc.Infof("Subscribed to topic(s) '%s' for MQTT trigger", config.Trigger.SubscribeTopics)
 }
 
 func (trigger *Trigger) messageHandler(_ pahoMqtt.Client, mqttMessage pahoMqtt.Message) {

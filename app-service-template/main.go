@@ -117,12 +117,12 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	//       Or remove default above if your use case needs multiple pipelines by topic.
 	// Example of adding functions pipelines by topic.
 	// These pipelines will only execute if the specified topic match the incoming topic.
-	// Note: Device services publish to the 'edgex/events/device/<profile-name>/<device-name>/<source-name>' topic
-	//       Core Data publishes to the 'edgex/events/core/<profile-name>/<device-name>/<source-name>' topic
+	// Note: Device services publish to the 'edgex/events/device/<device-service-name><profile-name>/<device-name>/<source-name>' topic
+	//       Core Data publishes to the 'edgex/events/core/<device-service-name>/<profile-name>/<device-name>/<source-name>' topic
 	// Note: This example with default above causes Events from Random-Float-Device device to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
 	// See https://docs.edgexfoundry.org/latest/microservices/application/AdvancedTopics/#pipeline-per-topics for more details.
-	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/+/+/Random-Float-Device/#"},
+	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/+/device-virtual/+/Random-Float-Device/#"},
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
 		sample.ConvertEventToXML,
@@ -133,7 +133,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	}
 	// Note: This example with default above causes Events from Int32 source to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
-	err = app.service.AddFunctionsPipelineForTopics("Int32s", []string{"edgex/events/+/+/+/Int32"},
+	err = app.service.AddFunctionsPipelineForTopics("Int32s", []string{"edgex/events/+/device-virtual/+/+/Int32"},
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
 		sample.ConvertEventToXML,

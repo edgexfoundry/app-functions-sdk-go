@@ -64,6 +64,12 @@ type TriggerInfo struct {
 	// Type of trigger to start pipeline
 	// enum: http, edgex-messagebus, or external-mqtt
 	Type string
+	// SubscribeTopics is a comma separated list of topics in which to subscribe
+	// Used when type in edgex-messagebus, or external-mqtt
+	SubscribeTopics string
+	// PublishTopic is the topic to publish pipeline output (if any)
+	// Used when type in edgex-messagebus, or external-mqtt
+	PublishTopic string
 	// Used when Type=external-mqtt
 	ExternalMqtt ExternalMqttConfig
 }
@@ -85,10 +91,6 @@ type HttpConfig struct {
 type ExternalMqttConfig struct {
 	// Url contains the fully qualified URL to connect to the MQTT broker
 	Url string
-	// SubscribeTopics is a comma separated list of topics in which to subscribe
-	SubscribeTopics string
-	// PublishTopic is the topic to publish pipeline output (if any)
-	PublishTopic string
 	// ClientId to connect to the broker with.
 	ClientId string
 	// ConnectTimeout is a time duration indicating how long to wait timing out on the broker connection

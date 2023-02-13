@@ -24,9 +24,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-messaging/v3/messaging/mocks"
 
@@ -71,15 +69,10 @@ func TestMain(m *testing.M) {
 func TestInitialize(t *testing.T) {
 
 	config := sdkCommon.ConfigurationStruct{
-		MessageBus: bootstrapConfig.MessageBusInfo{
-			Topics: map[string]string{
-				internal.MessageBusSubscribeTopics: "events",
-				internal.MessageBusPublishTopic:    "publish",
-			},
-		},
-
 		Trigger: sdkCommon.TriggerInfo{
-			Type: TriggerTypeMessageBus,
+			Type:            TriggerTypeMessageBus,
+			SubscribeTopics: "events",
+			PublishTopic:    "publish",
 		},
 	}
 

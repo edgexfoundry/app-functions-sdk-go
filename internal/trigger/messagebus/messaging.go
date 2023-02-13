@@ -70,12 +70,7 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 		return nil, errors.New("unable to find MessageBus Client. Make sure it is configured properly")
 	}
 
-	subscribeTopics, exists := config.MessageBus.Topics[internal.MessageBusSubscribeTopics]
-	if !exists {
-		return nil, fmt.Errorf("missing '%s' from 'MessageBus.Topics' configuration", internal.MessageBusSubscribeTopics)
-	}
-
-	subscribeTopics = strings.TrimSpace(subscribeTopics)
+	subscribeTopics := strings.TrimSpace(config.Trigger.SubscribeTopics)
 	if len(subscribeTopics) == 0 {
 		return nil, fmt.Errorf("'%s' can not be an empty string. Must contain one or more topic seperated by commas", internal.MessageBusSubscribeTopics)
 	} else {
@@ -94,14 +89,11 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 
 	lc.Infof("Subscribing to topic(s): '%s'", subscribeTopics)
 
-	publishTopic, exists := config.MessageBus.Topics[internal.MessageBusPublishTopic]
-
-	if exists {
-		trigger.publishTopic = strings.TrimSpace(publishTopic)
-		if len(trigger.publishTopic) == 0 {
-			return nil, fmt.Errorf("'%s' can not be an empty string. Must contain conatin a single non-empty topic", internal.MessageBusPublishTopic)
-		}
+	trigger.publishTopic = strings.TrimSpace(config.Trigger.PublishTopic)
+	if len(trigger.publishTopic) > 0 {
 		lc.Infof("Publishing to topic: '%s'", trigger.publishTopic)
+	} else {
+		lc.Infof("Publish topic not set for Trigger. Response data, if set, will not be published")
 	}
 
 	// Need to have a go func for each subscription, so we know with topic the data was received for.
