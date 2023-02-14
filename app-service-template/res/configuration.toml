@@ -31,9 +31,6 @@ SecretName = "https"
 HTTPSCertName = "cert"
 HTTPSKeyName = "key"
 
-[Database]
-Timeout = "30s"
-
 [Clients]
   [Clients.core-data]
   Protocol = "http"
