@@ -3,17 +3,7 @@
 [Writable]
 LogLevel = "INFO"
 
-  [Writable.StoreAndForward]
-  Enabled = false
-  RetryInterval = "5m"
-  MaxRetryCount = 10
-
   [Writable.InsecureSecrets]
-    [Writable.InsecureSecrets.DB]
-    path = "redisdb"
-      [Writable.InsecureSecrets.DB.Secrets]
-      username = ""
-      password = ""
     # TODO: Remove if not using HTTPS Webserver
     [Writable.InsecureSecrets.HTTPS]
     path = "https"
@@ -22,40 +12,17 @@ LogLevel = "INFO"
       key = ""
 
   [Writable.Telemetry]
-  Interval = "30s"
-  PublishTopicPrefix  = "edgex/telemetry" # /<service-name>/<metric-name> will be added to this Publish Topic prefix
-    [Writable.Telemetry.Metrics] # All service's metric names must be present in this list.
+    [Writable.Telemetry.Metrics] # All service's metric private configuration metrics must be listed here.
     # TODO: Remove sample custom metric and implement meaningful custom metrics if any needed.
     # Custom App Service Metrics
     EventsConvertedToXML = true
-    # App SDK provided Metrics
-    MessagesReceived = true
-    InvalidMessagesReceived = true
-    PipelineMessagesProcessed = true # Pipeline IDs are added as the tag for the metric for each pipeline defined
-    PipelineMessageProcessingTime = true # Pipeline IDs are added as the tag for the metric for each pipeline defined
-    PipelineProcessingErrors = true # Pipeline IDs are added as the tag for the metric for each pipeline defined
-    HttpExportSize = true # Single metric used for all HTTP Exports
-    MqttExportSize = true # BrokerAddress and Topic are added as the tag for this metric for each MqttExport defined
-    # Common Security Service Metrics
-    SecuritySecretsRequested = true
-    SecuritySecretsStored = true
-    SecurityConsulTokensRequested = true
-    SecurityConsulTokenDuration = true
-    [Writable.Telemetry.Tags] # Contains the service level tags to be attached to all the service's metrics
-#    Gateway="my-iot-gateway" # Tag must be added here or via Consul Env Override can only change existing value, not added new ones.
 
 [Service]
-HealthCheckInterval = "10s"
-Host = "localhost"
 # TODO: set this port appropriately,
 #       App service use port assignments 597xx with lower range 00-39 reserved for
 #       app-service-configurable profiles/instances, Rules Engine and examples
 Port = 59740
-ServerBindAddr = "" # Leave blank so default to Host value unless different value is needed.
 StartupMsg = "app-new-service Application Service has started"
-MaxResultCount = 0 # Not currently used by App Services.
-MaxRequestSize = 0 # Not currently used by App Services.
-RequestTimeout = "5s"
 
 # TODO: Remove section if not using HTTPS Webserver. Default protocol is HTTP if section is empty
 [HttpServer]
@@ -64,27 +31,12 @@ SecretName = "https"
 HTTPSCertName = "cert"
 HTTPSKeyName = "key"
 
-[Registry]
-Host = "localhost"
-Port = 8500
-Type = "consul"
-
-[Database]
-Type = "redisdb"
-Host = "localhost"
-Port = 6379
-Timeout = "30s"
-
 [Clients]
   [Clients.core-data]
   Protocol = "http"
   Host = "localhost"
   Port = 59880
 
-  [Clients.core-metadata]
-  Protocol = "http"
-  Host = "localhost"
-  Port = 59881
 
   [Clients.core-command]
   #  Protocol = "http"
@@ -106,33 +58,12 @@ Timeout = "30s"
 
 [MessageBus]
 Disabled = false  # TODO: set to true if not using edgex-messagebus Trigger below and don't want Metrics or Commands via MessageBus
-Protocol = "redis"
-Host = "localhost"
-Port = 6379
-Type = "redis"
-AuthMode = "usernamepassword"  # required for redis messagebus (secure or insecure).
-SecretName = "redisdb"
   [MessageBus.Topics]
   SubscribeTopics = "edgex/events/#"
   PublishTopic="event-xml"
   [MessageBus.Optional]
-  # Default MQTT Specific options that need to be here to enable evnironment variable overrides of them
+  # Default MQTT Specific options that need to be here to enable environment variable overrides of them
   ClientId ="app-new-service"
-  Qos =  "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
-  KeepAlive = "10" # Seconds (must be 2 or greater)
-  Retained = "false"
-  AutoReconnect = "true"
-  ConnectTimeout = "5" # Seconds
-  SkipCertVerify = "false"
-  # Additional Default NATS Specific options that need to be here to enable evnironment variable overrides of them
-  Format = "nats"
-  RetryOnFailedConnect = "true"
-  QueueGroup = ""
-  Durable = ""
-  AutoProvision = "true"
-  Deliver = "new"
-  DefaultPubRetryAttempts = "2"
-  Subject = "edgex/#" # Required for NATS Jetstram only for stream autoprovsioning
 
 # TODO: If using mqtt messagebus, Uncomment this section and remove above [MessageBus] section,
 #       Otherwise remove this commented out block
