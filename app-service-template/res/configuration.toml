@@ -46,10 +46,6 @@ HTTPSKeyName = "key"
   # Only valid if MessageBus Trigger is used
   # If prefer REST, remove below and uncomment above
   UseMessageBus = true
-  [Clients.core-command.Topics]
-  CommandQueryRequestTopicPrefix = "edgex/core/commandquery/request"
-  CommandRequestTopicPrefix = "edgex/core/command/request"
-  ResponseTopicPrefix = "edgex/response"
 
 [Clients.support-notifications]
   Protocol = "http"
@@ -58,51 +54,29 @@ HTTPSKeyName = "key"
 
 [MessageBus]
 Disabled = false  # TODO: set to true if not using edgex-messagebus Trigger below and don't want Metrics or Commands via MessageBus
-  [MessageBus.Topics]
-  SubscribeTopics = "edgex/events/#"
-  PublishTopic="event-xml"
   [MessageBus.Optional]
   # Default MQTT Specific options that need to be here to enable environment variable overrides of them
   ClientId ="app-new-service"
 
-# TODO: If using mqtt messagebus, Uncomment this section and remove above [MessageBus] section,
-#       Otherwise remove this commented out block
-#[MessageBus]
-#Protocol = "tcp"
-#Host = "localhost"
-#Port = 1883
-#Type = "mqtt"
-#AuthMode = "none"  # required for redis messagebus (secure or insecure).
-#SecretName = "mqtt-bus"
-#  [MessageBus.Topics]
-#  SubscribeTopics = "edgex/events/#"
-#  PublishTopic="event-xml"
-#  [MessageBus.Optional]
-#  ClientId ="app-new-service"
-#  Qos =  "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
-#  KeepAlive = "10" # Seconds (must be 2 or greater)
-#  Retained = "false"
-#  AutoReconnect = "true"
-#  ConnectTimeout = "5" # Seconds
-#  SkipCertVerify = "false"
-
 [Trigger]
 # Note that the MessaegBus connection above is used by edgex-messagebus trigger
 Type="edgex-messagebus"
+SubscribeTopics = "edgex/events/#"
+PublishTopic="event-xml"
 
 # TODO: Add custom settings needed by your app service or remove if you don't have any settings.
 # This can be any Key/Value pair you need.
 # For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#application-settings
 # Example that works with devices from the Virtual Device service:
 [ApplicationSettings]
-DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device, sample-numeric"
+DeviceNames = "Simple-Device01, Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device, sample-numeric"
 
 # TODO: Replace this section with your actual structured custom configuration section
 #       or remove if you don't have a need for structured custom configuration
 # This can be any structure you need, but it can not contain slices. Use a maps instead of slices.
 # For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 [AppCustom]
-ResourceNames = "Boolean, Int32, Uint32, Float32, Binary, Switch"
+ResourceNames = "Boolean, Int32, Uint32, Float32, Binary, SwitchButton"
 SomeValue = 123
   [AppCustom.SomeService]
   Host = "localhost"

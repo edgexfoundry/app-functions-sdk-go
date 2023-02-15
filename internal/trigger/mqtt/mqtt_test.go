@@ -101,7 +101,7 @@ func TestTrigger_responseHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			serviceBinding := &triggerMocks.ServiceBinding{}
 
-			serviceBinding.On("Config").Return(&sdkCommon.ConfigurationStruct{Trigger: sdkCommon.TriggerInfo{ExternalMqtt: sdkCommon.ExternalMqttConfig{PublishTopic: tt.fields.publishTopic}}})
+			serviceBinding.On("Config").Return(&sdkCommon.ConfigurationStruct{Trigger: sdkCommon.TriggerInfo{PublishTopic: tt.fields.publishTopic}})
 			serviceBinding.On("LoggingClient").Return(logger.NewMockClient())
 
 			ctx := &interfaceMocks.AppFunctionContext{}

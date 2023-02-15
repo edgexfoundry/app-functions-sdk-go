@@ -130,12 +130,13 @@ func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, 
 // AddBackgroundPublisher will create a channel of provided capacity to be
 // consumed by the MessageBus output and return a publisher that writes to it
 func (svc *Service) AddBackgroundPublisher(capacity int) (interfaces.BackgroundPublisher, error) {
-	topic := svc.config.MessageBus.Topics[internal.MessageBusPublishTopic]
+	publishTopic := strings.TrimSpace(svc.config.Trigger.PublishTopic)
 
-	if topic == "" {
-		return nil, errors.New("no publish topic configured for messagebus, background publishing unavailable")
+	if len(publishTopic) == 0 {
+		return nil, errors.New("publish topic not configured for Trigger, background publishing unavailable")
 	}
-	return svc.AddBackgroundPublisherWithTopic(capacity, topic)
+
+	return svc.AddBackgroundPublisherWithTopic(capacity, publishTopic)
 }
 
 // AddBackgroundPublisherWithTopic will create a channel of provided capacity to be
