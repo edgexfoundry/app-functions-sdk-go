@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,11 +73,14 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 	subscribeTopics := strings.TrimSpace(config.Trigger.SubscribeTopics)
 	if len(subscribeTopics) == 0 {
 		return nil, fmt.Errorf("'%s' can not be an empty string. Must contain one or more topic seperated by commas", internal.MessageBusSubscribeTopics)
-	} else {
-		topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(subscribeTopics, util.SplitComma))
-		for _, topic := range topics {
-			trigger.topics = append(trigger.topics, types.TopicChannel{Topic: topic, Messages: make(chan types.MessageEnvelope)})
-		}
+	}
+
+	topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(subscribeTopics, util.SplitComma))
+	subscribeTopics = ""
+	for _, topic := range topics {
+		topic = common.BuildTopic(config.MessageBus.GetBaseTopicPrefix(), topic)
+		trigger.topics = append(trigger.topics, types.TopicChannel{Topic: topic, Messages: make(chan types.MessageEnvelope)})
+		lc.Infof("Subscribing to topic: %s", topic)
 	}
 
 	messageErrors := make(chan error)
@@ -87,11 +90,10 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 		return nil, err
 	}
 
-	lc.Infof("Subscribing to topic(s): '%s'", subscribeTopics)
-
 	trigger.publishTopic = strings.TrimSpace(config.Trigger.PublishTopic)
 	if len(trigger.publishTopic) > 0 {
-		lc.Infof("Publishing to topic: '%s'", trigger.publishTopic)
+		trigger.publishTopic = common.BuildTopic(config.MessageBus.GetBaseTopicPrefix(), trigger.publishTopic)
+		lc.Infof("Publishing to topic: %s", trigger.publishTopic)
 	} else {
 		lc.Infof("Publish topic not set for Trigger. Response data, if set, will not be published")
 	}

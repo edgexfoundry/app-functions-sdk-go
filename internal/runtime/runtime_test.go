@@ -645,6 +645,10 @@ func TestGetMatchingPipelines(t *testing.T) {
 	require.NoError(t, err)
 	err = target.AddFunctionsPipeline("three", []string{"edgex/events/P1/D1/S1"}, expectedTransforms)
 	require.NoError(t, err)
+	err = target.AddFunctionsPipeline("four", []string{"edgex/events/device/device-virtual/+/Random-Float-Device/#"}, expectedTransforms)
+	require.NoError(t, err)
+	err = target.AddFunctionsPipeline("five", []string{"edgex/events/device/device-virtual/+/+/Int32"}, expectedTransforms)
+	require.NoError(t, err)
 
 	tests := []struct {
 		name          string
@@ -655,6 +659,8 @@ func TestGetMatchingPipelines(t *testing.T) {
 		{"Match 2", "edgex/events/P1/D1/S2", 2},
 		{"Match 1", "edgex/events/P2/D1/S2", 1},
 		{"Match 0", "edgex/events/P2/D2/S2", 0},
+		{"Match 1", "edgex/events/device/device-virtual/Random-Float-Device/Random-Float-Device/Float32", 1},
+		{"Match 1", "edgex/events/device/device-virtual/Random-Integer-Device/Random-Integer-Device/Int32", 1},
 	}
 
 	for _, test := range tests {

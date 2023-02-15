@@ -27,7 +27,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
-
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 )
 
@@ -105,7 +104,6 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	err = app.service.SetDefaultFunctionsPipeline(
 		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
 		sample.LogEventDetails,
-		sample.SendGetCommand,
 		sample.ConvertEventToXML,
 		sample.OutputXML)
 	if err != nil {
@@ -122,8 +120,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	// Note: This example with default above causes Events from Random-Float-Device device to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
 	// See https://docs.edgexfoundry.org/latest/microservices/application/AdvancedTopics/#pipeline-per-topics for more details.
-	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/+/device-virtual/+/Random-Float-Device/#"},
-		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
+	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"events/device/device-virtual/+/Random-Float-Device/#"},
 		sample.LogEventDetails,
 		sample.ConvertEventToXML,
 		sample.OutputXML)
@@ -133,9 +130,9 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	}
 	// Note: This example with default above causes Events from Int32 source to be processed twice
 	//       resulting in the XML to be published back to the MessageBus twice.
-	err = app.service.AddFunctionsPipelineForTopics("Int32s", []string{"edgex/events/+/device-virtual/+/+/Int32"},
-		transforms.NewFilterFor(deviceNames).FilterByDeviceName,
+	err = app.service.AddFunctionsPipelineForTopics("Int32s", []string{"events/device/device-virtual/+/+/Int32"},
 		sample.LogEventDetails,
+		sample.SendGetCommand,
 		sample.ConvertEventToXML,
 		sample.OutputXML)
 	if err != nil {

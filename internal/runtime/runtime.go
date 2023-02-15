@@ -133,9 +133,9 @@ func (fpr *FunctionsPipelineRuntime) SetFunctionsPipelineTopics(id string, topic
 		fpr.isBusyCopying.Lock()
 		pipeline.Topics = topics
 		fpr.isBusyCopying.Unlock()
-		fpr.lc.Infof("Topics set for `%s` pipeline", id)
+		fpr.lc.Infof("Topics '%v' set for `%s` pipeline", topics, id)
 	} else {
-		fpr.lc.Warnf("Unable to set topica for `%s` pipeline: Pipeline not found", id)
+		fpr.lc.Warnf("Unable to set topic for `%s` pipeline: Pipeline not found", id)
 	}
 }
 
