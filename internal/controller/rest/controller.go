@@ -175,7 +175,7 @@ func (c *Controller) prepareSecret(request commonDtos.SecretRequest) (string, ma
 		secretsKV[secret.Key] = secret.Value
 	}
 
-	path := strings.TrimSpace(request.Path)
+	path := strings.TrimSpace(request.SecretName)
 
 	return path, secretsKV
 }
