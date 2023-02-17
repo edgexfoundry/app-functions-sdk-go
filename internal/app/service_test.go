@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -130,6 +130,8 @@ func TestAddBackgroundPublisherMessageBus(t *testing.T) {
 		},
 	}
 
+	expectedPublishTopic := "edgex/topic"
+
 	p, err := sdk.AddBackgroundPublisher(1)
 
 	require.NoError(t, err)
@@ -142,7 +144,7 @@ func TestAddBackgroundPublisherMessageBus(t *testing.T) {
 
 	require.NotNil(t, pub.output, "publisher should have an output channel set")
 	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
-	require.Equal(t, sdk.config.Trigger.PublishTopic, pub.topic)
+	require.Equal(t, expectedPublishTopic, pub.topic)
 
 	// compare addresses since types will not match
 	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
@@ -159,6 +161,8 @@ func TestAddBackgroundPublisher_Arbitrary(t *testing.T) {
 		},
 	}
 
+	expectedPublishTopic := "edgex/topic"
+
 	p, err := sdk.AddBackgroundPublisher(1)
 
 	require.NoError(t, err)
@@ -171,7 +175,7 @@ func TestAddBackgroundPublisher_Arbitrary(t *testing.T) {
 
 	require.NotNil(t, pub.output, "publisher should have an output channel set")
 	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
-	require.Equal(t, sdk.config.Trigger.PublishTopic, pub.topic)
+	require.Equal(t, expectedPublishTopic, pub.topic)
 
 	// compare addresses since types will not match
 	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),
@@ -185,6 +189,8 @@ func TestAddBackgroundPublisher_Custom_Topic(t *testing.T) {
 
 	p, err := sdk.AddBackgroundPublisherWithTopic(1, topic)
 
+	expectedPublishTopic := "edgex/" + topic
+
 	require.NoError(t, err)
 
 	pub, ok := p.(*backgroundPublisher)
@@ -195,7 +201,7 @@ func TestAddBackgroundPublisher_Custom_Topic(t *testing.T) {
 
 	require.NotNil(t, pub.output, "publisher should have an output channel set")
 	require.NotNil(t, sdk.backgroundPublishChannel, "svc should have a background channel set for passing to trigger initialization")
-	require.Equal(t, topic, pub.topic)
+	require.Equal(t, expectedPublishTopic, pub.topic)
 
 	// compare addresses since types will not match
 	assert.Equal(t, fmt.Sprintf("%p", sdk.backgroundPublishChannel), fmt.Sprintf("%p", pub.output),

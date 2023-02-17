@@ -149,6 +149,8 @@ func (svc *Service) AddBackgroundPublisherWithTopic(capacity int, topic string) 
 		return nil, fmt.Errorf("background publishing not supported for %s trigger", svc.config.Trigger.Type)
 	}
 
+	topic = commonConstants.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic)
+
 	bgChan, pub := newBackgroundPublisher(topic, capacity)
 	svc.backgroundPublishChannel = bgChan
 	return pub, nil
@@ -401,12 +403,19 @@ func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, tr
 			return errors.New("blank topic not allowed")
 		}
 	}
-	err := svc.runtime.AddFunctionsPipeline(id, topics, transforms)
+
+	// Must add the base topic to all the input topics
+	var fullTopics []string
+	for _, topic := range topics {
+		fullTopics = append(fullTopics, commonConstants.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic))
+	}
+
+	err := svc.runtime.AddFunctionsPipeline(id, fullTopics, transforms)
 	if err != nil {
 		return err
 	}
 
-	svc.lc.Debugf("Pipeline '%s' added for topics '%v' with %d transform(s)", id, topics, len(transforms))
+	svc.lc.Debugf("Pipeline '%s' added for topics '%v' with %d transform(s)", id, fullTopics, len(transforms))
 	return nil
 }
 

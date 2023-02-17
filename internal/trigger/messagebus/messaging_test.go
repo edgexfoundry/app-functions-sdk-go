@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,7 +89,7 @@ func TestInitialize(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, trigger.client, "Expected client to be set")
 	assert.Equal(t, 1, len(trigger.topics))
-	assert.Equal(t, "events", trigger.topics[0].Topic)
+	assert.Equal(t, "edgex/events", trigger.topics[0].Topic)
 	assert.NotNil(t, trigger.topics[0].Messages)
 }
 
