@@ -186,5 +186,10 @@ func (webserver *WebServer) generateTLSConfig(httpsCert, httpsKey []byte) (*tls.
 		return nil, err
 	}
 
-	return &tls.Config{Certificates: []tls.Certificate{cert}}, nil
+	config := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
+	}
+
+	return config, nil
 }
