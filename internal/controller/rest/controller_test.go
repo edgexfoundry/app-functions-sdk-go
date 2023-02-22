@@ -219,9 +219,8 @@ func TestAddSecretRequest(t *testing.T) {
 	expectedRequestId := "82eb2e26-0f24-48aa-ae4c-de9dac3fb9bc"
 
 	mockProvider := &mocks.SecretProvider{}
-	mockProvider.On("StoreSecret", "/mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
 	mockProvider.On("StoreSecret", "mqtt", map[string]string{"password": "password", "username": "username"}).Return(nil)
-	mockProvider.On("StoreSecret", "/no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("invalid w/o Vault"))
+	mockProvider.On("StoreSecret", "no", map[string]string{"password": "password", "username": "username"}).Return(errors.New("invalid w/o Vault"))
 
 	dic.Update(di.ServiceConstructorMap{
 		container.ConfigurationName: func(get di.Get) interface{} {
@@ -237,17 +236,15 @@ func TestAddSecretRequest(t *testing.T) {
 
 	validRequest := commonDtos.SecretRequest{
 		BaseRequest: commonDtos.BaseRequest{RequestId: expectedRequestId, Versionable: commonDtos.NewVersionable()},
-		Path:        "mqtt",
+		SecretName:  "mqtt",
 		SecretData: []commonDtos.SecretDataKeyValue{
 			{Key: "username", Value: "username"},
 			{Key: "password", Value: "password"},
 		},
 	}
 
-	NoPath := validRequest
-	NoPath.Path = ""
-	validPathWithSlash := validRequest
-	validPathWithSlash.Path = "/mqtt"
+	NoName := validRequest
+	NoName.SecretName = ""
 	validNoRequestId := validRequest
 	validNoRequestId.RequestId = ""
 	badRequestId := validRequest
@@ -263,27 +260,24 @@ func TestAddSecretRequest(t *testing.T) {
 		{Key: "username", Value: ""},
 	}
 	noSecretStore := validRequest
-	noSecretStore.Path = "/no"
+	noSecretStore.SecretName = "no"
 
 	tests := []struct {
 		Name               string
 		Request            commonDtos.SecretRequest
 		ExpectedRequestId  string
-		SecretsPath        string
 		SecretStoreEnabled string
 		ErrorExpected      bool
 		ExpectedStatusCode int
 	}{
-		{"Valid - sub-path no trailing slash, SecretsPath has trailing slash", validRequest, expectedRequestId, "my-secrets/", "true", false, http.StatusCreated},
-		{"Valid - sub-path only with trailing slash", validPathWithSlash, expectedRequestId, "my-secrets", "true", false, http.StatusCreated},
-		{"Valid - both trailing slashes", validPathWithSlash, expectedRequestId, "my-secrets/", "true", false, http.StatusCreated},
-		{"Valid - no requestId", validNoRequestId, "", "", "true", false, http.StatusCreated},
-		{"Invalid - no path", NoPath, "", "", "true", true, http.StatusBadRequest},
-		{"Invalid - bad requestId", badRequestId, "", "", "true", true, http.StatusBadRequest},
-		{"Invalid - no secrets", noSecrets, "", "", "true", true, http.StatusBadRequest},
-		{"Invalid - missing secret key", missingSecretKey, "", "", "true", true, http.StatusBadRequest},
-		{"Invalid - missing secret value", missingSecretValue, "", "", "true", true, http.StatusBadRequest},
-		{"Invalid - No Secret Store", noSecretStore, "", "", "false", true, http.StatusInternalServerError},
+		{"Valid name", validRequest, expectedRequestId, "true", false, http.StatusCreated},
+		{"Valid - no requestId", validNoRequestId, "", "true", false, http.StatusCreated},
+		{"Invalid - no name", NoName, "", "true", true, http.StatusBadRequest},
+		{"Invalid - bad requestId", badRequestId, "", "true", true, http.StatusBadRequest},
+		{"Invalid - no secrets", noSecrets, "", "true", true, http.StatusBadRequest},
+		{"Invalid - missing secret key", missingSecretKey, "", "true", true, http.StatusBadRequest},
+		{"Invalid - missing secret value", missingSecretValue, "", "true", true, http.StatusBadRequest},
+		{"Invalid - No Secret Store", noSecretStore, "", "false", true, http.StatusInternalServerError},
 	}
 
 	for _, testCase := range tests {
