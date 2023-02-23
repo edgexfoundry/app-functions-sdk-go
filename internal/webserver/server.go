@@ -17,6 +17,7 @@
 package webserver
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -59,6 +60,7 @@ func NewWebServer(dic *di.Container, router *mux.Router, serviceName string) *We
 		config:     container.ConfigurationFrom(dic.Get),
 		router:     router,
 		controller: rest.NewController(router, dic, serviceName),
+		dic:        dic,
 	}
 
 	return ws
@@ -154,11 +156,41 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			return
 		}
 
+		// ListenAndServeTLS below takes filenames for the certificate and key but the raw data is coming from Vault, so must generate the tlsConfig from raw data first.
+		tlsConfig, err := webserver.generateTLSConfig([]byte(httpsCert), []byte(httpsKey))
+		if err != nil {
+			lc.Errorf("unable to generate a TLS configuration.", err)
+			errChannel <- err
+			return
+		}
+
+		svr := &http.Server{
+			Addr:      addr,
+			Handler:   http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"),
+			TLSConfig: tlsConfig,
+		}
+
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
 
-		errChannel <- http.ListenAndServeTLS(addr, httpsCert, httpsKey, http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"))
+		// ListenAndServeTLS takes filenames for the certificate and key but the raw data is coming from Vault
+		// empty strings will make the server use the certificate and key from tls.Config{}
+		errChannel <- svr.ListenAndServeTLS("", "")
 	} else {
 		lc.Infof("Starting HTTP Web Server on address %s", addr)
 		errChannel <- http.ListenAndServe(addr, http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"))
 	}
+}
+
+func (webserver *WebServer) generateTLSConfig(httpsCert, httpsKey []byte) (*tls.Config, error) {
+	cert, err := tls.X509KeyPair(httpsCert, httpsKey)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
+	}
+
+	return config, nil
 }
