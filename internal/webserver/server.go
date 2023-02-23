@@ -156,6 +156,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			return
 		}
 
+		// ListenAndServeTLS below takes filenames for the certificate and key but the raw data is coming from Vault, so must generate the tlsConfig from raw data first.
 		tlsConfig, err := webserver.generateTLSConfig([]byte(httpsCert), []byte(httpsKey))
 		if err != nil {
 			lc.Errorf("unable to generate a TLS configuration.", err)
@@ -171,7 +172,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
 
-		// ListenAndServeTLS requires filenames for the certificate and key but the raw data is coming from Vault
+		// ListenAndServeTLS takes filenames for the certificate and key but the raw data is coming from Vault
 		// empty strings will make the server use the certificate and key from tls.Config{}
 		errChannel <- svr.ListenAndServeTLS("", "")
 	} else {
