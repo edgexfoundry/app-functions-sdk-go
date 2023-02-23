@@ -7,7 +7,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.24
 	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.15
-	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.9
+	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.11
 	github.com/edgexfoundry/go-mod-registry/v3 v3.0.0-dev.3
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/gomodule/redigo v1.8.9
@@ -50,7 +50,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/nats-io/nats.go v1.20.0 // indirect
+	github.com/nats-io/nats.go v1.23.0 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
