@@ -827,7 +827,7 @@ func TestService_EventClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
-			return clients.NewEventClient(baseUrl + "59880")
+			return clients.NewEventClient(baseUrl+"59880", nil)
 		},
 	})
 
@@ -841,7 +841,7 @@ func TestService_CommandClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.CommandClientName: func(get di.Get) interface{} {
-			return clients.NewCommandClient(baseUrl + "59882")
+			return clients.NewCommandClient(baseUrl+"59882", nil)
 		},
 	})
 
@@ -855,7 +855,7 @@ func TestService_DeviceServiceClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.DeviceServiceClientName: func(get di.Get) interface{} {
-			return clients.NewDeviceServiceClient(baseUrl + "59881")
+			return clients.NewDeviceServiceClient(baseUrl+"59881", nil)
 		},
 	})
 
@@ -870,7 +870,7 @@ func TestService_DeviceProfileClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.DeviceProfileClientName: func(get di.Get) interface{} {
-			return clients.NewDeviceProfileClient(baseUrl + "59881")
+			return clients.NewDeviceProfileClient(baseUrl+"59881", nil)
 		},
 	})
 
@@ -884,7 +884,7 @@ func TestService_DeviceClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.DeviceClientName: func(get di.Get) interface{} {
-			return clients.NewDeviceClient(baseUrl + "59881")
+			return clients.NewDeviceClient(baseUrl+"59881", nil)
 		},
 	})
 
@@ -899,7 +899,7 @@ func TestService_NotificationClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.NotificationClientName: func(get di.Get) interface{} {
-			return clients.NewNotificationClient(baseUrl + "59860")
+			return clients.NewNotificationClient(baseUrl+"59860", nil)
 		},
 	})
 
@@ -914,7 +914,7 @@ func TestService_SubscriptionClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.SubscriptionClientName: func(get di.Get) interface{} {
-			return clients.NewSubscriptionClient(baseUrl + "59860")
+			return clients.NewSubscriptionClient(baseUrl+"59860", nil)
 		},
 	})
 
