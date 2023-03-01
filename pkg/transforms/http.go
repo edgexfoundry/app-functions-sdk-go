@@ -40,8 +40,8 @@ type HTTPSender struct {
 	continueOnSendError bool
 	returnInputData     bool
 	httpHeaderName      string
+	secretValueKey      string
 	secretName          string
-	secretPath          string
 	urlFormatter        StringValuesFormatter
 	httpSizeMetrics     gometrics.Histogram
 }
@@ -56,14 +56,14 @@ func NewHTTPSender(url string, mimeType string, persistOnError bool) *HTTPSender
 }
 
 // NewHTTPSenderWithSecretHeader creates, initializes and returns a new instance of HTTPSender configured to use a secret header
-func NewHTTPSenderWithSecretHeader(url string, mimeType string, persistOnError bool, headerName string, secretPath string, secretName string) *HTTPSender {
+func NewHTTPSenderWithSecretHeader(url string, mimeType string, persistOnError bool, headerName string, secretName string, secretValueKey string) *HTTPSender {
 	return NewHTTPSenderWithOptions(HTTPSenderOptions{
 		URL:            url,
 		MimeType:       mimeType,
 		PersistOnError: persistOnError,
 		HTTPHeaderName: headerName,
-		SecretPath:     secretPath,
 		SecretName:     secretName,
+		SecretValueKey: secretValueKey,
 	})
 }
 
@@ -76,8 +76,8 @@ func NewHTTPSenderWithOptions(options HTTPSenderOptions) *HTTPSender {
 		continueOnSendError: options.ContinueOnSendError,
 		returnInputData:     options.ReturnInputData,
 		httpHeaderName:      options.HTTPHeaderName,
+		secretValueKey:      options.SecretValueKey,
 		secretName:          options.SecretName,
-		secretPath:          options.SecretPath,
 		urlFormatter:        options.URLFormatter,
 	}
 }
@@ -92,10 +92,10 @@ type HTTPSenderOptions struct {
 	PersistOnError bool
 	// HTTPHeaderName to use for passing configured secret
 	HTTPHeaderName string
-	// SecretPath to search for configured secret
-	SecretPath string
-	// SecretName for configured secret
+	// SecretName to search for configured secret
 	SecretName string
+	// SecretValueKey for configured secret
+	SecretValueKey string
 	// URLFormatter specifies custom formatting behavior to be applied to configured URL.
 	// If nothing specified, default behavior is to attempt to replace placeholders in the
 	// form '{some-context-key}' with the values found in the context storage.
@@ -171,18 +171,18 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 	}
 	var theSecrets map[string]string
 	if usingSecrets {
-		theSecrets, err = ctx.SecretProvider().GetSecret(sender.secretPath, sender.secretName)
+		theSecrets, err = ctx.SecretProvider().GetSecret(sender.secretName, sender.secretValueKey)
 		if err != nil {
 			return false, err
 		}
 
 		lc.Debugf("Setting HTTP Header '%s' with secret value from SecretStore at path='%s' & name='%s in pipeline '%s'",
 			sender.httpHeaderName,
-			sender.secretPath,
 			sender.secretName,
+			sender.secretValueKey,
 			ctx.PipelineId())
 
-		req.Header.Set(sender.httpHeaderName, theSecrets[sender.secretName])
+		req.Header.Set(sender.httpHeaderName, theSecrets[sender.secretValueKey])
 	}
 
 	req.Header.Set("Content-Type", sender.mimeType)
@@ -258,20 +258,20 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 
 func (sender *HTTPSender) determineIfUsingSecrets(ctx interfaces.AppFunctionContext) (bool, error) {
 	// not using secrets if both are empty
-	if len(sender.secretPath) == 0 && len(sender.secretName) == 0 {
+	if len(sender.secretName) == 0 && len(sender.secretValueKey) == 0 {
 		if len(sender.httpHeaderName) == 0 {
 			return false, nil
 		}
 
-		return false, fmt.Errorf("in pipeline '%s', secretPath & secretName must be specified when HTTP Header Name is specified", ctx.PipelineId())
+		return false, fmt.Errorf("in pipeline '%s', secretName & secretValueKey must be specified when HTTP Header Name is specified", ctx.PipelineId())
 	}
 
 	//check if one field but not others are provided for secrets
-	if len(sender.secretPath) != 0 && len(sender.secretName) == 0 {
-		return false, fmt.Errorf("in pipeline '%s', secretPath was specified but no secretName was provided", ctx.PipelineId())
+	if len(sender.secretName) != 0 && len(sender.secretValueKey) == 0 {
+		return false, fmt.Errorf("in pipeline '%s', secretName was specified but no secretName was provided", ctx.PipelineId())
 	}
-	if len(sender.secretName) != 0 && len(sender.secretPath) == 0 {
-		return false, fmt.Errorf("in pipeline '%s', HTTP Header secretName was provided but no secretPath was provided", ctx.PipelineId())
+	if len(sender.secretValueKey) != 0 && len(sender.secretName) == 0 {
+		return false, fmt.Errorf("in pipeline '%s', HTTP Header secretName was provided but no secretName was provided", ctx.PipelineId())
 	}
 
 	if len(sender.httpHeaderName) == 0 {

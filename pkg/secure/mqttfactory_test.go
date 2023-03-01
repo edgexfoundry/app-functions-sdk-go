@@ -20,9 +20,10 @@
 package secure
 
 import (
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"os"
 	"testing"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
@@ -62,7 +63,7 @@ func TestNewMqttFactory(t *testing.T) {
 
 	assert.NotNil(t, target.logger)
 	assert.Equal(t, expectedMode, target.authMode)
-	assert.Equal(t, expectedPath, target.secretPath)
+	assert.Equal(t, expectedPath, target.secretName)
 	assert.Equal(t, expectedSkipVerify, target.skipCertVerify)
 	assert.Nil(t, target.opts)
 
