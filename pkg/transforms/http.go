@@ -92,9 +92,9 @@ type HTTPSenderOptions struct {
 	PersistOnError bool
 	// HTTPHeaderName to use for passing configured secret
 	HTTPHeaderName string
-	// SecretName to search for configured secret
+	// SecretName is the name of the secret in the SecretStore
 	SecretName string
-	// SecretValueKey for configured secret
+	//  SecretValueKey is the key for the value in the secret data from the SecretStore
 	SecretValueKey string
 	// URLFormatter specifies custom formatting behavior to be applied to configured URL.
 	// If nothing specified, default behavior is to attempt to replace placeholders in the
@@ -176,7 +176,7 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 			return false, err
 		}
 
-		lc.Debugf("Setting HTTP Header '%s' with secret value from SecretStore at path='%s' & name='%s in pipeline '%s'",
+		lc.Debugf("Setting HTTP Header '%s' with secret value from SecretStore at secretName='%s' & secretKeyValue='%s in pipeline '%s'",
 			sender.httpHeaderName,
 			sender.secretName,
 			sender.secretValueKey,

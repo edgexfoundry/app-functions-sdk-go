@@ -297,9 +297,9 @@ func (app *Configurable) Encrypt(parameters map[string]string) interfaces.AppFun
 	encryptionKey := parameters[EncryptionKey]
 
 	// SecretName & SecretValueKey are optional if EncryptionKey specified
-	// EncryptionKey is optional if SecretName & SecretName are specified
+	// EncryptionKey is optional if SecretName & SecretValueKey are specified
 
-	// If EncryptionKey not specified, then SecretName & SecretName must be specified
+	// If EncryptionKey not specified, then SecretName & SecretValueKey must be specified
 	if len(encryptionKey) == 0 && (len(secretName) == 0 || len(secretValueKey) == 0) {
 		app.lc.Errorf("Could not find '%s' or '%s' and '%s' in configuration", EncryptionKey, SecretName, SecretValueKey)
 		return nil

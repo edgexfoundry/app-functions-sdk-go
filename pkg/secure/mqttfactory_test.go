@@ -57,13 +57,13 @@ func TestMain(m *testing.M) {
 
 func TestNewMqttFactory(t *testing.T) {
 	expectedMode := "none"
-	expectedPath := "myPath"
+	expectedSecretName := "mySecretName"
 	expectedSkipVerify := true
-	target := NewMqttFactory(secretDataProvider, lc, expectedMode, expectedPath, expectedSkipVerify)
+	target := NewMqttFactory(secretDataProvider, lc, expectedMode, expectedSecretName, expectedSkipVerify)
 
 	assert.NotNil(t, target.logger)
 	assert.Equal(t, expectedMode, target.authMode)
-	assert.Equal(t, expectedPath, target.secretName)
+	assert.Equal(t, expectedSecretName, target.secretName)
 	assert.Equal(t, expectedSkipVerify, target.skipCertVerify)
 	assert.Nil(t, target.opts)
 

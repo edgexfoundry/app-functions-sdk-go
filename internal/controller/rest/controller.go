@@ -115,9 +115,9 @@ func (c *Controller) AddSecret(writer http.ResponseWriter, request *http.Request
 		return
 	}
 
-	path, secret := c.prepareSecret(secretRequest)
+	secretName, secret := c.prepareSecret(secretRequest)
 
-	if err := c.secretProvider.StoreSecret(path, secret); err != nil {
+	if err := c.secretProvider.StoreSecret(secretName, secret); err != nil {
 		c.sendError(writer, request, errors.KindServerError, "Storing secret failed", err, secretRequest.RequestId)
 		return
 	}
@@ -175,7 +175,7 @@ func (c *Controller) prepareSecret(request commonDtos.SecretRequest) (string, ma
 		secretsKV[secret.Key] = secret.Value
 	}
 
-	path := strings.TrimSpace(request.SecretName)
+	secretName := strings.TrimSpace(request.SecretName)
 
-	return path, secretsKV
+	return secretName, secretsKV
 }

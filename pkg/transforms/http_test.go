@@ -144,8 +144,8 @@ func TestHTTPPostPutWithSecrets(t *testing.T) {
 	expectedValue := "my-API-key"
 
 	mockSP := &mocks2.SecretProvider{}
-	mockSP.On("GetSecret", "secretname", "header").Return(map[string]string{"Secret-Header-Name": expectedValue}, nil)
-	mockSP.On("GetSecret", "secretname", "bogus").Return(nil, errors.New("FAKE NOT FOUND ERROR"))
+	mockSP.On("GetSecret", "my-secret", "my-secret-key").Return(map[string]string{"Secret-Header-Name": expectedValue}, nil)
+	mockSP.On("GetSecret", "my-secret", "bogus").Return(nil, errors.New("FAKE NOT FOUND ERROR"))
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.SecretProviderName: func(get di.Get) interface{} {
@@ -187,28 +187,27 @@ func TestHTTPPostPutWithSecrets(t *testing.T) {
 		Name                 string
 		Path                 string
 		HeaderName           string
-		SecretValueKey       string
 		SecretName           string
+		SecretValueKey       string
 		ExpectToContinue     bool
 		ExpectedErrorMessage string
 		ExpectedMethod       string
 	}{
-		{"unsuccessful POST w/o secret header name", path, "", "header", "secretname", false, "HTTP Header Name required when using secrets", ""},
-		{"unsuccessful POST w/o secret path", path, "Secret-Header", "header", "", false, "HTTP Header secretName was provided but no secretName was provided", ""},
-		{"unsuccessful POST w/o secret name", path, "Secret-Header", "", "secretname", false, "secretName was specified but no secretName was provided", ""},
-		{"successful POST with secrets", path, "Secret-Header-Name", "header", "secretname", true, "", http.MethodPost},
-		{"successful POST with secrets and formatted path", formatPath, "Secret-Header-Name", "header", "secretname", true, "", http.MethodPost},
+		{"unsuccessful POST w/o secret header name", path, "", "my-secret", "my-secret-key", false, "HTTP Header Name required when using secrets", ""},
+		{"unsuccessful POST w/o secret name", path, "Secret-Header", "", "my-secret-key", false, "HTTP Header secretName was provided but no secretName was provided", ""},
+		{"unsuccessful POST w/o secret value key", path, "Secret-Header", "my-secret", "", false, "secretName was specified but no secretName was provided", ""},
+		{"successful POST with secrets", path, "Secret-Header-Name", "my-secret", "my-secret-key", true, "", http.MethodPost},
+		{"successful POST with secrets and formatted path", formatPath, "Secret-Header-Name", "my-secret", "my-secret-key", true, "", http.MethodPost},
 		{"successful POST without secrets", path, "", "", "", true, "", http.MethodPost},
 		{"successful POST without secrets and formatted path", formatPath, "", "", "", true, "", http.MethodPost},
-		{"unsuccessful POST with secrets - retrieval fails", path, "Secret-Header", "bogus", "secretname", false, "FAKE NOT FOUND ERROR", ""},
-		{"unsuccessful PUT w/o secret header name", path, "", "header", "secretname", false, "HTTP Header Name required when using secrets", ""},
-		{"unsuccessful PUT w/o secret path name", path, "Secret-Header", "header", "", false, "HTTP Header secretName was provided but no secretName was provided", ""},
-		{"successful PUT with secrets", path, "Secret-Header", "header", "secretname", true, "", http.MethodPut},
-		{"successful PUT with secrets and formatted path", formatPath, "Secret-Header", "header", "secretname", true, "", http.MethodPut},
+		{"unsuccessful POST with secrets - retrieval fails", path, "Secret-Header", "my-secret", "bogus", false, "FAKE NOT FOUND ERROR", ""},
+		{"unsuccessful PUT w/o secret header name", path, "", "my-secret", "my-secret-key", false, "HTTP Header Name required when using secrets", ""},
+		{"unsuccessful PUT w/o secret name", path, "Secret-Header", "", "my-secret-key", false, "HTTP Header secretName was provided but no secretName was provided", ""},
+		{"successful PUT with secrets", path, "Secret-Header", "my-secret", "my-secret-key", true, "", http.MethodPut},
+		{"successful PUT with secrets and formatted path", formatPath, "Secret-Header", "my-secret", "my-secret-key", true, "", http.MethodPut},
 		{"successful PUT without secrets", path, "", "", "", true, "", http.MethodPut},
 		{"successful PUT without secrets and formatted path", formatPath, "", "", "", true, "", http.MethodPut},
-		{"unsuccessful PUT with secrets - retrieval fails", path, "Secret-Header", "bogus", "secretname", false, "FAKE NOT FOUND ERROR", ""},
-		{"unsuccessful PUT with secrets - retrieval fails", path, "Secret-Header", "bogus", "secretname", false, "FAKE NOT FOUND ERROR", ""},
+		{"unsuccessful PUT with secrets - retrieval fails", path, "Secret-Header", "my-secret", "bogus", false, "FAKE NOT FOUND ERROR", ""},
 	}
 
 	for _, test := range tests {

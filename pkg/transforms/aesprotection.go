@@ -119,7 +119,7 @@ func (protection *AESProtection) getKey(ctx interfaces.AppFunctionContext) ([]by
 		}
 
 		ctx.LoggingClient().Debugf(
-			"Using encryption key from Secret Store at SecretName=%s & name=%s in pipeline '%s'",
+			"Using encryption key from Secret Store at SecretName=%s & SecretValueKey=%s in pipeline '%s'",
 			protection.SecretName,
 			protection.SecretValueKey,
 			ctx.PipelineId())

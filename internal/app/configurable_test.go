@@ -166,7 +166,7 @@ func TestHTTPExport(t *testing.T) {
 	testBadReturnInputData := "bogus"
 
 	testHeaderName := "My-Header"
-	testSecretName := "/path"
+	testSecretName := "my-secret"
 	testSecretValueKey := "header"
 
 	tests := []struct {
@@ -191,7 +191,7 @@ func TestHTTPExport(t *testing.T) {
 		{"Invalid Post - bad persistOnError", ExportMethodPost, &testUrl, &testMimeType, &testBadPersistOnError, nil, nil, nil, nil, nil, false},
 		{"Invalid Post - missing headerName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, &testSecretName, &testSecretValueKey, false},
 		{"Invalid Post - missing secretName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, nil, &testSecretValueKey, false},
-		{"Invalid Post - missing secretName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, nil, false},
+		{"Invalid Post - missing secretValueKey", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, nil, false},
 		{"Valid Put - ony required params", ExportMethodPut, &testUrl, &testMimeType, nil, nil, nil, nil, nil, nil, true},
 		{"Valid Put - w/o secrets", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, nil, nil, true},
 		{"Valid Put - with secrets", http.MethodPut, &testUrl, &testMimeType, nil, nil, nil, &testHeaderName, &testSecretName, &testSecretValueKey, true},
@@ -203,7 +203,7 @@ func TestHTTPExport(t *testing.T) {
 		{"Invalid Put - bad returnInputData", ExportMethodPut, &testUrl, &testMimeType, nil, nil, &testBadReturnInputData, nil, nil, nil, false},
 		{"Invalid Put - missing headerName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, &testSecretName, &testSecretValueKey, false},
 		{"Invalid Put - missing secretName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, nil, &testSecretValueKey, false},
-		{"Invalid Put - missing secretName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, nil, false},
+		{"Invalid Put - missing secretValueKey", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, nil, false},
 	}
 
 	for _, test := range tests {
@@ -327,7 +327,7 @@ func TestMQTTExport(t *testing.T) {
 	params := make(map[string]string)
 	params[BrokerAddress] = "mqtt://broker:8883"
 	params[Topic] = "topic"
-	params[SecretName] = "/path"
+	params[SecretName] = "my-secret"
 	params[ClientID] = "clientid"
 	params[Qos] = "0"
 	params[Retain] = "true"
