@@ -20,7 +20,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"github.com/eclipse/paho.mqtt.golang"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 )
@@ -29,17 +30,17 @@ type MqttFactory struct {
 	sp             messaging.SecretDataProvider
 	logger         logger.LoggingClient
 	authMode       string
-	secretPath     string
+	secretName     string
 	opts           *mqtt.ClientOptions
 	skipCertVerify bool
 }
 
-func NewMqttFactory(sp messaging.SecretDataProvider, log logger.LoggingClient, mode string, path string, skipVerify bool) MqttFactory {
+func NewMqttFactory(sp messaging.SecretDataProvider, log logger.LoggingClient, mode string, secretName string, skipVerify bool) MqttFactory {
 	return MqttFactory{
 		sp:             sp,
 		logger:         log,
 		authMode:       mode,
-		secretPath:     path,
+		secretName:     secretName,
 		skipCertVerify: skipVerify,
 	}
 }
@@ -53,13 +54,13 @@ func (factory MqttFactory) Create(opts *mqtt.ClientOptions) (mqtt.Client, error)
 	factory.opts = opts
 
 	//get the secrets from the secret provider and populate the struct
-	secretData, err := messaging.GetSecretData(factory.authMode, factory.secretPath, factory.sp)
+	secretData, err := messaging.GetSecretData(factory.authMode, factory.secretName, factory.sp)
 	if err != nil {
 		return nil, err
 	}
 	//ensure that the authmode selected has the required secret values
 	if secretData != nil {
-		err = messaging.ValidateSecretData(factory.authMode, factory.secretPath, secretData)
+		err = messaging.ValidateSecretData(factory.authMode, factory.secretName, secretData)
 		if err != nil {
 			return nil, err
 		}

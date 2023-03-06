@@ -238,7 +238,7 @@ func createMqttClient(sp messaging.SecretDataProvider, lc logger.LoggingClient, 
 		sp,
 		lc,
 		config.AuthMode,
-		config.SecretPath,
+		config.SecretName,
 		config.SkipCertVerify,
 	)
 	mqttClient, err := mqttFactory.Create(opts)

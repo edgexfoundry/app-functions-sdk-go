@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/etm"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
@@ -29,17 +30,17 @@ import (
 )
 
 type AESProtection struct {
-	SecretPath    string
-	SecretName    string
-	EncryptionKey string
+	SecretName     string
+	SecretValueKey string
+	EncryptionKey  string
 }
 
 // NewAESProtection creates, initializes and returns a new instance of AESProtection configured
 // to retrieve the encryption key from the Secret Store
-func NewAESProtection(secretPath string, secretName string) *AESProtection {
+func NewAESProtection(secretName string, secretValueKey string) *AESProtection {
 	return &AESProtection{
-		SecretPath: secretPath,
-		SecretName: secretName,
+		SecretName:     secretName,
+		SecretValueKey: secretValueKey,
 	}
 }
 
@@ -97,35 +98,35 @@ func (protection *AESProtection) Encrypt(ctx interfaces.AppFunctionContext, data
 
 func (protection *AESProtection) getKey(ctx interfaces.AppFunctionContext) ([]byte, error) {
 	// If using Secret Store for the encryption key
-	if len(protection.SecretPath) != 0 && len(protection.SecretName) != 0 {
+	if len(protection.SecretName) != 0 && len(protection.SecretValueKey) != 0 {
 		// Note secrets are cached so this call doesn't result in unneeded calls to SecretStore Service and
 		// the cache is invalidated when StoreSecrets is used.
-		secretData, err := ctx.SecretProvider().GetSecret(protection.SecretPath, protection.SecretName)
+		secretData, err := ctx.SecretProvider().GetSecret(protection.SecretName, protection.SecretValueKey)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"unable to retieve encryption key at secret path=%s and name=%s in pipeline '%s'",
-				protection.SecretPath,
+				"unable to retieve encryption key at SecretName=%s and SecretValueKey=%s in pipeline '%s'",
 				protection.SecretName,
+				protection.SecretValueKey,
 				ctx.PipelineId())
 		}
 
-		key, ok := secretData[protection.SecretName]
+		key, ok := secretData[protection.SecretValueKey]
 		if !ok {
 			return nil, fmt.Errorf(
 				"unable find encryption key in secret data for name=%s in pipeline '%s'",
-				protection.SecretName,
+				protection.SecretValueKey,
 				ctx.PipelineId())
 		}
 
 		ctx.LoggingClient().Debugf(
-			"Using encryption key from Secret Store at path=%s & name=%s in pipeline '%s'",
-			protection.SecretPath,
+			"Using encryption key from Secret Store at SecretName=%s & SecretValueKey=%s in pipeline '%s'",
 			protection.SecretName,
+			protection.SecretValueKey,
 			ctx.PipelineId())
 
 		return hex.DecodeString(key)
 	}
-	return nil, fmt.Errorf("No key configured")
+	return nil, fmt.Errorf("no key configured")
 }
 
 func clearKey(key []byte) {

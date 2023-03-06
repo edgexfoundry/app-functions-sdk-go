@@ -58,8 +58,8 @@ const (
 	BatchThreshold      = "batchthreshold"
 	TimeInterval        = "timeinterval"
 	HeaderName          = "headername"
-	SecretPath          = "secretpath"
 	SecretName          = "secretname"
+	SecretValueKey      = "secretvaluekey"
 	BrokerAddress       = "brokeraddress"
 	ClientID            = "clientid"
 	KeepAlive           = "keepalive"
@@ -292,35 +292,35 @@ func (app *Configurable) Encrypt(parameters map[string]string) interfaces.AppFun
 		return nil
 	}
 
-	secretPath := parameters[SecretPath]
 	secretName := parameters[SecretName]
+	secretValueKey := parameters[SecretValueKey]
 	encryptionKey := parameters[EncryptionKey]
 
-	// SecretPath & SecretName are optional if EncryptionKey specified
-	// EncryptionKey is optional if SecretPath & SecretName are specified
+	// SecretName & SecretValueKey are optional if EncryptionKey specified
+	// EncryptionKey is optional if SecretName & SecretValueKey are specified
 
-	// If EncryptionKey not specified, then SecretPath & SecretName must be specified
-	if len(encryptionKey) == 0 && (len(secretPath) == 0 || len(secretName) == 0) {
-		app.lc.Errorf("Could not find '%s' or '%s' and '%s' in configuration", EncryptionKey, SecretPath, SecretName)
+	// If EncryptionKey not specified, then SecretName & SecretValueKey must be specified
+	if len(encryptionKey) == 0 && (len(secretName) == 0 || len(secretValueKey) == 0) {
+		app.lc.Errorf("Could not find '%s' or '%s' and '%s' in configuration", EncryptionKey, SecretName, SecretValueKey)
 		return nil
 	}
 
-	// SecretPath & SecretName both must be specified it one of them is.
-	if (len(secretPath) != 0 && len(secretName) == 0) || (len(secretPath) == 0 && len(secretName) != 0) {
-		app.lc.Errorf("'%s' and '%s' both must be set in configuration", SecretPath, SecretName)
+	// SecretName & SecretValueKey both must be specified it one of them is.
+	if (len(secretName) != 0 && len(secretValueKey) == 0) || (len(secretName) == 0 && len(secretValueKey) != 0) {
+		app.lc.Errorf("'%s' and '%s' both must be set in configuration", SecretName, SecretValueKey)
 		return nil
 	}
 
 	switch strings.ToLower(algorithm) {
 	case EncryptAES256:
-		if len(secretPath) > 0 && len(secretName) > 0 {
+		if len(secretName) > 0 && len(secretValueKey) > 0 {
 			protector := transforms.AESProtection{
-				SecretPath: secretPath,
-				SecretName: secretName,
+				SecretName:     secretName,
+				SecretValueKey: secretValueKey,
 			}
 			return protector.Encrypt
 		}
-		app.lc.Error("secretPath / secretKey are required for AES 256 encryption")
+		app.lc.Error("secretName / secretValueKey are required for AES 256 encryption")
 		return nil
 	default:
 		app.lc.Errorf(
@@ -380,9 +380,9 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 		return nil
 	}
 
-	secretPath, ok := parameters[SecretPath]
+	secretName, ok := parameters[SecretName]
 	if !ok {
-		app.lc.Error("Could not find " + SecretPath)
+		app.lc.Error("Could not find " + SecretName)
 		return nil
 	}
 	authMode, ok := parameters[AuthMode]
@@ -441,7 +441,7 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 		QoS:            byte(qos),
 		BrokerAddress:  brokerAddress,
 		ClientId:       clientID,
-		SecretPath:     secretPath,
+		SecretName:     secretName,
 		Topic:          topic,
 		AuthMode:       authMode,
 	}
@@ -734,20 +734,20 @@ func (app *Configurable) processHttpExportParameters(
 	result.URL = strings.TrimSpace(result.URL)
 	result.MimeType = strings.TrimSpace(result.MimeType)
 	result.HTTPHeaderName = strings.TrimSpace(parameters[HeaderName])
-	result.SecretPath = strings.TrimSpace(parameters[SecretPath])
 	result.SecretName = strings.TrimSpace(parameters[SecretName])
+	result.SecretValueKey = strings.TrimSpace(parameters[SecretValueKey])
 
-	if len(result.HTTPHeaderName) == 0 && len(result.SecretPath) != 0 && len(result.SecretName) != 0 {
+	if len(result.HTTPHeaderName) == 0 && len(result.SecretName) != 0 && len(result.SecretValueKey) != 0 {
 		return result, "",
-			fmt.Errorf("HTTPExport missing %s since %s & %s are specified", HeaderName, SecretPath, SecretName)
+			fmt.Errorf("HTTPExport missing %s since %s & %s are specified", HeaderName, SecretName, SecretValueKey)
 	}
-	if len(result.SecretPath) == 0 && len(result.HTTPHeaderName) != 0 && len(result.SecretName) != 0 {
+	if len(result.SecretName) == 0 && len(result.HTTPHeaderName) != 0 && len(result.SecretValueKey) != 0 {
 		return result, "",
-			fmt.Errorf("HTTPExport missing %s since %s & %s are specified", SecretPath, HeaderName, SecretName)
+			fmt.Errorf("HTTPExport missing %s since %s & %s are specified", SecretName, HeaderName, SecretValueKey)
 	}
-	if len(result.SecretName) == 0 && len(result.SecretPath) != 0 && len(result.HTTPHeaderName) != 0 {
+	if len(result.SecretValueKey) == 0 && len(result.SecretName) != 0 && len(result.HTTPHeaderName) != 0 {
 		return result, "",
-			fmt.Errorf("HTTPExport missing %s since %s & %s are specified", SecretName, SecretPath, HeaderName)
+			fmt.Errorf("HTTPExport missing %s since %s & %s are specified", SecretValueKey, SecretName, HeaderName)
 	}
 
 	return result, method, nil

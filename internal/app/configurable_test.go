@@ -166,8 +166,8 @@ func TestHTTPExport(t *testing.T) {
 	testBadReturnInputData := "bogus"
 
 	testHeaderName := "My-Header"
-	testSecretPath := "/path"
-	testSecretName := "header"
+	testSecretName := "my-secret"
+	testSecretValueKey := "header"
 
 	tests := []struct {
 		Name                string
@@ -178,32 +178,32 @@ func TestHTTPExport(t *testing.T) {
 		ContinueOnSendError *string
 		ReturnInputData     *string
 		HeaderName          *string
-		SecretPath          *string
 		SecretName          *string
+		SecretValueKey      *string
 		ExpectValid         bool
 	}{
 		{"Valid Post - ony required params", ExportMethodPost, &testUrl, &testMimeType, nil, nil, nil, nil, nil, nil, true},
 		{"Valid Post - w/o secrets", http.MethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, nil, nil, true},
-		{"Valid Post - with secrets", ExportMethodPost, &testUrl, &testMimeType, nil, nil, nil, &testHeaderName, &testSecretPath, &testSecretName, true},
-		{"Valid Post - with all params", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, &testContinueOnSendError, &testReturnInputData, &testHeaderName, &testSecretPath, &testSecretName, true},
+		{"Valid Post - with secrets", ExportMethodPost, &testUrl, &testMimeType, nil, nil, nil, &testHeaderName, &testSecretName, &testSecretValueKey, true},
+		{"Valid Post - with all params", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, &testContinueOnSendError, &testReturnInputData, &testHeaderName, &testSecretName, &testSecretValueKey, true},
 		{"Invalid Post - no url", ExportMethodPost, nil, &testMimeType, nil, nil, nil, nil, nil, nil, false},
 		{"Invalid Post - no mimeType", ExportMethodPost, &testUrl, nil, nil, nil, nil, nil, nil, nil, false},
 		{"Invalid Post - bad persistOnError", ExportMethodPost, &testUrl, &testMimeType, &testBadPersistOnError, nil, nil, nil, nil, nil, false},
-		{"Invalid Post - missing headerName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, &testSecretPath, &testSecretName, false},
-		{"Invalid Post - missing secretPath", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, nil, &testSecretName, false},
-		{"Invalid Post - missing secretName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretPath, nil, false},
+		{"Invalid Post - missing headerName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, &testSecretName, &testSecretValueKey, false},
+		{"Invalid Post - missing secretName", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, nil, &testSecretValueKey, false},
+		{"Invalid Post - missing secretValueKey", ExportMethodPost, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, nil, false},
 		{"Valid Put - ony required params", ExportMethodPut, &testUrl, &testMimeType, nil, nil, nil, nil, nil, nil, true},
 		{"Valid Put - w/o secrets", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, nil, nil, true},
-		{"Valid Put - with secrets", http.MethodPut, &testUrl, &testMimeType, nil, nil, nil, &testHeaderName, &testSecretPath, &testSecretName, true},
-		{"Valid Put - with all params", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretPath, &testSecretName, true},
+		{"Valid Put - with secrets", http.MethodPut, &testUrl, &testMimeType, nil, nil, nil, &testHeaderName, &testSecretName, &testSecretValueKey, true},
+		{"Valid Put - with all params", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, &testSecretValueKey, true},
 		{"Invalid Put - no url", ExportMethodPut, nil, &testMimeType, nil, nil, nil, nil, nil, nil, false},
 		{"Invalid Put - no mimeType", ExportMethodPut, &testUrl, nil, nil, nil, nil, nil, nil, nil, false},
 		{"Invalid Put - bad persistOnError", ExportMethodPut, &testUrl, &testMimeType, &testBadPersistOnError, nil, nil, nil, nil, nil, false},
 		{"Invalid Put - bad continueOnSendError", ExportMethodPut, &testUrl, &testMimeType, nil, &testBadContinueOnSendError, nil, nil, nil, nil, false},
 		{"Invalid Put - bad returnInputData", ExportMethodPut, &testUrl, &testMimeType, nil, nil, &testBadReturnInputData, nil, nil, nil, false},
-		{"Invalid Put - missing headerName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, &testSecretPath, &testSecretName, false},
-		{"Invalid Put - missing secretPath", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, nil, &testSecretName, false},
-		{"Invalid Put - missing secretName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretPath, nil, false},
+		{"Invalid Put - missing headerName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, nil, &testSecretName, &testSecretValueKey, false},
+		{"Invalid Put - missing secretName", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, nil, &testSecretValueKey, false},
+		{"Invalid Put - missing secretValueKey", ExportMethodPut, &testUrl, &testMimeType, &testPersistOnError, nil, nil, &testHeaderName, &testSecretName, nil, false},
 	}
 
 	for _, test := range tests {
@@ -235,12 +235,12 @@ func TestHTTPExport(t *testing.T) {
 				params[HeaderName] = *test.HeaderName
 			}
 
-			if test.SecretPath != nil {
-				params[SecretPath] = *test.SecretPath
-			}
-
 			if test.SecretName != nil {
 				params[SecretName] = *test.SecretName
+			}
+
+			if test.SecretValueKey != nil {
+				params[SecretValueKey] = *test.SecretValueKey
 			}
 
 			transform := configurable.HTTPExport(params)
@@ -327,7 +327,7 @@ func TestMQTTExport(t *testing.T) {
 	params := make(map[string]string)
 	params[BrokerAddress] = "mqtt://broker:8883"
 	params[Topic] = "topic"
-	params[SecretPath] = "/path"
+	params[SecretName] = "my-secret"
 	params[ClientID] = "clientid"
 	params[Qos] = "0"
 	params[Retain] = "true"
@@ -375,11 +375,11 @@ func TestEncrypt(t *testing.T) {
 	configurable := Configurable{lc: lc}
 
 	tests := []struct {
-		Name       string
-		Algorithm  string
-		SecretPath string
-		SecretName string
-		ExpectNil  bool
+		Name           string
+		Algorithm      string
+		SecretName     string
+		SecretValueKey string
+		ExpectNil      bool
 	}{
 		{"AES256 - Bad - No secrets ", EncryptAES256, "", "", true},
 		{"AES256 - good - secrets", EncryptAES256, uuid.NewString(), uuid.NewString(), false},
@@ -391,11 +391,11 @@ func TestEncrypt(t *testing.T) {
 			if len(testCase.Algorithm) > 0 {
 				params[Algorithm] = testCase.Algorithm
 			}
-			if len(testCase.SecretPath) > 0 {
-				params[SecretPath] = testCase.SecretPath
-			}
 			if len(testCase.SecretName) > 0 {
 				params[SecretName] = testCase.SecretName
+			}
+			if len(testCase.SecretValueKey) > 0 {
+				params[SecretValueKey] = testCase.SecretValueKey
 			}
 
 			transform := configurable.Encrypt(params)

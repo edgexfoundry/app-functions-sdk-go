@@ -51,8 +51,8 @@ type MQTTSecretConfig struct {
 	BrokerAddress string
 	// ClientId to connect with the broker with.
 	ClientId string
-	// The name of the path in secret provider to retrieve your secrets
-	SecretPath string
+	// The name of the secret in secret provider to retrieve your secrets
+	SecretName string
 	// AutoReconnect indicated whether or not to retry connection if disconnected
 	AutoReconnect bool
 	// KeepAlive is the interval duration between client sending keepalive ping to broker
@@ -68,7 +68,7 @@ type MQTTSecretConfig struct {
 	// SkipCertVerify
 	SkipCertVerify bool
 	// AuthMode indicates what to use when connecting to the broker. Options are "none", "cacert" , "usernamepassword", "clientcert".
-	// If a CA Cert exists in the SecretPath then it will be used for all modes except "none".
+	// If a CA Cert exists in the SecretName then it will be used for all modes except "none".
 	AuthMode string
 }
 
@@ -112,7 +112,7 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 	}
 
 	config := sender.mqttConfig
-	mqttFactory := secure.NewMqttFactory(ctx.SecretProvider(), ctx.LoggingClient(), config.AuthMode, config.SecretPath, config.SkipCertVerify)
+	mqttFactory := secure.NewMqttFactory(ctx.SecretProvider(), ctx.LoggingClient(), config.AuthMode, config.SecretName, config.SkipCertVerify)
 
 	if len(sender.mqttConfig.KeepAlive) > 0 {
 		keepAlive, err := time.ParseDuration(sender.mqttConfig.KeepAlive)

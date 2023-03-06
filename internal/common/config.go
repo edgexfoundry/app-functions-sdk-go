@@ -105,10 +105,10 @@ type ExternalMqttConfig struct {
 	Retain bool
 	// SkipCertVerify indicates if the certificate verification should be skipped
 	SkipCertVerify bool
-	// SecretPath is the name of the path in secret provider to retrieve your secrets
-	SecretPath string
+	// SecretName is the name of the secret in secret provider to retrieve your secrets
+	SecretName string
 	// AuthMode indicates what to use when connecting to the broker. Options are "none", "cacert" , "usernamepassword", "clientcert".
-	// If a CA Cert exists in the SecretPath then it will be used for all modes except "none".
+	// If a CA Cert exists in the secret data for the SecretName then it will be used for all modes except "none".
 	AuthMode string
 	// RetryDuration indicates how long (in seconds) to wait timing out on the MQTT client creation
 	RetryDuration int
