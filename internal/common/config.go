@@ -174,6 +174,11 @@ func (c *ConfigurationStruct) EmptyWritablePtr() interface{} {
 	return &WritableInfo{}
 }
 
+// GetWritablePtr returns pointer to the writable section
+func (c *ConfigurationStruct) GetWritablePtr() any {
+	return &c.Writable
+}
+
 // UpdateWritableFromRaw updates the Writeable section of configuration from raw update received from Configuration Provider.
 func (c *ConfigurationStruct) UpdateWritableFromRaw(rawWritable interface{}) bool {
 	writable, ok := rawWritable.(*WritableInfo)
