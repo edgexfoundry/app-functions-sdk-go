@@ -1,6 +1,6 @@
 module github.com/edgexfoundry/app-functions-sdk-go/v3
 
-go 1.18
+go 1.20
 
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.7
