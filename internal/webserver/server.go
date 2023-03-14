@@ -133,6 +133,12 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 	}
 	addr := fmt.Sprintf("%s:%d", bindAddress, config.Service.Port)
 
+	svr := &http.Server{
+		Addr:              addr,
+		Handler:           http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"),
+		ReadHeaderTimeout: serviceTimeout,
+	}
+
 	if config.HttpServer.Protocol == "https" {
 		provider := bootstrapContainer.SecretProviderFrom(webserver.dic.Get)
 		httpsSecretData, err := provider.GetSecret(config.HttpServer.SecretName)
@@ -164,11 +170,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			return
 		}
 
-		svr := &http.Server{
-			Addr:      addr,
-			Handler:   http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"),
-			TLSConfig: tlsConfig,
-		}
+		svr.TLSConfig = tlsConfig
 
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
 
@@ -177,7 +179,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		errChannel <- svr.ListenAndServeTLS("", "")
 	} else {
 		lc.Infof("Starting HTTP Web Server on address %s", addr)
-		errChannel <- http.ListenAndServe(addr, http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"))
+		errChannel <- svr.ListenAndServe()
 	}
 }
 
