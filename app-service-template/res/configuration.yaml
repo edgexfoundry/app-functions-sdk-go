@@ -1,0 +1,83 @@
+# TODO: Go here for detailed information on Application Service configuration:
+#       https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/
+Writable:
+  LogLevel: "INFO"
+
+  InsecureSecrets:
+    # TODO: Remove if not using HTTPS Webserver
+    HTTPS:
+      path: "https"
+      Secrets:
+        cert: ""
+        key: ""
+
+  Telemetry:
+    Metrics: # All service's metric private configuration metrics must be listed here.
+      # TODO: Remove sample custom metric and implement meaningful custom metrics if any needed.
+      # Custom App Service Metrics
+      EventsConvertedToXML: true
+
+Service:
+  Host: localhost
+  # TODO: set this port appropriately,
+  #       App service use port assignments 597xx with lower range 00-39 reserved for
+  #       app-service-configurable profiles/instances, Rules Engine and examples
+  Port: 59740
+  StartupMsg: "app-new-service Application Service has started"
+
+# TODO: Remove section if not using HTTPS Webserver. Default protocol is HTTP if section is empty
+HttpServer:
+  Protocol: "http"
+  SecretName: "https"
+  HTTPSCertName: "cert"
+  HTTPSKeyName: "key"
+
+Clients:
+  core-data:
+    Protocol: "http"
+    Host: "localhost"
+    Port: 59880
+
+  core-command:
+    #  Protocol: "http"
+    #  Host: "localhost"
+    #  Port: 59882
+    # Choose to use new messaging based communication for Command Client.
+    # Only valid if MessageBus Trigger is used
+    # If prefer REST, remove below and uncomment above
+    UseMessageBus: true
+
+  support-notifications:
+    Protocol: "http"
+    Host: "localhost"
+    Port: 59860
+
+MessageBus:
+  Disabled: false  # TODO: set to true if not using edgex-messagebus Trigger below and don't want Metrics or Commands via MessageBus
+  Optional:
+    # Default MQTT Specific options that need to be here to enable environment variable overrides of them
+    ClientId: "app-new-service"
+
+Trigger:
+  # Note that the MessageBus connection above is used by edgex-messagebus trigger which is the default set in common config
+  # Default value for SubscribeTopics is aslo set in common config
+  PublishTopic: "event-xml"  # Base topic is prepened to this topic when using edgex-messagebus
+
+# TODO: Add custom settings needed by your app service or remove if you don't have any settings.
+# This can be any Key/Value pair you need.
+# For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#application-settings
+# Example that works with devices from the Virtual Device service:
+ApplicationSettings:
+  DeviceNames: "Simple-Device01, Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device, sample-numeric"
+
+# TODO: Replace this section with your actual structured custom configuration section
+#       or remove if you don't have a need for structured custom configuration
+# This can be any structure you need, but it can not contain slices. Use a maps instead of slices.
+# For more details see: https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
+AppCustom:
+  ResourceNames: "Boolean, Int32, Uint32, Float32, Binary, SwitchButton"
+  SomeValue: 123
+  SomeService:
+    Host: "localhost"
+    Port: 9080
+    Protocol: "http"
