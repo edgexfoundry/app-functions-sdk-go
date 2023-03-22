@@ -30,9 +30,6 @@ https://github.com/edgexfoundry/go-mod-bootstrap/blob/main/LICENSE
 edgexfoundry/go-mod-secrets (Apache 2.0) https://github.com/edgexfoundry/go-mod-configuration/v3
 https://github.com/edgexfoundry/go-mod-configuration/blob/main/LICENSE
 
-BurntSushi/toml (MIT) https://github.com/BurntSushi/toml
-https://github.com/BurntSushi/toml/blob/master/COPYING
-
 go-logfmt/logfmt (MIT) https://github.com/go-logfmt/logfmt
 https://github.com/go-logfmt/logfmt/blob/master/LICENSE
 
@@ -83,9 +80,6 @@ https://github.com/mitchellh/reflectwalk/blob/master/LICENSE
 
 mitchellh/go-homedir (MIT) https://github.com/mitchellh/go-homedir
 https://github.com/mitchellh/go-homedir/blob/master/LICENSE
-
-pelletier/go-toml (MIT) https://github.com/pelletier/go-toml
-https://github.com/pelletier/go-toml/blob/master/LICENSE
 
 pkg/errors (BSD-2) https://github.com/pkg/errors
 https://github.com/pkg/errors/blob/master/LICENSE
