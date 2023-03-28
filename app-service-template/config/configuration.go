@@ -17,7 +17,7 @@
 
 package config
 
-// This file contains example of custom configuration that can be loaded from the service's configuration.toml
+// This file contains example of custom configuration that can be loaded from the service's configuration.yaml
 // and/or the Configuration Provider, aka Consul (if enabled).
 // For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 // TODO: Update this configuration as needed for you service's needs and remove this comment
@@ -30,7 +30,7 @@ import (
 
 // TODO: Define your structured custom configuration types. Must be wrapped with an outer struct with
 //
-//	single element that matches the top level custom configuration element in your configuration.toml file,
+//	single element that matches the top level custom configuration element in your configuration.yaml file,
 //	'AppCustom' in this example. Replace this example with your configuration structure or
 //	remove this file if not using structured custom configuration.
 type ServiceConfig struct {
@@ -38,7 +38,7 @@ type ServiceConfig struct {
 }
 
 // AppCustomConfig is example of service's custom structured configuration that is specified in the service's
-// configuration.toml file and Configuration Provider (aka Consul), if enabled.
+// configuration.yaml file and Configuration Provider (aka Consul), if enabled.
 type AppCustomConfig struct {
 	ResourceNames string
 	SomeValue     int

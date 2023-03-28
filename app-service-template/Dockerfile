@@ -47,7 +47,7 @@ COPY --from=builder /app/LICENSE /LICENSE
 COPY --from=builder /app/res/ /res/
 COPY --from=builder /app/app-new-service /app-new-service
 
-# TODO: set this port appropriatly as it is in the configuation.toml
+# TODO: set this port appropriatly as it is in the configuation.yaml
 EXPOSE 59740
 
 ENTRYPOINT ["/app-new-service"]

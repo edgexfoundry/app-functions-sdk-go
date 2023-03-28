@@ -174,7 +174,7 @@ func (s *Sample) ConvertEventToXML(ctx interfaces.AppFunctionContext, data inter
 
 	// Example of DEBUG message which by default you don't want to be logged.
 	//     To see debug log messages, Set WRITABLE_LOGLEVEL=DEBUG environment variable or
-	//     change LogLevel in configuration.toml before running app service.
+	//     change LogLevel in configuration.yaml before running app service.
 	lc.Debugf("Event converted to XML in pipeline '%s': %s", ctx.PipelineId(), xml)
 
 	// TODO: Remove sample metric and implement meaningful metrics if any needed.
