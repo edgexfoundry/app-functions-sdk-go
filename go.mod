@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.2.7
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.58
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.0.0-dev.60
 	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.0.0-dev.34
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.0.0-dev.19
 	github.com/edgexfoundry/go-mod-registry/v3 v3.0.0-dev.7
