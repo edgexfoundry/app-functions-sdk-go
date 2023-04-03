@@ -55,6 +55,12 @@ func (compression *Compression) CompressWithGZIP(ctx interfaces.AppFunctionConte
 	var buf bytes.Buffer
 
 	gzipWriter := gzip.NewWriter(&buf)
+	defer func() {
+		defer func() {
+			// make sure writer is closed if error occurred before close is called below
+			_ = gzipWriter.Close()
+		}()
+	}()
 
 	_, err = gzipWriter.Write(rawData)
 	if err != nil {
@@ -87,6 +93,12 @@ func (compression *Compression) CompressWithZLIB(ctx interfaces.AppFunctionConte
 	var buf bytes.Buffer
 
 	zlibWriter := zlib.NewWriter(&buf)
+	defer func() {
+		defer func() {
+			// make sure writer is closed if error occurred before close is called below
+			_ = zlibWriter.Close()
+		}()
+	}()
 
 	_, err = zlibWriter.Write(byteData)
 	if err != nil {
