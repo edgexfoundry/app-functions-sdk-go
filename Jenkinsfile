@@ -17,6 +17,7 @@
 edgeXBuildGoApp (
     project: 'app-functions-sdk-go',
     semver: true,
+    goVersion: '1.16',
     testScript: 'make test',
     buildImage: false,
     publishSwaggerDocs: true,
