@@ -11,6 +11,12 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/jakarta/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/jakarta/CHANGELOG.md) (indirect dependency)
 
+## [v2.1.2] Jakarta - 2023-04-12 (Only compatible with the 2.x releases)
+
+### Bug Fixes 🐛
+
+- Make Compression functions thread safe ([#12458a4](https://github.com/edgexfoundry/app-functions-sdk-go/pull/1376/commits/12458a4))
+
 ## [v2.1.1] Jakarta - 2022-06-08 (Only compatible with the 2.x releases)
 
 ### Bug Fixes 🐛
