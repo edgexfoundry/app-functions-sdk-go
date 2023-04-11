@@ -90,7 +90,7 @@ func (vv *VersionValidator) BootstrapHandler(
 		return false
 	}
 
-	jwtSecretProvider := secret.NewJWTSecretProvider(bootstrapContainer.SecretProviderFrom(dic.Get))
+	jwtSecretProvider := secret.NewJWTSecretProvider(bootstrapContainer.SecretProviderExtFrom(dic.Get))
 	client := clients.NewCommonClient(val.Url(), jwtSecretProvider)
 
 	var response commonDtos.VersionResponse
