@@ -33,8 +33,6 @@ import (
 )
 
 type Compression struct {
-	gzipWriter *gzip.Writer
-	zlibWriter *zlib.Writer
 }
 
 // NewCompression creates, initializes and returns a new instance of Compression
@@ -56,18 +54,18 @@ func (compression *Compression) CompressWithGZIP(ctx interfaces.AppFunctionConte
 	}
 	var buf bytes.Buffer
 
-	if compression.gzipWriter == nil {
-		compression.gzipWriter = gzip.NewWriter(&buf)
-	} else {
-		compression.gzipWriter.Reset(&buf)
-	}
+	gzipWriter := gzip.NewWriter(&buf)
+	defer func() {
+		// make sure writer is closed if error occurred before close is called below
+		_ = gzipWriter.Close()
+	}()
 
-	_, err = compression.gzipWriter.Write(rawData)
+	_, err = gzipWriter.Write(rawData)
 	if err != nil {
 		return false, fmt.Errorf("unable to write GZIP data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
 
-	err = compression.gzipWriter.Close()
+	err = gzipWriter.Close()
 	if err != nil {
 		return false, fmt.Errorf("unable to close GZIP data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
@@ -93,18 +91,18 @@ func (compression *Compression) CompressWithZLIB(ctx interfaces.AppFunctionConte
 	}
 	var buf bytes.Buffer
 
-	if compression.zlibWriter == nil {
-		compression.zlibWriter = zlib.NewWriter(&buf)
-	} else {
-		compression.zlibWriter.Reset(&buf)
-	}
+	zlibWriter := zlib.NewWriter(&buf)
+	defer func() {
+		// make sure writer is closed if error occurred before close is called below
+		_ = zlibWriter.Close()
+	}()
 
-	_, err = compression.zlibWriter.Write(byteData)
+	_, err = zlibWriter.Write(byteData)
 	if err != nil {
 		return false, fmt.Errorf("unable to write ZLIB data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
 
-	err = compression.zlibWriter.Close()
+	err = zlibWriter.Close()
 	if err != nil {
 		return false, fmt.Errorf("unable to close ZLIB data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
