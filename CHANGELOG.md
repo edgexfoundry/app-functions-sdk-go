@@ -11,7 +11,13 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
-## [v2.2.0] Levski - 2022-11-09 (Only compatible with the 2.x releases)
+## [v2.3.1] Levski - 2023-04-12 (Only compatible with the 2.x releases)
+
+### Bug Fixes 🐛
+
+- Make Compression functions thread safe ([#d5509e3](https://github.com/edgexfoundry/app-functions-sdk-go/pull/1381/commits/d5509e3))
+
+## [v2.3.0] Levski - 2022-11-09 (Only compatible with the 2.x releases)
 
 ### Features ✨
 
