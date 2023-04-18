@@ -22,7 +22,9 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/base64"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"io"
+	"sync"
 	"testing"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
@@ -110,4 +112,40 @@ func BenchmarkZlib(b *testing.B) {
 	}
 	b.SetBytes(int64(len(enc.([]byte))))
 	result = enc.([]byte)
+}
+
+func runCompression(wg *sync.WaitGroup, compress interfaces.AppFunction) {
+	wg.Add(1)
+	defer wg.Done()
+	compress(ctx, []byte(clearString))
+}
+
+func BenchmarkGzipWith1000Goroutines(b *testing.B) {
+	comp := NewCompression()
+	wg := &sync.WaitGroup{}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for n := 0; n < 1000; n++ {
+			go runCompression(wg, comp.CompressWithGZIP)
+		}
+		wg.Wait()
+	}
+	b.StopTimer()
+}
+
+func BenchmarkZlibWith1000Goroutines(b *testing.B) {
+	comp := NewCompression()
+	wg := &sync.WaitGroup{}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for n := 0; n < 1000; n++ {
+			go runCompression(wg, comp.CompressWithZLIB)
+		}
+		wg.Wait()
+	}
+	b.StopTimer()
 }
