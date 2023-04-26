@@ -41,8 +41,8 @@ import (
 func TestValidateVersionMatch(t *testing.T) {
 	startupTimer := startup.NewStartUpTimer("unit-test")
 
-	clientConfigs := make(map[string]config.ClientInfo)
-	clientConfigs[common.CoreMetaDataServiceKey] = config.ClientInfo{
+	clientConfigs := make(map[string]*config.ClientInfo)
+	clientConfigs[common.CoreMetaDataServiceKey] = &config.ClientInfo{
 		Protocol: "http",
 		Host:     "localhost",
 		Port:     0, // Will be replaced by local test webserver's port
