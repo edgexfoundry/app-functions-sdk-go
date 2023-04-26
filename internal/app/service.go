@@ -518,7 +518,7 @@ func (svc *Service) Initialize() error {
 		bootstrapConfig.ServiceTypeApp,
 		[]bootstrapInterfaces.BootstrapHandler{
 			bootstrapHandlers.MessagingBootstrapHandler,
-			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
+			bootstrapHandlers.NewClientsBootstrap(svc.flags.InDevMode()).BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,
 			bootstrapHandlers.NewServiceMetrics(svc.serviceKey).BootstrapHandler,
 		},

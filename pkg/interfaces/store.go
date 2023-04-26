@@ -15,11 +15,10 @@
 // interfaces establishes the contract required for any implementation of the export store functionality in a database provider.
 package interfaces
 
+import bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
+
 type DatabaseInfo struct {
-	Type    string
-	Host    string
-	Port    int
-	Timeout string
+	bootstrapConfig.Database
 
 	// TODO: refactor specifics
 	// Redis specific configuration items

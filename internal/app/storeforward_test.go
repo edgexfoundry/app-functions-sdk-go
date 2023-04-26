@@ -16,6 +16,9 @@
 package app
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/redis"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -23,8 +26,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
 )
 
 func Test_service_RegisterCustomStoreFactory_Inbuilt_Name(t *testing.T) {
@@ -63,7 +64,7 @@ func Test_service_NewStoreClient_Invalid(t *testing.T) {
 func Test_service_NewStoreClient_Redis(t *testing.T) {
 	sut := &Service{customStoreClientFactories: map[string]func(db interfaces.DatabaseInfo, cred config.Credentials) (interfaces.StoreClient, error){}}
 
-	result, err := sut.createStoreClient(interfaces.DatabaseInfo{Type: db.RedisDB, Timeout: "5s"}, config.Credentials{})
+	result, err := sut.createStoreClient(interfaces.DatabaseInfo{Database: config.Database{Type: db.RedisDB, Timeout: "5s"}}, config.Credentials{})
 
 	assert.NoError(t, err)
 	c, ok := result.(*redis.Client)
@@ -86,7 +87,7 @@ func Test_service_NewStoreClient_Custom(t *testing.T) {
 
 	require.NoError(t, err)
 
-	result, err := sut.createStoreClient(interfaces.DatabaseInfo{Type: name}, config.Credentials{})
+	result, err := sut.createStoreClient(interfaces.DatabaseInfo{Database: config.Database{Type: name}}, config.Credentials{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, x, result)

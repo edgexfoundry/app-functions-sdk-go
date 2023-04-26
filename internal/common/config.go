@@ -17,9 +17,8 @@
 package common
 
 import (
-	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 )
 
 // WritableInfo is used to hold configuration information that is considered "live" or can be changed on the fly without a restart of the service.
@@ -54,7 +53,7 @@ type ConfigurationStruct struct {
 	// ApplicationSettings contains the custom configuration for the Application service
 	ApplicationSettings map[string]string
 	// Clients contains the configuration for connecting to the dependent Edgex clients
-	Clients map[string]bootstrapConfig.ClientInfo
+	Clients bootstrapConfig.ClientsCollection
 	// Database contains the configuration for connection to the Database
 	Database interfaces.DatabaseInfo
 }
@@ -191,10 +190,11 @@ func (c *ConfigurationStruct) UpdateWritableFromRaw(rawWritable interface{}) boo
 // GetBootstrap returns the configuration elements required by the bootstrap.
 func (c *ConfigurationStruct) GetBootstrap() bootstrapConfig.BootstrapConfiguration {
 	return bootstrapConfig.BootstrapConfiguration{
-		Clients:    c.Clients,
-		Service:    c.transformToBootstrapServiceInfo(),
-		Registry:   c.Registry,
-		MessageBus: c.MessageBus,
+		Clients:    &c.Clients,
+		Service:    &c.Service,
+		Registry:   &c.Registry,
+		MessageBus: &c.MessageBus,
+		Database:   &c.Database.Database,
 	}
 }
 
@@ -216,9 +216,4 @@ func (c *ConfigurationStruct) GetInsecureSecrets() bootstrapConfig.InsecureSecre
 // GetTelemetryInfo returns the service's Telemetry settings.
 func (c *ConfigurationStruct) GetTelemetryInfo() *bootstrapConfig.TelemetryInfo {
 	return &c.Writable.Telemetry
-}
-
-// transformToBootstrapServiceInfo transforms the SDK's ServiceInfo to the bootstrap's version of ServiceInfo
-func (c *ConfigurationStruct) transformToBootstrapServiceInfo() bootstrapConfig.ServiceInfo {
-	return c.Service
 }
