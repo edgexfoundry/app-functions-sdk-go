@@ -23,6 +23,7 @@ import (
 	"compress/zlib"
 	"encoding/base64"
 	"fmt"
+	"sync"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 
@@ -33,6 +34,9 @@ import (
 )
 
 type Compression struct {
+	gzipWriter *gzip.Writer
+	zlibWriter *zlib.Writer
+	mutex      sync.Mutex
 }
 
 // NewCompression creates, initializes and returns a new instance of Compression
@@ -43,6 +47,10 @@ func NewCompression() *Compression {
 // CompressWithGZIP compresses data received as either a string,[]byte, or json.Marshaller using gzip algorithm
 // and returns a base64 encoded string as a []byte.
 func (compression *Compression) CompressWithGZIP(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+	// as gzip writer is not allowed to be used by multiple goroutines, to avoid data race, use mutex lock to ensure atomic gzip writer operation.
+	compression.mutex.Lock()
+	defer compression.mutex.Unlock()
+
 	if data == nil {
 		// We didn't receive a result
 		return false, fmt.Errorf("function CompressWithGZIP in pipeline '%s': No Data Received", ctx.PipelineId())
@@ -54,18 +62,18 @@ func (compression *Compression) CompressWithGZIP(ctx interfaces.AppFunctionConte
 	}
 	var buf bytes.Buffer
 
-	gzipWriter := gzip.NewWriter(&buf)
-	defer func() {
-		// make sure writer is closed if error occurred before close is called below
-		_ = gzipWriter.Close()
-	}()
+	if compression.gzipWriter == nil {
+		compression.gzipWriter = gzip.NewWriter(&buf)
+	} else {
+		compression.gzipWriter.Reset(&buf)
+	}
 
-	_, err = gzipWriter.Write(rawData)
+	_, err = compression.gzipWriter.Write(rawData)
 	if err != nil {
 		return false, fmt.Errorf("unable to write GZIP data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
 
-	err = gzipWriter.Close()
+	err = compression.gzipWriter.Close()
 	if err != nil {
 		return false, fmt.Errorf("unable to close GZIP data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
@@ -79,6 +87,10 @@ func (compression *Compression) CompressWithGZIP(ctx interfaces.AppFunctionConte
 // CompressWithZLIB compresses data received as either a string,[]byte, or json.Marshaller using zlib algorithm
 // and returns a base64 encoded string as a []byte.
 func (compression *Compression) CompressWithZLIB(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+	// as zlib writer is not allowed to be used by multiple goroutines, to avoid data race, use mutex lock to ensure atomic zlib writer operation.
+	compression.mutex.Lock()
+	defer compression.mutex.Unlock()
+
 	if data == nil {
 		// We didn't receive a result
 		return false, fmt.Errorf("function CompressWithZLIB in pipeline '%s': No Data Received", ctx.PipelineId())
@@ -90,18 +102,18 @@ func (compression *Compression) CompressWithZLIB(ctx interfaces.AppFunctionConte
 	}
 	var buf bytes.Buffer
 
-	zlibWriter := zlib.NewWriter(&buf)
-	defer func() {
-		// make sure writer is closed if error occurred before close is called below
-		_ = zlibWriter.Close()
-	}()
+	if compression.zlibWriter == nil {
+		compression.zlibWriter = zlib.NewWriter(&buf)
+	} else {
+		compression.zlibWriter.Reset(&buf)
+	}
 
-	_, err = zlibWriter.Write(byteData)
+	_, err = compression.zlibWriter.Write(byteData)
 	if err != nil {
 		return false, fmt.Errorf("unable to write ZLIB data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
 
-	err = zlibWriter.Close()
+	err = compression.zlibWriter.Close()
 	if err != nil {
 		return false, fmt.Errorf("unable to close ZLIB data in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 	}
