@@ -18,6 +18,10 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db"
@@ -28,19 +32,16 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/secret"
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"strings"
-	"sync"
-	"time"
 )
 
 // RegisterCustomStoreFactory allows registration of alternative storage implementation to back the Store&Forward loop
-func (svc *Service) RegisterCustomStoreFactory(name string, factory func(cfg interfaces.DatabaseInfo, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)) error {
+func (svc *Service) RegisterCustomStoreFactory(name string, factory func(cfg bootstrapConfig.Database, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)) error {
 	if name == db.RedisDB {
 		return fmt.Errorf("cannot register factory for reserved name %q", name)
 	}
 
 	if svc.customStoreClientFactories == nil {
-		svc.customStoreClientFactories = make(map[string]func(db interfaces.DatabaseInfo, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error), 1)
+		svc.customStoreClientFactories = make(map[string]func(db bootstrapConfig.Database, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error), 1)
 	}
 
 	svc.customStoreClientFactories[strings.ToUpper(name)] = factory
@@ -48,7 +49,7 @@ func (svc *Service) RegisterCustomStoreFactory(name string, factory func(cfg int
 	return nil
 }
 
-func (svc *Service) createStoreClient(database interfaces.DatabaseInfo, credentials bootstrapConfig.Credentials) (interfaces.StoreClient, error) {
+func (svc *Service) createStoreClient(database bootstrapConfig.Database, credentials bootstrapConfig.Credentials) (interfaces.StoreClient, error) {
 	switch strings.ToLower(database.Type) {
 	case db.RedisDB:
 		return redis.NewClient(database, credentials)
@@ -68,8 +69,10 @@ func (svc *Service) startStoreForward() {
 }
 
 func (svc *Service) stopStoreForward() {
-	svc.LoggingClient().Info("Canceling Store and Forward retry loop")
-	svc.ctx.storeForwardCancelCtx()
+	svc.lc.Info("Canceling Store and Forward retry loop")
+	if svc.ctx.storeForwardCancelCtx != nil {
+		svc.ctx.storeForwardCancelCtx()
+	}
 	svc.ctx.storeForwardWg.Wait()
 }
 

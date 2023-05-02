@@ -15,17 +15,6 @@
 // interfaces establishes the contract required for any implementation of the export store functionality in a database provider.
 package interfaces
 
-import bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
-
-type DatabaseInfo struct {
-	bootstrapConfig.Database
-
-	// TODO: refactor specifics
-	// Redis specific configuration items
-	MaxIdle   int
-	BatchSize int
-}
-
 // StoreClient establishes the contracts required to persist exported data before being forwarded.
 type StoreClient interface {
 	// Store persists a stored object to the data store and returns the assigned UUID.

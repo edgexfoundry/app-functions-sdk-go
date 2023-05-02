@@ -94,7 +94,7 @@ type Service struct {
 	deferredFunctions          []bootstrap.Deferred
 	backgroundPublishChannel   <-chan interfaces.BackgroundMessage
 	customTriggerFactories     map[string]func(sdk *Service) (interfaces.Trigger, error)
-	customStoreClientFactories map[string]func(db interfaces.DatabaseInfo, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)
+	customStoreClientFactories map[string]func(db bootstrapConfig.Database, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)
 	profileSuffixPlaceholder   string
 	commandLine                commandLineFlags
 	flags                      *flags.Default

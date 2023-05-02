@@ -39,7 +39,7 @@ func Test_service_RegisterCustomStoreFactory_Inbuilt_Name(t *testing.T) {
 func Test_service_RegisterCustomStoreFactory(t *testing.T) {
 	sut := &Service{}
 
-	f := func(info interfaces.DatabaseInfo, credentials config.Credentials) (interfaces.StoreClient, error) {
+	f := func(info config.Database, credentials config.Credentials) (interfaces.StoreClient, error) {
 		return nil, nil
 	}
 
@@ -56,15 +56,15 @@ func Test_service_RegisterCustomStoreFactory(t *testing.T) {
 func Test_service_NewStoreClient_Invalid(t *testing.T) {
 	sut := &Service{}
 
-	_, err := sut.createStoreClient(interfaces.DatabaseInfo{}, config.Credentials{})
+	_, err := sut.createStoreClient(config.Database{}, config.Credentials{})
 
 	assert.Error(t, err)
 }
 
 func Test_service_NewStoreClient_Redis(t *testing.T) {
-	sut := &Service{customStoreClientFactories: map[string]func(db interfaces.DatabaseInfo, cred config.Credentials) (interfaces.StoreClient, error){}}
+	sut := &Service{customStoreClientFactories: map[string]func(db config.Database, cred config.Credentials) (interfaces.StoreClient, error){}}
 
-	result, err := sut.createStoreClient(interfaces.DatabaseInfo{Database: config.Database{Type: db.RedisDB, Timeout: "5s"}}, config.Credentials{})
+	result, err := sut.createStoreClient(config.Database{Type: db.RedisDB, Timeout: "5s"}, config.Credentials{})
 
 	assert.NoError(t, err)
 	c, ok := result.(*redis.Client)
@@ -77,7 +77,7 @@ func Test_service_NewStoreClient_Custom(t *testing.T) {
 
 	sut := &Service{}
 
-	f := func(info interfaces.DatabaseInfo, credentials config.Credentials) (interfaces.StoreClient, error) {
+	f := func(info config.Database, credentials config.Credentials) (interfaces.StoreClient, error) {
 		return x, nil
 	}
 
@@ -87,7 +87,7 @@ func Test_service_NewStoreClient_Custom(t *testing.T) {
 
 	require.NoError(t, err)
 
-	result, err := sut.createStoreClient(interfaces.DatabaseInfo{Database: config.Database{Type: name}}, config.Credentials{})
+	result, err := sut.createStoreClient(config.Database{Type: name}, config.Credentials{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, x, result)

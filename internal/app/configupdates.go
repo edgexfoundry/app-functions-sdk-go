@@ -112,7 +112,7 @@ func (processor *ConfigUpdateProcessor) processConfigChangedStoreForwardEnabled(
 		if storeClient == nil {
 			err := initializeStoreClient(sdk.config, sdk)
 			if err != nil {
-				// Error already logged
+				sdk.lc.Errorf("Initializing Database for Store and Forward failed: %v", err)
 				sdk.config.Writable.StoreAndForward.Enabled = false
 				return
 			}

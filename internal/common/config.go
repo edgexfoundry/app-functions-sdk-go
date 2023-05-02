@@ -17,7 +17,6 @@
 package common
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 )
 
@@ -55,7 +54,7 @@ type ConfigurationStruct struct {
 	// Clients contains the configuration for connecting to the dependent Edgex clients
 	Clients bootstrapConfig.ClientsCollection
 	// Database contains the configuration for connection to the Database
-	Database interfaces.DatabaseInfo
+	Database bootstrapConfig.Database
 }
 
 // TriggerInfo contains Metadata associated with each Trigger
@@ -194,7 +193,7 @@ func (c *ConfigurationStruct) GetBootstrap() bootstrapConfig.BootstrapConfigurat
 		Service:    &c.Service,
 		Registry:   &c.Registry,
 		MessageBus: &c.MessageBus,
-		Database:   &c.Database.Database,
+		Database:   &c.Database,
 	}
 }
 
