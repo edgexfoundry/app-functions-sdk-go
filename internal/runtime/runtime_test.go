@@ -44,7 +44,7 @@ const (
 )
 
 var testAddEventRequest = createAddEventRequest()
-var testV2Event = testAddEventRequest.Event
+var testEvent = testAddEventRequest.Event
 
 func createAddEventRequest() requests.AddEventRequest {
 	event := dtos.NewEvent("Thermostat", "FamilyRoomThermostat", "Temperature")
@@ -122,7 +122,7 @@ func TestProcessMessageOneCustomTransform(t *testing.T) {
 		require.NotNil(t, data, "should have been passed the first event from CoreData")
 		if result, ok := data.(*dtos.Event); ok {
 			require.True(t, ok, "Should have received EdgeX event")
-			require.Equal(t, testV2Event.DeviceName, result.DeviceName, "Did not receive expected EdgeX event")
+			require.Equal(t, testEvent.DeviceName, result.DeviceName, "Did not receive expected EdgeX event")
 		}
 		transform1WasCalled = true
 		return true, "Hello"
@@ -160,7 +160,7 @@ func TestProcessMessageTwoCustomTransforms(t *testing.T) {
 		require.NotNil(t, data, "should have been passed the first event from CoreData")
 		if result, ok := data.(dtos.Event); ok {
 			require.True(t, ok, "Should have received Event")
-			assert.Equal(t, testV2Event.DeviceName, result.DeviceName, "Did not receive expected Event")
+			assert.Equal(t, testEvent.DeviceName, result.DeviceName, "Did not receive expected Event")
 		}
 
 		return true, "Transform1Result"
@@ -209,7 +209,7 @@ func TestProcessMessageThreeCustomTransformsOneFail(t *testing.T) {
 
 		if result, ok := data.(*dtos.Event); ok {
 			require.True(t, ok, "Should have received EdgeX event")
-			require.Equal(t, testV2Event.DeviceName, result.DeviceName, "Did not receive expected EdgeX event")
+			require.Equal(t, testEvent.DeviceName, result.DeviceName, "Did not receive expected EdgeX event")
 		}
 
 		return false, "Transform1Result"
@@ -247,7 +247,7 @@ func TestProcessMessageTransformError(t *testing.T) {
 
 	// Send a RegistryInfo to the pipeline, instead of an Event
 	registryInfo := config.RegistryInfo{
-		Host: testV2Event.DeviceName,
+		Host: testEvent.DeviceName,
 	}
 	payload, _ := json.Marshal(registryInfo)
 	envelope := types.MessageEnvelope{
@@ -321,8 +321,8 @@ func TestProcessMessageJSON(t *testing.T) {
 
 		if result, ok := data.(*dtos.Event); ok {
 			require.True(t, ok, "Should have received EdgeX event")
-			assert.Equal(t, testV2Event.DeviceName, result.DeviceName, "Did not receive expected EdgeX event, wrong device")
-			assert.Equal(t, testV2Event.Id, result.Id, "Did not receive expected EdgeX event, wrong ID")
+			assert.Equal(t, testEvent.DeviceName, result.DeviceName, "Did not receive expected EdgeX event, wrong device")
+			assert.Equal(t, testEvent.Id, result.Id, "Did not receive expected EdgeX event, wrong ID")
 		}
 
 		return false, nil
@@ -363,8 +363,8 @@ func TestProcessMessageCBOR(t *testing.T) {
 
 		if result, ok := data.(*dtos.Event); ok {
 			require.True(t, ok, "Should have received EdgeX event")
-			assert.Equal(t, testV2Event.DeviceName, result.DeviceName, "Did not receive expected EdgeX event, wrong device")
-			assert.Equal(t, testV2Event.Id, result.Id, "Did not receive expected EdgeX event, wrong ID")
+			assert.Equal(t, testEvent.DeviceName, result.DeviceName, "Did not receive expected EdgeX event, wrong device")
+			assert.Equal(t, testEvent.Id, result.Id, "Did not receive expected EdgeX event, wrong ID")
 		}
 
 		return false, nil
@@ -401,13 +401,13 @@ func TestDecode_Process_MessageTargetType(t *testing.T) {
 	jsonPayload, err := json.Marshal(testAddEventRequest)
 	require.NoError(t, err)
 
-	eventJsonPayload, err := json.Marshal(testV2Event)
+	eventJsonPayload, err := json.Marshal(testEvent)
 	require.NoError(t, err)
 
 	cborPayload, err := cbor.Marshal(testAddEventRequest)
 	assert.NoError(t, err)
 
-	eventCborPayload, err := cbor.Marshal(testV2Event)
+	eventCborPayload, err := cbor.Marshal(testEvent)
 	require.NoError(t, err)
 
 	expected := CustomType{
@@ -501,10 +501,10 @@ func TestExecutePipelinePersist(t *testing.T) {
 }
 
 func TestGolangRuntime_processEventPayload(t *testing.T) {
-	jsonV2AddEventPayload, _ := json.Marshal(testAddEventRequest)
-	cborV2AddEventPayload, _ := cbor.Marshal(testAddEventRequest)
-	jsonV2EventPayload, _ := json.Marshal(testAddEventRequest.Event)
-	cborV2EventPayload, _ := cbor.Marshal(testAddEventRequest.Event)
+	jsonAddEventPayload, _ := json.Marshal(testAddEventRequest)
+	cborAddEventPayload, _ := cbor.Marshal(testAddEventRequest)
+	jsonEventPayload, _ := json.Marshal(testAddEventRequest.Event)
+	cborEventPayload, _ := cbor.Marshal(testAddEventRequest.Event)
 
 	notAnEvent := dtos.DeviceResource{
 		Description: "Not An Event",
@@ -513,7 +513,7 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 	jsonInvalidPayload, _ := json.Marshal(notAnEvent)
 	cborInvalidPayload, _ := cbor.Marshal(notAnEvent)
 
-	expectedV2Event := testV2Event
+	expectedEvent := testEvent
 
 	tests := []struct {
 		Name        string
@@ -522,10 +522,10 @@ func TestGolangRuntime_processEventPayload(t *testing.T) {
 		Expected    *dtos.Event
 		ExpectError bool
 	}{
-		{"JSON V2 Add Event DTO", jsonV2AddEventPayload, common.ContentTypeJSON, &expectedV2Event, false},
-		{"CBOR V2 Add Event DTO", cborV2AddEventPayload, common.ContentTypeCBOR, &expectedV2Event, false},
-		{"JSON V2 Event DTO", jsonV2EventPayload, common.ContentTypeJSON, &expectedV2Event, false},
-		{"CBOR V2 Event DTO", cborV2EventPayload, common.ContentTypeCBOR, &expectedV2Event, false},
+		{"JSON Add Event DTO", jsonAddEventPayload, common.ContentTypeJSON, &expectedEvent, false},
+		{"CBOR Add Event DTO", cborAddEventPayload, common.ContentTypeCBOR, &expectedEvent, false},
+		{"JSON Event DTO", jsonEventPayload, common.ContentTypeJSON, &expectedEvent, false},
+		{"CBOR Event DTO", cborEventPayload, common.ContentTypeCBOR, &expectedEvent, false},
 		{"invalid JSON", jsonInvalidPayload, common.ContentTypeJSON, nil, true},
 		{"invalid CBOR", cborInvalidPayload, common.ContentTypeCBOR, nil, true},
 	}

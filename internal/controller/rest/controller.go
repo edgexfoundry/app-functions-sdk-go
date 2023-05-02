@@ -38,7 +38,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Controller controller for V2 REST APIs
+// Controller controller for REST APIs
 type Controller struct {
 	router         *mux.Router
 	secretProvider bootstrapInterfaces.SecretProvider
@@ -65,21 +65,21 @@ func (c *Controller) SetCustomConfigInfo(customConfig interfaces.UpdatableConfig
 }
 
 // Ping handles the request to /ping endpoint. Is used to test if the service is working
-// It returns a response as specified by the V2 API swagger in openapi/v2
+// It returns a response as specified by the API swagger in openapi
 func (c *Controller) Ping(writer http.ResponseWriter, request *http.Request) {
 	response := commonDtos.NewPingResponse(c.serviceName)
 	c.sendResponse(writer, request, common.ApiPingRoute, response, http.StatusOK)
 }
 
 // Version handles the request to /version endpoint. Is used to request the service's versions
-// It returns a response as specified by the V2 API swagger in openapi/v2
+// It returns a response as specified by the API swagger in openapi
 func (c *Controller) Version(writer http.ResponseWriter, request *http.Request) {
 	response := commonDtos.NewVersionSdkResponse(internal.ApplicationVersion, internal.SDKVersion, c.serviceName)
 	c.sendResponse(writer, request, common.ApiVersionRoute, response, http.StatusOK)
 }
 
 // Config handles the request to /config endpoint. Is used to request the service's configuration
-// It returns a response as specified by the V2 API swagger in openapi/v2
+// It returns a response as specified by the API swagger in openapi
 func (c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
 	var fullConfig interface{}
 
@@ -102,7 +102,7 @@ func (c *Controller) Config(writer http.ResponseWriter, request *http.Request) {
 }
 
 // AddSecret handles the request to add App Service exclusive secret to the Secret Store
-// It returns a response as specified by the V2 API swagger in openapi/v2
+// It returns a response as specified by the API swagger in openapi
 func (c *Controller) AddSecret(writer http.ResponseWriter, request *http.Request) {
 	defer func() {
 		_ = request.Body.Close()
@@ -140,7 +140,7 @@ func (c *Controller) sendError(
 	c.sendResponse(writer, request, internal.ApiAddSecretRoute, response, edgexErr.Code())
 }
 
-// sendResponse puts together the response packet for the V2 API
+// sendResponse puts together the response packet for the API
 func (c *Controller) sendResponse(
 	writer http.ResponseWriter,
 	request *http.Request,
