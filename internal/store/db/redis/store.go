@@ -19,9 +19,10 @@ package redis
 import (
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"sync"
 	"time"
+
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/redis/models"
 
@@ -201,7 +202,7 @@ func (c Client) Disconnect() error {
 }
 
 // NewClient provides a factory for building a StoreClient
-func NewClient(config interfaces.DatabaseInfo, credentials bootstrapConfig.Credentials) (interfaces.StoreClient, error) {
+func NewClient(config bootstrapConfig.Database, credentials bootstrapConfig.Credentials) (interfaces.StoreClient, error) {
 	var retErr error
 	once.Do(func() {
 		connectionString := fmt.Sprintf("%s:%d", config.Host, config.Port)
@@ -235,10 +236,8 @@ func NewClient(config interfaces.DatabaseInfo, credentials bootstrapConfig.Crede
 				 * TODO: Longer term, once the objects are clean of external dependencies, the use
 				 * of another serializer should make this moot.
 				 */
-				MaxIdle: config.MaxIdle,
-				Dial:    dialFunc,
+				Dial: dialFunc,
 			},
-			BatchSize: config.BatchSize,
 		}
 	})
 

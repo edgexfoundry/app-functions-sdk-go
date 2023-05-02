@@ -115,7 +115,7 @@ type ApplicationService interface {
 	// RegisterCustomTriggerFactory registers a trigger factory for a custom trigger to be used.
 	RegisterCustomTriggerFactory(name string, factory func(TriggerConfig) (Trigger, error)) error
 	// RegisterCustomStoreFactory registers a factory function that can be used to create a custom storage client for the Store & Forward loop.
-	RegisterCustomStoreFactory(name string, factory func(cfg DatabaseInfo, cred config.Credentials) (StoreClient, error)) error
+	RegisterCustomStoreFactory(name string, factory func(cfg config.Database, cred config.Credentials) (StoreClient, error)) error
 	// AddBackgroundPublisher Adds and returns a BackgroundPublisher which is used to publish
 	// asynchronously to the Edgex MessageBus.
 	// Not valid for use with the HTTP or External MQTT triggers
