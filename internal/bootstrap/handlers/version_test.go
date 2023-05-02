@@ -77,12 +77,12 @@ func TestValidateVersionMatch(t *testing.T) {
 		skipVersionCheck bool
 		ExpectFailure    bool
 	}{
-		{"Compatible Versions", "1.1.0", "v1.0.0", false, false},
-		{"SDK Dev Compatible Versions", "2.0.0", "v2.0.0-dev.11", false, false},
+		{"Compatible Versions", "3.1.0", "v3.0.0", false, false},
+		{"SDK Dev Compatible Versions", "3.0.0", "v3.0.0-dev.11", false, false},
 		{"Core Dev Compatible Versions", "1.2.1-dev.1", "v1.2.0", false, false},
 		{"Both Dev Compatible Versions", "1.2.1-dev.1", "v1.2.0-dev.4", false, false},
-		{"Un-compatible Versions", "2.0.0", "v1.0.0", false, true},
-		{"Skip Version Check", "2.0.0", "v1.0.0", true, false},
+		{"Un-compatible Versions", "3.0.0", "v2.0.0", false, true},
+		{"Skip Version Check", "3.0.0", "v2.0.0", true, false},
 		{"Running in Debugger", "1.0.0", "v0.0.0", false, false},
 		{"SDK Beta Version", "1.0.0", "v0.2.0", false, false},
 		{"SDK Version malformed", "1.0.0", "", false, true},

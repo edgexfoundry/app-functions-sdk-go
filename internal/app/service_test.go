@@ -685,7 +685,7 @@ func TestSetServiceKey(t *testing.T) {
 			expectedServiceKey: "MyAppService-mqtt-export",
 		},
 		{
-			name:               "Profile specified with V2 override",
+			name:               "Profile specified with override",
 			profile:            "rules-engine",
 			profileEnvVar:      envProfile,
 			profileEnvValue:    "rules-engine-redis",
@@ -693,7 +693,7 @@ func TestSetServiceKey(t *testing.T) {
 			expectedServiceKey: "MyAppService-rules-engine-redis",
 		},
 		{
-			name:               "No profile specified with V2 override",
+			name:               "No profile specified with override",
 			profileEnvVar:      envProfile,
 			profileEnvValue:    "http-export",
 			originalServiceKey: "MyAppService-" + interfaces.ProfileSuffixPlaceholder,
