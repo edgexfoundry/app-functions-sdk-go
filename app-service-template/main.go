@@ -140,8 +140,8 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 		return -1
 	}
 
-	if err := app.service.MakeItRun(); err != nil {
-		app.lc.Errorf("MakeItRun returned error: %s", err.Error())
+	if err := app.service.Run(); err != nil {
+		app.lc.Errorf("Run returned error: %s", err.Error())
 		return -1
 	}
 

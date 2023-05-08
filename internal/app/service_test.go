@@ -767,7 +767,7 @@ func TestSetServiceKey(t *testing.T) {
 	}
 }
 
-func TestMakeItStop(t *testing.T) {
+func TestStop(t *testing.T) {
 	stopCalled := false
 
 	sdk := Service{
@@ -779,11 +779,11 @@ func TestMakeItStop(t *testing.T) {
 		lc: logger.NewMockClient(),
 	}
 
-	sdk.MakeItStop()
+	sdk.Stop()
 	require.True(t, stopCalled, "Cancel function set at svc.stop should be called if set")
 
 	sdk.ctx.stop = nil
-	sdk.MakeItStop() //should avoid nil pointer
+	sdk.Stop() //should avoid nil pointer
 }
 
 func TestFindMatchingFunction(t *testing.T) {

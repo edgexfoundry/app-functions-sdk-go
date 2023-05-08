@@ -103,15 +103,15 @@ type ApplicationService interface {
 	AddFunctionsPipelineForTopics(id string, topic []string, transforms ...AppFunction) error
 	// RemoveAllFunctionPipelines removes all existing function pipelines
 	RemoveAllFunctionPipelines()
-	// MakeItRun starts the configured trigger to allow the functions pipeline to execute when the trigger
-	// receives data and starts the internal webserver. This is a long running function which does not return until
-	// the service is stopped or MakeItStop() is called.
-	// An error is returned if the trigger can not be create or initialized or if the internal webserver
+	// Run starts the configured trigger to allow the functions pipeline to execute when the trigger
+	// receives data and starts the internal webserver. This is a long-running function which does not return until
+	// the service is stopped or Stop() is called.
+	// An error is returned if the trigger can not be created or initialized or if the internal webserver
 	// encounters an error.
-	MakeItRun() error
-	// MakeItStop stops the configured trigger so that the functions pipeline no longer executes.
+	Run() error
+	// Stop stops the configured trigger so that the functions pipeline no longer executes.
 	// An error is returned
-	MakeItStop()
+	Stop()
 	// RegisterCustomTriggerFactory registers a trigger factory for a custom trigger to be used.
 	RegisterCustomTriggerFactory(name string, factory func(TriggerConfig) (Trigger, error)) error
 	// RegisterCustomStoreFactory registers a factory function that can be used to create a custom storage client for the Store & Forward loop.

@@ -352,25 +352,6 @@ func (_m *ApplicationService) LoggingClient() logger.LoggingClient {
 	return r0
 }
 
-// MakeItRun provides a mock function with given fields:
-func (_m *ApplicationService) MakeItRun() error {
-	ret := _m.Called()
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// MakeItStop provides a mock function with given fields:
-func (_m *ApplicationService) MakeItStop() {
-	_m.Called()
-}
-
 // MetricsManager provides a mock function with given fields:
 func (_m *ApplicationService) MetricsManager() bootstrapinterfaces.MetricsManager {
 	ret := _m.Called()
@@ -466,6 +447,20 @@ func (_m *ApplicationService) RequestTimeout() time.Duration {
 	return r0
 }
 
+// Run provides a mock function with given fields:
+func (_m *ApplicationService) Run() error {
+	ret := _m.Called()
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func() error); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SecretProvider provides a mock function with given fields:
 func (_m *ApplicationService) SecretProvider() bootstrapinterfaces.SecretProvider {
 	ret := _m.Called()
@@ -500,6 +495,11 @@ func (_m *ApplicationService) SetDefaultFunctionsPipeline(transforms ...func(int
 	}
 
 	return r0
+}
+
+// Stop provides a mock function with given fields:
+func (_m *ApplicationService) Stop() {
+	_m.Called()
 }
 
 // SubscriptionClient provides a mock function with given fields:

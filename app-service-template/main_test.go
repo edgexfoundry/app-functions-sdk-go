@@ -54,7 +54,7 @@ func TestCreateAndRunService_Success(t *testing.T) {
 		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("MakeItRun").Return(nil)
+		mockAppService.On("Run").Return(nil)
 
 		return mockAppService, true
 	}
@@ -129,11 +129,11 @@ func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
+func TestCreateAndRunService_Run_Failed(t *testing.T) {
 	app := myApp{}
 
-	// ensure failure is from MakeItRun
-	makeItRunCalled := false
+	// ensure failure is from Run
+	RunCalled := false
 
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
@@ -152,8 +152,8 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 			Return(nil)
 		mockAppService.On("AddFunctionsPipelineForTopics", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("MakeItRun").Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
-			makeItRunCalled = true
+		mockAppService.On("Run").Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
+			RunCalled = true
 		})
 
 		return mockAppService, true
@@ -161,6 +161,6 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 
 	expected := -1
 	actual := app.CreateAndRunAppService("TestKey", mockFactory)
-	require.True(t, makeItRunCalled, "MakeItRun never called")
+	require.True(t, RunCalled, "Run never called")
 	assert.Equal(t, expected, actual)
 }
