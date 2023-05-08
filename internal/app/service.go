@@ -156,19 +156,19 @@ func (svc *Service) AddBackgroundPublisherWithTopic(capacity int, topic string) 
 	return pub, nil
 }
 
-// MakeItStop will force the service loop to exit in the same fashion as SIGINT/SIGTERM received from the OS
-func (svc *Service) MakeItStop() {
+// Stop will force the service loop to exit in the same fashion as SIGINT/SIGTERM received from the OS
+func (svc *Service) Stop() {
 	if svc.ctx.stop != nil {
 		svc.ctx.stop()
 	} else {
-		svc.lc.Warn("MakeItStop called but no stop handler set on SDK - is the service running?")
+		svc.lc.Warn("Stop called but no stop handler set on SDK - is the service running?")
 	}
 }
 
-// MakeItRun initializes and starts the trigger as specified in the
+// Run initializes and starts the trigger as specified in the
 // configuration. It will also configure the webserver and start listening on
 // the specified port.
-func (svc *Service) MakeItRun() error {
+func (svc *Service) Run() error {
 
 	config := container.ConfigurationFrom(svc.dic.Get)
 
@@ -222,7 +222,7 @@ func (svc *Service) MakeItRun() error {
 		svc.lc.Info("Terminating signal received: " + signalReceived.String())
 
 	case <-runCtx.Done():
-		svc.lc.Info("Terminating: svc.MakeItStop called")
+		svc.lc.Info("Terminating: svc.Stop called")
 	}
 
 	svc.ctx.stop = nil
