@@ -11,7 +11,164 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
-## [v2.2.0] Levski - 2022-11-09 (Only compatible with the 2.x releases)
+## [v3.0.0] Minnesota - 2023-05-31 (Only compatible with the 3.x releases)
+
+### Features ✨
+
+- Consume new -d/--dev Dev Mode command-line flag ([#1397](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1397)) ([#199daa5](https://github.com/edgexfoundry/app-functions-sdk-go/commits/199daa5))
+- Consume SecretProvider breaking changes ([#1383](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1383)) ([#716268c](https://github.com/edgexfoundry/app-functions-sdk-go/commits/716268c))
+- Consume watch for common Writable config changes ([#1347](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1347)) ([#87b6fb4](https://github.com/edgexfoundry/app-functions-sdk-go/commits/87b6fb4))
+- Support JWT microservice authentication ([#1331](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1331)) ([#d409af3](https://github.com/edgexfoundry/app-functions-sdk-go/commits/d409af3))
+- Add RemoveAllFunctionPipelines in ApplicationService interface ([#1220](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1220)) ([#0ecd0af](https://github.com/edgexfoundry/app-functions-sdk-go/commits/0ecd0af))
+- Add core command client via message bus to app-service-template ([#1274](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1274)) ([#1af21c3](https://github.com/edgexfoundry/app-functions-sdk-go/commits/1af21c3))
+
+### Bug Fixes 🐛
+
+- Make Compression functions thread safe ([#1375](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1375)) ([#592d573](https://github.com/edgexfoundry/app-functions-sdk-go/commits/592d573))
+- Correct the metric name  that is registered ([#1269](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1269)) ([#d560509](https://github.com/edgexfoundry/app-functions-sdk-go/commits/d560509))
+- **webserver:** fix a nil pointer crash when enabling the https web server ([#1316](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1316)) ([#2584b24](https://github.com/edgexfoundry/app-functions-sdk-go/commits/2584b24))
+
+### Code Refactoring ♻
+- Rename MakeItRun and MakeItStop APIs to Run and Stop ([#7915819](https://github.com/edgexfoundry/app-functions-sdk-go/commit/791581934acc78a700d95736db9d503f94415a7f))
+  ```
+  BREAKING CHANGE: MakeItRun renamed to Run and MakeItStop renamed to Stop
+  ```
+- Change configuration file format to YAML ([#f43ee24](https://github.com/edgexfoundry/app-functions-sdk-go/commit/f43ee24ec29add38492262510e3a4e61cdb4b840))
+  ```
+  BREAKING CHANGE: Configuration file now uses YAML format, default file name is now configuration.yaml
+  ```
+- Renamed secretName to secretValueKey and secretPath to secretName ([#4c69509](https://github.com/edgexfoundry/app-functions-sdk-go/commit/4c69509804e16640f3857169a5a9862e5c8a893d))
+  ```
+  BREAKING CHANGE: Renamed secretName to secretValueKey and secretPath to secretName for all pipeline function paramters
+  ```
+- Move swagger to v3 ([#23a06a](https://github.com/edgexfoundry/app-functions-sdk-go/commit/23a06a59b43cebc5cff4e8a424f341ee6d304330))
+  ```
+  BREAKING CHANGE: Swagger for API reference has been move to 3.0.0
+  ```
+- Consume Secret DTO changes ([#de29a595](https://github.com/edgexfoundry/app-functions-sdk-go/commit/de29a595cec6d66e1df6e6acdcb98ef01ca53273))
+  ```
+  BREAKING CHANGE: Secret DTO object in core contracts uses SecretName instead of Path
+  ```
+- Prepend base topic to all topics ([#ba1091ba](https://github.com/edgexfoundry/app-functions-sdk-go/commit/ba1091ba5b70cc1febe2606501b78f2df82bcfe2))
+  ```
+  BREAKING CHANGE: All subcribe and publish topics now have the configured base topic ("edgex/" by default) prepened automatically. Configured topics and topics in code need to have "edgex/" removed.
+  ```
+- Replace internal topics from config with new constants ([#a57f3f5](https://github.com/edgexfoundry/app-functions-sdk-go/commit/a57f3f565e436a58f8d2a88e19976967ca27a63d))
+  ```
+  BREAKING CHANGE: Internal topics no longer configurable, except the base topic. Trigger topics for edgex-messagebus and external-mqtt now directly under Trigger section.
+  ```
+- Updates for common config([#1be498e](https://github.com/edgexfoundry/app-functions-sdk-go/commit/1be498e1ad676816747fa5bbbe5c025d98b87dd2))
+  ```
+  BREAKING CHANGE: configuration file changed to remove common config settings
+  ```
+- Use latest MessageBus for new Request API ([#3eb0e8b](https://github.com/edgexfoundry/app-functions-sdk-go/commit/3eb0e8bd2e70a3d8f6a7558bb5202a846e508296))
+  ```
+  BREAKING CHANGE: Topics for Commands via MessageBus have changed.
+  ```
+- Update message bus topic wild cards ([#3ca42d5](https://github.com/edgexfoundry/app-functions-sdk-go/commit/3ca42d5cbaa22a218d275f14a8e9b0dc87da7e63))
+  ```
+  BREAKING CHANGE: use MQTT wild cards + for single level and # for multiple levels
+  ```
+- Remove old metrics collection and REST /metrics endpoint ([#34fb173](https://github.com/edgexfoundry/app-functions-sdk-go/commit/34fb17360a6d641a34f5321b1496bf4c790579ed))
+  ```
+  BREAKING CHANGE: /metrics endpoint no longer available for any service
+  ```
+- Update config for removal of SecretStore from services' configuration file([#a745a1e](https://github.com/edgexfoundry/app-functions-sdk-go/commit/a745a1eef47addd7fe20a9bf52f4804644403ce3))
+  ```
+  BREAKING CHANGE: SecretStore config no longer in service configuration file. Changes must be done via use of environment variable overrides of default values.
+  ```
+- Rework code for refactored stand alone MessageBus Configuration ([#a2c5c7d](https://github.com/edgexfoundry/app-functions-sdk-go/commit/a2c5c7d8637fd78b5232d966dc1ecdc9f014e67f))
+  ```
+  BREAKING CHANGE: MessageBus Configuration moved outside Trigger configuration for edgex-messagebus trigger type. This is so it is availble with other trigger types for metrics and commanding. See V3 migration guide.
+  ```
+- Remove ZeroMQ MessageBus capability ([#5e53b62](https://github.com/edgexfoundry/app-functions-sdk-go/commit/5e53b6206090d02689650d5f83dd79eb10220bb4))
+  ```
+  BREAKING CHANGE: ZeroMQ MessageBus capability no longer available
+  ```
+- Rename command line flags for the sake of consistency ([#bf729f07](https://github.com/edgexfoundry/app-functions-sdk-go/commit/bf729f074aa947aff4acf018fefda59f90d52f0c))
+  ```
+  BREAKING CHANGE: renamed `-c/--confdir` to `-cd/--configDir`and `-f/--file` to `-cf/--configFile`
+  ```
+- Use config stem from common constants ([#d07e07](https://github.com/edgexfoundry/app-functions-sdk-go/commit/d07e074f04d6177e074284f97957b318b3fd6cce))
+  ```
+  BREAKING CHANGE: Location of service's configuration in Consul has changed
+  ```
+- Update module to v3 ([#1061222](https://github.com/edgexfoundry/app-functions-sdk-go/commit/1061222ac360509a006a70fb54a7a238a7aecaec))
+  ```
+  BREAKING CHANGE: Import paths will need to change to v3
+  ```
+- **store-forward:** Use common Database struct from go-mod-bootstrap directly ([#b5eda90](https://github.com/edgexfoundry/app-functions-sdk-go/commit/b5eda90a63fa711a23af36c11683fbeef4570659))
+  ```
+  BREAKING CHANGE: Service and Store interfaces now use Database struct from go-mod-bootstrap. Custom App Services using those specifc APIs will required migration.
+  ```
+- Change HTTPSender factory methods and receivers to use pointers ([#1259](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1259)) ([#fb7a401](https://github.com/edgexfoundry/app-functions-sdk-go/commits/fb7a401))
+  ```
+  BREAKING CHANGE: change HTTPSender factory methods and receivers to use pointers
+  ```
+- Change all factory methods and receiver functions to use pointers ([#1261](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1261)) ([#2bf8d04](https://github.com/edgexfoundry/app-functions-sdk-go/commits/2bf8d04))
+  ```
+  BREAKING CHANGE: change all factory methods and receiver functions to use pointers
+  ```
+- Remove deprecated NewTags() factory method and rename … ([#1258](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1258)) ([#8092c7e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/8092c7e))
+  ```
+  BREAKING CHANGE: remove deprecated NewTags() factory method and rename NewGenericTags() to NewTags
+  ```
+- Remove deprecated SecretsLastUpdated code ([#1256](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1256)) ([#4b1b6c8](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4b1b6c8))
+  ```
+  BREAKING CHANGE: remove deprecated SecretsLastUpdated code, use SecretProvider
+  ```
+- Remove deprecated StoreSecret code ([#1254](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1254)) ([#100e6de](https://github.com/edgexfoundry/app-functions-sdk-go/commits/100e6de))
+  ```
+  BREAKING CHANGE: remove deprecated StoreSecret code, use SecretProvider
+  ```
+- Remove deprecated GetSecret code ([#1251](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1251)) ([#e59d3cb](https://github.com/edgexfoundry/app-functions-sdk-go/commits/e59d3cb))
+  ```
+  BREAKING CHANGE: remove deprecated GetSecret, use SecretProvider
+  ```
+- Remove deprecated EncryptWithAES code ([#1235](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1235)) ([#19e77ea](https://github.com/edgexfoundry/app-functions-sdk-go/commits/19e77ea))
+  ```
+  BREAKING CHANGE: removed EncryptWithAES, use AESProtection.Encrypt
+  ```
+- Remove deprecated LoadConfigurablePipeline function ([#1234](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1234)) ([#05fb931](https://github.com/edgexfoundry/app-functions-sdk-go/commits/05fb931))
+  ```
+  BREAKING CHANGE: remove deprecated code for LoadConfigurablePipeline2, use LoadConfigurableFunctionPipelines
+  ```
+- Remove deprecated SetFunctionsPipeline code ([#1231](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1231)) ([#529d23f](https://github.com/edgexfoundry/app-functions-sdk-go/commits/529d23f))
+  ```
+  BREAKING CHANGE: Removed SetFunctionsPipeline, use SetDefaultFunctionsPipeline
+  ```
+- Remove Deprecated PushToCoreData ([#1282](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1282)) ([#d782540](https://github.com/edgexfoundry/app-functions-sdk-go/commits/d782540))
+  ```
+  BREAKING CHANGE: Removed deprecated PushToCoreData, replaced by WrapIntoEvent which is then used to publish directly to the MessageBus
+  ```
+- Refactor Target Type flags for configurable functions pipeline ([#1285](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1285)) ([#83561e9](https://github.com/edgexfoundry/app-functions-sdk-go/commits/83561e9))
+  ```
+  BREAKING CHANGE: UseTargetTypeOfByteArray and UseTargetTypeOfMetric has been replaced, use TargetType this takes string inputs: raw, metric or event
+  ``` 
+- Update swagger to match latest change in go-mod-contracts dtos common Secret ([#1307](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1307)) ([#59d0a14](https://github.com/edgexfoundry/app-functions-sdk-go/commits/59d0a14))
+- Rename toml references in comments to yaml ([#1369](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1369)) ([#9c6013f](https://github.com/edgexfoundry/app-functions-sdk-go/commits/9c6013f))
+- Clean up all remaining reverences to v2 in the code ([#5cec24b](https://github.com/edgexfoundry/app-functions-sdk-go/commits/5cec24b))
+- Add benchmark tests for running compression functions with multiple goroutines ([#a57a250](https://github.com/edgexfoundry/app-functions-sdk-go/commits/a57a250))
+- Make Compression functions thread safe ([#097a002](https://github.com/edgexfoundry/app-functions-sdk-go/commits/097a002))
+- Change mqtt connect handler for multiple subscribe ([#1232](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1232)) ([#8a09cca](https://github.com/edgexfoundry/app-functions-sdk-go/commits/8a09cca))
+- Renamed GolangRuntime to FunctionPipelineRuntime ([#1229](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1229)) ([#77b43ae](https://github.com/edgexfoundry/app-functions-sdk-go/commits/77b43ae))
+- Implement error interface for MessageError ([#1270](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1270)) ([#4d6f96c](https://github.com/edgexfoundry/app-functions-sdk-go/commits/4d6f96c))
+- Remove deprecated Process code ([#1240](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1240)) ([#a81394e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/a81394e))
+
+### Build 👷
+
+- Ignore all go-mod deps, except go-mod-bootstrap ([#e86759e](https://github.com/edgexfoundry/app-functions-sdk-go/commits/e86759e))
+- Disable CGO for all docker builds so always work ([#1249](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1249)) ([#048555f](https://github.com/edgexfoundry/app-functions-sdk-go/commits/048555f))
+- Update to Go 1.20, Alpine 3.17 and linter v1.51.2 ([#1353](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1353)) ([#2c071f0](https://github.com/edgexfoundry/app-functions-sdk-go/commits/2c071f0))
+- Update to latest modules w/o TOML package ([#1367](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1367)) ([#99c5002](https://github.com/edgexfoundry/app-functions-sdk-go/commits/99c5002))
+
+## [v2.3.1] Levski - 2023-04-12 (Only compatible with the 2.x releases)
+
+### Bug Fixes 🐛
+
+- Make Compression functions thread safe ([#d5509e3](https://github.com/edgexfoundry/app-functions-sdk-go/pull/1381/commits/d5509e3))
+
+## [v2.3.0] Levski - 2022-11-09 (Only compatible with the 2.x releases)
 
 ### Features ✨
 
