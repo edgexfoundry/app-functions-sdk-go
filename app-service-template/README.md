@@ -14,6 +14,8 @@ Follow the instructions below to create your new customer application service:
 
 3. Remove the `replace` statement from the go.mod file
 
+4. Ensure the SDK version in the go.mod file is set to the proper release version (i.e no -dev.x)
+
 4. Do a global search and replace on `app-new-service` to replace it with the name of your service
 
    - Note that this name is used as the service key, so it needs to use dashes rather than spaces in the name and avoid other special characters
