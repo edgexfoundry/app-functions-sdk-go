@@ -8,6 +8,8 @@ import (
 
 	config "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 
+	context "context"
+
 	http "net/http"
 
 	interfaces "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -115,6 +117,22 @@ func (_m *ApplicationService) AddRoute(route string, handler func(http.ResponseW
 		r0 = rf(route, handler, methods...)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// AppContext provides a mock function with given fields:
+func (_m *ApplicationService) AppContext() context.Context {
+	ret := _m.Called()
+
+	var r0 context.Context
+	if rf, ok := ret.Get(0).(func() context.Context); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(context.Context)
+		}
 	}
 
 	return r0

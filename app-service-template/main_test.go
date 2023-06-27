@@ -18,6 +18,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -39,6 +40,7 @@ func TestCreateAndRunService_Success(t *testing.T) {
 
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
+		mockAppService.On("AppContext").Return(context.Background())
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
@@ -81,6 +83,7 @@ func TestCreateAndRunService_GetAppSettingStrings_Failed(t *testing.T) {
 	getAppSettingStringsCalled := false
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
+		mockAppService.On("AppContext").Return(context.Background())
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return(nil, fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
@@ -104,6 +107,7 @@ func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
 
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
+		mockAppService.On("AppContext").Return(context.Background())
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)
@@ -137,6 +141,7 @@ func TestCreateAndRunService_Run_Failed(t *testing.T) {
 
 	mockFactory := func(_ string) (interfaces.ApplicationService, bool) {
 		mockAppService := &mocks.ApplicationService{}
+		mockAppService.On("AppContext").Return(context.Background())
 		mockAppService.On("LoggingClient").Return(logger.NewMockClient())
 		mockAppService.On("GetAppSettingStrings", "DeviceNames").
 			Return([]string{"Random-Boolean-Device, Random-Integer-Device"}, nil)

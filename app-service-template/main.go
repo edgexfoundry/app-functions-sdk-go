@@ -18,6 +18,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"reflect"
 
@@ -38,6 +39,7 @@ const (
 type myApp struct {
 	service       interfaces.ApplicationService
 	lc            logger.LoggingClient
+	appCtx        context.Context
 	serviceConfig *config.ServiceConfig
 	configChanged chan bool
 }
@@ -139,6 +141,10 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 		app.lc.Errorf("AddFunctionsPipelineForTopic returned error: %s", err.Error())
 		return -1
 	}
+
+	// TODO: Use this context in long running function to detect when the context is cancel for function can exit.
+	//       Remove if no long running functions
+	app.appCtx = app.service.AppContext()
 
 	if err := app.service.Run(); err != nil {
 		app.lc.Errorf("Run returned error: %s", err.Error())
