@@ -967,7 +967,7 @@ func TestService_SecretProvider(t *testing.T) {
 }
 
 func TestService_AppContext(t *testing.T) {
-	expected, _ := context.WithCancel(context.Background())
+	expected, cancel := context.WithCancel(context.Background())
 	sdk := Service{
 		ctx: contextGroup{
 			appCtx: expected,
@@ -976,4 +976,6 @@ func TestService_AppContext(t *testing.T) {
 
 	actual := sdk.AppContext()
 	assert.Equal(t, expected, actual)
+	// Linter requires use cancel function
+	cancel()
 }
