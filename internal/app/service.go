@@ -116,6 +116,12 @@ type contextGroup struct {
 	stop                  context.CancelFunc
 }
 
+// AppContext returns the application service context used to detect cancelled context when the service is terminating.
+// Used by custom app service to appropriately exit any long-running functions.
+func (svc *Service) AppContext() context.Context {
+	return svc.ctx.appCtx
+}
+
 // AddRoute allows you to leverage the existing webserver to add routes.
 func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
 	if route == commonConstants.ApiPingRoute ||

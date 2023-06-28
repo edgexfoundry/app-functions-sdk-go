@@ -17,6 +17,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -963,4 +964,18 @@ func TestService_SecretProvider(t *testing.T) {
 	actual := sdk.SecretProvider()
 	require.NotNil(t, actual)
 	assert.Equal(t, mockSecretProvider, actual)
+}
+
+func TestService_AppContext(t *testing.T) {
+	expected, cancel := context.WithCancel(context.Background())
+	sdk := Service{
+		ctx: contextGroup{
+			appCtx: expected,
+		},
+	}
+
+	actual := sdk.AppContext()
+	assert.Equal(t, expected, actual)
+	// Linter requires use cancel function
+	cancel()
 }
