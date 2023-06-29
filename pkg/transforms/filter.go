@@ -128,7 +128,7 @@ func (f *Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data in
 			for _, name := range f.FilterValues {
 				item, err := regexp.Compile(name)
 				if err != nil {
-					return false, fmt.Errorf("bad regexp in filtering on pipeline '%s': %s", ctx.PipelineId(), err.Error())
+					return false, fmt.Errorf("bad regexp (%s) in filtering on pipeline '%s': %s", name, ctx.PipelineId(), err.Error())
 				}
 				if item.MatchString(reading.ResourceName) {
 					readingFilteredOut = true
@@ -149,7 +149,7 @@ func (f *Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data in
 			for _, name := range f.FilterValues {
 				item, err := regexp.Compile(name)
 				if err != nil {
-					return false, fmt.Errorf("bad regexp in filtering on  pipeline '%s': %s", ctx.PipelineId(), err.Error())
+					return false, fmt.Errorf("bad regexp (%s) in filtering on  pipeline '%s': %s", name, ctx.PipelineId(), err.Error())
 				}
 				if item.MatchString(reading.ResourceName) {
 					readingFilteredFor = true
@@ -203,7 +203,7 @@ func (f *Filter) doEventFilter(filterProperty string, value string, lc logger.Lo
 	for _, name := range f.FilterValues {
 		item, err := regexp.Compile(name)
 		if err != nil {
-			lc.Errorf("bad regexp in filtering in pipeline '%s' : %s", f.ctx.PipelineId(), err.Error())
+			lc.Errorf("bad regexp (%s) in filtering in pipeline '%s' : %s", name, f.ctx.PipelineId(), err.Error())
 			return false
 		}
 		if item.MatchString(value) {
