@@ -18,6 +18,7 @@ package transforms
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
@@ -125,7 +126,11 @@ func (f *Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data in
 		for _, reading := range existingEvent.Readings {
 			readingFilteredOut := false
 			for _, name := range f.FilterValues {
-				if reading.ResourceName == name {
+				item, err := regexp.Compile(name)
+				if err != nil {
+					return false, fmt.Errorf("bad regexp (%s) in filtering on pipeline '%s': %s", name, ctx.PipelineId(), err.Error())
+				}
+				if item.MatchString(reading.ResourceName) {
 					readingFilteredOut = true
 					break
 				}
@@ -142,7 +147,11 @@ func (f *Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data in
 		for _, reading := range existingEvent.Readings {
 			readingFilteredFor := false
 			for _, name := range f.FilterValues {
-				if reading.ResourceName == name {
+				item, err := regexp.Compile(name)
+				if err != nil {
+					return false, fmt.Errorf("bad regexp (%s) in filtering on  pipeline '%s': %s", name, ctx.PipelineId(), err.Error())
+				}
+				if item.MatchString(reading.ResourceName) {
 					readingFilteredFor = true
 					break
 				}
@@ -192,7 +201,12 @@ func (f *Filter) doEventFilter(filterProperty string, value string, lc logger.Lo
 	}
 
 	for _, name := range f.FilterValues {
-		if value == name {
+		item, err := regexp.Compile(name)
+		if err != nil {
+			lc.Errorf("bad regexp (%s) in filtering in pipeline '%s' : %s", name, f.ctx.PipelineId(), err.Error())
+			return false
+		}
+		if item.MatchString(value) {
 			if f.FilterOut {
 				lc.Debugf("Event not accepted for %s=%s in pipeline '%s'", filterProperty, value, f.ctx.PipelineId())
 				return false

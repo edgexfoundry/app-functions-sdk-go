@@ -37,9 +37,11 @@ const (
 	sourceName1 = "source1"
 	sourceName2 = "source2"
 
-	resource1 = "resource1"
-	resource2 = "resource2"
-	resource3 = "resource3"
+	resource1       = "resource1"
+	resource2       = "resource2"
+	resource3       = "resource3"
+	resource10      = "resource10"
+	resource_regexp = "[a-z]*.1"
 )
 
 func TestFilter_FilterByProfileName(t *testing.T) {
@@ -52,17 +54,19 @@ func TestFilter_FilterByProfileName(t *testing.T) {
 		EventIn           *dtos.Event
 		ExpectedNilResult bool
 	}{
-		{"filter for - no event", []string{profileName1}, true, nil, true},
+		{"filter for - no event", []string{profileName1}, false, nil, true},
 		{"filter for - no filter values", []string{}, false, &profile1Event, false},
 		{"filter for with extra data - found", []string{profileName1}, false, &profile1Event, false},
 		{"filter for - found", []string{profileName1}, false, &profile1Event, false},
 		{"filter for - not found", []string{profileName2}, false, &profile1Event, true},
+		{"filter for - regexp found", []string{"profile*"}, false, &profile1Event, false},
 
 		{"filter out - no event", []string{profileName1}, true, nil, true},
 		{"filter out - no filter values", []string{}, true, &profile1Event, false},
 		{"filter out extra param - found", []string{profileName1}, true, &profile1Event, true},
 		{"filter out - found", []string{profileName1}, true, &profile1Event, true},
 		{"filter out - not found", []string{profileName2}, true, &profile1Event, false},
+		{"filter out - regexp not found", []string{"test*"}, true, &profile1Event, false},
 	}
 
 	for _, test := range tests {
@@ -107,12 +111,16 @@ func TestFilter_FilterByDeviceName(t *testing.T) {
 		{"filter for with extra data - found", []string{deviceName1}, false, &device1Event, false},
 		{"filter for - found", []string{deviceName1}, false, &device1Event, false},
 		{"filter for - not found", []string{deviceName2}, false, &device1Event, true},
+		{"filter for regexp - found", []string{"device*"}, false, &device1Event, false},
+		{"filter for regexp - not found", []string{"test"}, false, &device1Event, true},
 
 		{"filter out - no event", []string{deviceName1}, true, nil, true},
 		{"filter out - no filter values", []string{}, true, &device1Event, false},
 		{"filter out extra param - found", []string{deviceName1}, true, &device1Event, true},
 		{"filter out - found", []string{deviceName1}, true, &device1Event, true},
 		{"filter out - not found", []string{deviceName2}, true, &device1Event, false},
+		{"filter out regexp - found", []string{deviceName1}, true, &device1Event, true},
+		{"filter out regexp - not found", []string{"test"}, true, &device1Event, false},
 	}
 
 	for _, test := range tests {
@@ -157,12 +165,16 @@ func TestFilter_FilterBySourceName(t *testing.T) {
 		{"filter for with extra data - found", []string{sourceName1}, false, &source1Event, false},
 		{"filter for - found", []string{sourceName1}, false, &source1Event, false},
 		{"filter for - not found", []string{sourceName2}, false, &source1Event, true},
+		{"filter for regexp - found", []string{"source*"}, false, &source1Event, false},
+		{"filter for regexp - not found", []string{"test"}, false, &source1Event, true},
 
 		{"filter out - no event", []string{sourceName1}, true, nil, true},
 		{"filter out - no filter values", []string{}, true, &source1Event, false},
 		{"filter out extra param - found", []string{sourceName1}, true, &source1Event, true},
 		{"filter out - found", []string{sourceName1}, true, &source1Event, true},
 		{"filter out - not found", []string{sourceName2}, true, &source1Event, false},
+		{"filter out regexp - found", []string{"source*"}, true, &source1Event, true},
+		{"filter out regexp - not found", []string{"test"}, true, &source1Event, false},
 	}
 
 	for _, test := range tests {
@@ -215,6 +227,15 @@ func TestFilter_FilterByResourceName(t *testing.T) {
 	err = twoResourceEvent.AddSimpleReading(resource2, common.ValueTypeInt32, int32(123))
 	require.NoError(t, err)
 
+	// event with readings for resource 1 & 2 & 10
+	threeResourceEvent := dtos.NewEvent(profileName1, deviceName1, sourceName1)
+	err = threeResourceEvent.AddSimpleReading(resource1, common.ValueTypeInt32, int32(123))
+	require.NoError(t, err)
+	err = threeResourceEvent.AddSimpleReading(resource2, common.ValueTypeInt32, int32(123))
+	require.NoError(t, err)
+	err = threeResourceEvent.AddSimpleReading(resource10, common.ValueTypeInt32, int32(123))
+	require.NoError(t, err)
+
 	tests := []struct {
 		Name                 string
 		Filters              []string
@@ -232,6 +253,7 @@ func TestFilter_FilterByResourceName(t *testing.T) {
 		{"filter for 2 in 2R - 2 of 2 found", []string{resource1, resource2}, false, &twoResourceEvent, false, 2},
 		{"filter for 2 in R2 - 1 of 2 found", []string{resource1, resource2}, false, &resource2Event, false, 1},
 		{"filter for 1 in R2 - not found", []string{resource1}, false, &resource2Event, true, 0},
+		{"filter for 1 in 3R via regexp - 2 found", []string{resource_regexp}, false, &threeResourceEvent, false, 2},
 
 		{"filter out - no event", []string{resource1}, true, nil, true, 0},
 		{"filter out extra param - found", []string{resource1}, true, &resource1Event, true, 0},
@@ -243,6 +265,7 @@ func TestFilter_FilterByResourceName(t *testing.T) {
 		{"filter out 2 in R2 - 1 of 1 found", []string{resource1, resource2}, true, &resource2Event, true, 0},
 		{"filter out 2 in 2R - 2 of 2 found", []string{resource1, resource2}, true, &twoResourceEvent, true, 0},
 		{"filter out 2 in R3 - not found", []string{resource1, resource2}, true, &resource3Event, false, 1},
+		{"filter out 2 in 3R via regexp - 1 found", []string{resource_regexp}, true, &threeResourceEvent, false, 1},
 	}
 
 	for _, test := range tests {
