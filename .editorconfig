@@ -1,0 +1,21 @@
+# editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Default settings:
+# A newline ending every file
+# Use 4 spaces as indentation
+[*]
+insert_final_newline = true
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+[*.md]
+indent_size = 4
+trim_trailing_whitespace = false
+
+[{*.go,*.go2}]
+ij_go_add_leading_space_to_comments = false
+ij_go_group_stdlib_imports = false

@@ -81,24 +81,21 @@ func (factory MqttFactory) configureMQTTClientForAuth(secretData *messaging.Secr
 		// nolint: gosec
 		InsecureSkipVerify: factory.skipCertVerify,
 		MinVersion:         tls.VersionTLS12,
+		ClientAuth:         tls.NoClientCert,
 	}
 	// Username may be required when cert authentication
 	if secretData.Username != "" {
 		factory.opts.SetUsername(secretData.Username)
 	}
-	switch factory.authMode {
-	case messaging.AuthModeUsernamePassword:
+	if secretData.Password != "" {
 		factory.opts.SetPassword(secretData.Password)
-	case messaging.AuthModeCert:
+	}
+	if len(secretData.CertPemBlock) > 0 && len(secretData.KeyPemBlock) > 0 {
 		cert, err = tls.X509KeyPair(secretData.CertPemBlock, secretData.KeyPemBlock)
 		if err != nil {
 			return err
 		}
 		tlsConfig.Certificates = []tls.Certificate{cert}
-	case messaging.AuthModeCA:
-		// Nothing to do here for this option
-	case messaging.AuthModeNone:
-		return nil
 	}
 
 	if len(secretData.CaPemBlock) > 0 {
