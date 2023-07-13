@@ -110,6 +110,47 @@ func TestAddRoute(t *testing.T) {
 
 }
 
+func TestAddCustomRouteUnauthenticated(t *testing.T) {
+	router := mux.NewRouter()
+
+	ws := webserver.NewWebServer(dic, router, uuid.NewString())
+
+	sdk := Service{
+		webserver: ws,
+	}
+	_ = sdk.AddCustomRoute("/test", interfaces.Unauthenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		path, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		assert.Equal(t, "/test", path)
+		return nil
+	})
+
+}
+
+func TestAddCustomRouteAuthenticated(t *testing.T) {
+	router := mux.NewRouter()
+
+	ws := webserver.NewWebServer(dic, router, uuid.NewString())
+
+	sdk := Service{
+		webserver: ws,
+		dic:       di.NewContainer(di.ServiceConstructorMap{}),
+	}
+	_ = sdk.AddCustomRoute("/test", interfaces.Authenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		path, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		assert.Equal(t, "/test", path)
+		return nil
+	})
+
+}
+
 func TestAddBackgroundPublisherNoTopic(t *testing.T) {
 	sdk := Service{
 		config: &common.ConfigurationStruct{},

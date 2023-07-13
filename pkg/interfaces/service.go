@@ -74,15 +74,27 @@ type UpdatableConfig interface {
 	bootstrapInterfaces.UpdatableConfig
 }
 
+// Authentication is a typed boolean for AddRoute calls
+type Authentication bool
+
+const (
+	Unauthenticated Authentication = false
+	Authenticated   Authentication = true
+)
+
 // ApplicationService defines the interface for an edgex Application Service
 type ApplicationService interface {
 	// AppContext returns the application service context used to detect cancelled context when the service is terminating.
 	// Used by custom app service to appropriately exit any long-running functions.
 	AppContext() context.Context
-	// AddRoute a custom REST route to the application service's internal webserver
+	// AddRoute adds a custom REST route to the application service's internal webserver
 	// A reference to this ApplicationService is add the the context that is passed to the handler, which
 	// can be retrieved using the `AppService` key
 	AddRoute(route string, handler func(http.ResponseWriter, *http.Request), methods ...string) error
+	// AddCustomRoute adds a custom REST route to the application service's internal webserver
+	// A reference to this ApplicationService is add the the context that is passed to the handler, which
+	// can be retrieved using the `AppService` key
+	AddCustomRoute(route string, authentication Authentication, handler func(http.ResponseWriter, *http.Request), methods ...string) error
 	// RequestTimeout returns the configured request timeout value from [Service] section.
 	RequestTimeout() time.Duration
 	// ApplicationSettings returns the key/value map of custom settings
