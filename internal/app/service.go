@@ -124,11 +124,24 @@ func (svc *Service) AppContext() context.Context {
 
 // AddRoute allows you to leverage the existing webserver to add routes.
 func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
+	// Legacy behavior is to add unauthenticated route
+	return svc.AddCustomRoute(route, interfaces.Unauthenticated, handler, methods...)
+}
+
+// AddCustomRoute allows you to leverage the existing webserver to add routes.
+func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authentication, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
 	if route == commonConstants.ApiPingRoute ||
 		route == commonConstants.ApiConfigRoute ||
 		route == commonConstants.ApiVersionRoute ||
 		route == internal.ApiTriggerRoute {
 		return errors.New("route is reserved")
+	}
+	if authentication == interfaces.Authenticated {
+		lc := bootstrapContainer.LoggingClientFrom(svc.dic.Get)
+		secretProvider := bootstrapContainer.SecretProviderExtFrom(svc.dic.Get)
+		authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
+
+		return svc.webserver.AddRoute(route, authenticationHook(svc.addContext(handler)), methods...)
 	}
 	return svc.webserver.AddRoute(route, svc.addContext(handler), methods...)
 }
