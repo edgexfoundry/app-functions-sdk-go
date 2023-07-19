@@ -22,54 +22,63 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/controller/rest"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/controller"
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
-
 	"github.com/gorilla/mux"
 )
 
 // WebServer handles the webserver configuration
 type WebServer struct {
-	dic        *di.Container
-	config     *sdkCommon.ConfigurationStruct
-	lc         logger.LoggingClient
-	router     *mux.Router
-	controller *rest.Controller
-}
-
-// swagger:model
-type Version struct {
-	Version    string `json:"version"`
-	SDKVersion string `json:"sdk_version"`
+	dic                 *di.Container
+	config              *sdkCommon.ConfigurationStruct
+	lc                  logger.LoggingClient
+	router              *mux.Router
+	commonApiController *controller.CommonController
 }
 
 // NewWebServer returns a new instance of *WebServer
 func NewWebServer(dic *di.Container, router *mux.Router, serviceName string) *WebServer {
 	ws := &WebServer{
-		lc:         bootstrapContainer.LoggingClientFrom(dic.Get),
-		config:     container.ConfigurationFrom(dic.Get),
-		router:     router,
-		controller: rest.NewController(router, dic, serviceName),
-		dic:        dic,
+		lc:                  bootstrapContainer.LoggingClientFrom(dic.Get),
+		config:              container.ConfigurationFrom(dic.Get),
+		router:              router,
+		commonApiController: controller.NewCommonController(dic, router, serviceName, internal.ApplicationVersion),
+		dic:                 dic,
 	}
+
+	ws.lc.Info("Registering standard routes...")
+	ws.commonApiController.SetSDKVersion(internal.SDKVersion)
+
+	/// Trigger is not considered a standard route. Trigger route (when configured) is setup by the HTTP Trigger
+	//  in internal/trigger/http/rest.go
 
 	return ws
 }
 
 // SetCustomConfigInfo sets the custom configurations
 func (webserver *WebServer) SetCustomConfigInfo(customConfig interfaces.UpdatableConfig) {
-	webserver.controller.SetCustomConfigInfo(customConfig)
+	webserver.commonApiController.SetCustomConfigInfo(customConfig)
+}
+
+// ConfigureCors sets up the middleware for CORS
+func (webserver *WebServer) ConfigureCors() {
+	router := webserver.router
+
+	webserver.lc.Info("Registering CORS middleware...")
+
+	router.Use(bootstrapHandlers.ProcessCORS(webserver.config.Service.CORSConfiguration))
+
+	// Handle the CORS preflight request
+	router.Methods(http.MethodOptions).MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		return r.Header.Get(bootstrapHandlers.AccessControlRequestMethod) != ""
+	}).HandlerFunc(bootstrapHandlers.HandlePreflight(webserver.config.Service.CORSConfiguration))
 }
 
 // AddRoute enables support to leverage the existing webserver to add routes.
@@ -80,33 +89,6 @@ func (webserver *WebServer) AddRoute(routePath string, handler func(http.Respons
 		return routeErr
 	}
 	return nil
-}
-
-// ConfigureStandardRoutes loads up the default routes
-func (webserver *WebServer) ConfigureStandardRoutes() {
-	router := webserver.router
-	controller := webserver.controller
-
-	lc := bootstrapContainer.LoggingClientFrom(webserver.dic.Get)
-	secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
-	authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
-
-	webserver.lc.Info("Registering standard routes...")
-
-	router.HandleFunc(common.ApiPingRoute, controller.Ping).Methods(http.MethodGet)
-	router.HandleFunc(common.ApiVersionRoute, authenticationHook(controller.Version)).Methods(http.MethodGet)
-	router.HandleFunc(common.ApiConfigRoute, authenticationHook(controller.Config)).Methods(http.MethodGet)
-	router.HandleFunc(internal.ApiAddSecretRoute, authenticationHook(controller.AddSecret)).Methods(http.MethodPost)
-
-	router.Use(handlers.ProcessCORS(webserver.config.Service.CORSConfiguration))
-
-	// Handle the CORS preflight request
-	router.Methods(http.MethodOptions).MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
-		return r.Header.Get(handlers.AccessControlRequestMethod) != ""
-	}).HandlerFunc(handlers.HandlePreflight(webserver.config.Service.CORSConfiguration))
-
-	/// Trigger is not considered a standard route. Trigger route (when configured) is setup by the HTTP Trigger
-	//  in internal/trigger/http/rest.go
 }
 
 // SetupTriggerRoute adds a route to handle trigger pipeline from REST request

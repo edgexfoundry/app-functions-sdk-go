@@ -133,6 +133,7 @@ func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authe
 	if route == commonConstants.ApiPingRoute ||
 		route == commonConstants.ApiConfigRoute ||
 		route == commonConstants.ApiVersionRoute ||
+		route == commonConstants.ApiSecretRoute ||
 		route == internal.ApiTriggerRoute {
 		return errors.New("route is reserved")
 	}
@@ -568,8 +569,6 @@ func (svc *Service) Initialize() error {
 	NewConfigUpdateProcessor(svc).WaitForConfigUpdates(configUpdated)
 
 	svc.webserver = webserver.NewWebServer(svc.dic, mux.NewRouter(), svc.serviceKey)
-	svc.webserver.ConfigureStandardRoutes()
-
 	svc.lc.Info("Service started in: " + startupTimer.SinceAsString())
 
 	return nil
