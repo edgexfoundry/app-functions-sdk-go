@@ -98,8 +98,9 @@ func TestAddRoute(t *testing.T) {
 	sdk := Service{
 		webserver: ws,
 	}
-	_ = sdk.AddRoute("/test", func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	err := sdk.AddRoute("/test", func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	require.NoError(t, err)
+	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, err := route.GetPathTemplate()
 		if err != nil {
 			return err
@@ -107,6 +108,7 @@ func TestAddRoute(t *testing.T) {
 		assert.Equal(t, "/test", path)
 		return nil
 	})
+	require.NoError(t, err)
 
 }
 
@@ -118,8 +120,9 @@ func TestAddCustomRouteUnauthenticated(t *testing.T) {
 	sdk := Service{
 		webserver: ws,
 	}
-	_ = sdk.AddCustomRoute("/test", interfaces.Unauthenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	err := sdk.AddCustomRoute("/test", interfaces.Unauthenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	require.NoError(t, err)
+	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, err := route.GetPathTemplate()
 		if err != nil {
 			return err
@@ -127,6 +130,7 @@ func TestAddCustomRouteUnauthenticated(t *testing.T) {
 		assert.Equal(t, "/test", path)
 		return nil
 	})
+	require.NoError(t, err)
 
 }
 
@@ -139,8 +143,9 @@ func TestAddCustomRouteAuthenticated(t *testing.T) {
 		webserver: ws,
 		dic:       di.NewContainer(di.ServiceConstructorMap{}),
 	}
-	_ = sdk.AddCustomRoute("/test", interfaces.Authenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	err := sdk.AddCustomRoute("/test", interfaces.Authenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	require.NoError(t, err)
+	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, err := route.GetPathTemplate()
 		if err != nil {
 			return err
@@ -148,6 +153,7 @@ func TestAddCustomRouteAuthenticated(t *testing.T) {
 		assert.Equal(t, "/test", path)
 		return nil
 	})
+	require.NoError(t, err)
 
 }
 
