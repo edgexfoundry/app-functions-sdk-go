@@ -90,6 +90,7 @@ type ApplicationService interface {
 	// AddRoute adds a custom REST route to the application service's internal webserver
 	// A reference to this ApplicationService is add the the context that is passed to the handler, which
 	// can be retrieved using the `AppService` key
+	// Deprecated: It is recommended to use AddCustomRoute() instead and enable authentication for custom routes
 	AddRoute(route string, handler func(http.ResponseWriter, *http.Request), methods ...string) error
 	// AddCustomRoute adds a custom REST route to the application service's internal webserver
 	// A reference to this ApplicationService is add the the context that is passed to the handler, which
