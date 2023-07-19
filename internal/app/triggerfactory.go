@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2020 Technotects
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2022-2023 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,6 +63,8 @@ func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) inte
 				svc.LoggingClient().Errorf("failed to initialize custom trigger [%s]: %s", triggerType, err.Error())
 				return nil
 			}
+		} else if len(configuration.Trigger.Type) == 0 {
+			svc.LoggingClient().Error("Trigger type not found, missing common config? Use -cp or -cc flags for common config")
 		} else {
 			svc.LoggingClient().Errorf("Invalid Trigger type of '%s' specified", configuration.Trigger.Type)
 		}
