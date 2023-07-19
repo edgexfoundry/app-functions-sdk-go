@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2021, 2023 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,7 +86,8 @@ func (vv *VersionValidator) BootstrapHandler(
 	// Core Metadata will never be optional.
 	val, ok := config.Clients[common.CoreMetaDataServiceKey]
 	if !ok {
-		logger.Error("Unable to get version of Core Metadata: Core Metadata missing from Clients configuration")
+		logger.Error("Unable to get version of Core Metadata: " +
+			"Client configuration for core-metadata not found, missing common config? Use -cp or -cc flags for common config.")
 		return false
 	}
 

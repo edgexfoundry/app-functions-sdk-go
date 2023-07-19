@@ -547,7 +547,7 @@ func (svc *Service) Initialize() error {
 	svc.addDeferred(deferred)
 
 	if !successful {
-		return fmt.Errorf("boostrapping failed")
+		return fmt.Errorf("bootstrapping failed")
 	}
 
 	configuration := container.ConfigurationFrom(svc.dic.Get)

@@ -72,7 +72,9 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 
 	subscribeTopics := strings.TrimSpace(config.Trigger.SubscribeTopics)
 	if len(subscribeTopics) == 0 {
-		return nil, fmt.Errorf("'%s' can not be an empty string. Must contain one or more topic seperated by commas", internal.MessageBusSubscribeTopics)
+		errMsg := "'%s' can not be an empty string. Must contain one or more topic separated by commas, " +
+			"missing common config? Use -cp or -cc flags for common config"
+		return nil, fmt.Errorf(errMsg, internal.MessageBusSubscribeTopics)
 	}
 
 	topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(subscribeTopics, util.SplitComma))
