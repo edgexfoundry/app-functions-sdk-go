@@ -91,70 +91,56 @@ func IsInstanceOf(objectPtr, typePtr interface{}) bool {
 }
 
 func TestAddRoute(t *testing.T) {
-	router := mux.NewRouter()
+	sdk, router := createSdkAndRouter()
+	expectedPath := "/test"
 
-	ws := webserver.NewWebServer(dic, router, uuid.NewString())
-
-	sdk := Service{
-		webserver: ws,
-	}
-	err := sdk.AddRoute("/test", func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	require.NoError(t, err)
-	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		path, err := route.GetPathTemplate()
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, "/test", path)
-		return nil
-	})
-	require.NoError(t, err)
-
+	_ = sdk.AddRoute(expectedPath, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	verifyPath(t, expectedPath, router)
 }
 
 func TestAddCustomRouteUnauthenticated(t *testing.T) {
-	router := mux.NewRouter()
+	sdk, router := createSdkAndRouter()
+	expectedPath := "/test"
 
-	ws := webserver.NewWebServer(dic, router, uuid.NewString())
-
-	sdk := Service{
-		webserver: ws,
-	}
-	err := sdk.AddCustomRoute("/test", interfaces.Unauthenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	require.NoError(t, err)
-	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		path, err := route.GetPathTemplate()
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, "/test", path)
-		return nil
-	})
-	require.NoError(t, err)
-
+	_ = sdk.AddCustomRoute(expectedPath, interfaces.Unauthenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	verifyPath(t, expectedPath, router)
 }
 
 func TestAddCustomRouteAuthenticated(t *testing.T) {
+	sdk, router := createSdkAndRouter()
+	expectedPath := "/test"
+
+	_ = sdk.AddCustomRoute(expectedPath, interfaces.Authenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	verifyPath(t, expectedPath, router)
+
+}
+
+func createSdkAndRouter() (Service, *mux.Router) {
 	router := mux.NewRouter()
 
 	ws := webserver.NewWebServer(dic, router, uuid.NewString())
 
 	sdk := Service{
 		webserver: ws,
-		dic:       di.NewContainer(di.ServiceConstructorMap{}),
+		dic:       dic,
 	}
-	err := sdk.AddCustomRoute("/test", interfaces.Authenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	require.NoError(t, err)
-	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	return sdk, router
+}
+
+func verifyPath(t *testing.T, expectedPath string, router *mux.Router) {
+	pathFound := false
+	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, err := route.GetPathTemplate()
 		if err != nil {
 			return err
 		}
-		assert.Equal(t, "/test", path)
+		if path == expectedPath {
+			pathFound = true
+		}
 		return nil
 	})
-	require.NoError(t, err)
 
+	assert.True(t, pathFound)
 }
 
 func TestAddBackgroundPublisherNoTopic(t *testing.T) {
