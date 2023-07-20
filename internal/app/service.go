@@ -569,6 +569,8 @@ func (svc *Service) Initialize() error {
 	NewConfigUpdateProcessor(svc).WaitForConfigUpdates(configUpdated)
 
 	svc.webserver = webserver.NewWebServer(svc.dic, mux.NewRouter(), svc.serviceKey)
+	svc.webserver.ConfigureCors()
+
 	svc.lc.Info("Service started in: " + startupTimer.SinceAsString())
 
 	return nil
