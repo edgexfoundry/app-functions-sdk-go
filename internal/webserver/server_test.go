@@ -17,11 +17,12 @@
 package webserver
 
 import (
-	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/google/uuid"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
@@ -69,6 +70,12 @@ func TestAddRoute(t *testing.T) {
 }
 
 func TestSetupTriggerRoute(t *testing.T) {
+	envDisableSecurity := os.Getenv("EDGEX_DISABLE_JWT_VALIDATION")
+	os.Setenv("EDGEX_DISABLE_JWT_VALIDATION", "true")
+	defer func() {
+		os.Setenv("EDGEX_DISABLE_JWT_VALIDATION", envDisableSecurity)
+	}()
+
 	webserver := NewWebServer(dic, mux.NewRouter(), uuid.NewString())
 
 	handlerFunctionNotCalled := true

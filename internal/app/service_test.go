@@ -97,8 +97,9 @@ func TestAddRoute(t *testing.T) {
 	sdk := Service{
 		webserver: ws,
 	}
-	_ = sdk.AddRoute("/test", func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	err := sdk.AddRoute("/test", func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	require.NoError(t, err)
+	err = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, err := route.GetPathTemplate()
 		if err != nil {
 			return err
@@ -106,6 +107,7 @@ func TestAddRoute(t *testing.T) {
 		assert.Equal(t, "/test", path)
 		return nil
 	})
+	require.NoError(t, err)
 
 }
 

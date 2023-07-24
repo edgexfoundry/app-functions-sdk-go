@@ -31,6 +31,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
@@ -85,12 +86,16 @@ func (webserver *WebServer) ConfigureStandardRoutes() {
 	router := webserver.router
 	controller := webserver.controller
 
+	lc := bootstrapContainer.LoggingClientFrom(webserver.dic.Get)
+	secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
+	authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
+
 	webserver.lc.Info("Registering standard routes...")
 
 	router.HandleFunc(common.ApiPingRoute, controller.Ping).Methods(http.MethodGet)
-	router.HandleFunc(common.ApiVersionRoute, controller.Version).Methods(http.MethodGet)
-	router.HandleFunc(common.ApiConfigRoute, controller.Config).Methods(http.MethodGet)
-	router.HandleFunc(internal.ApiAddSecretRoute, controller.AddSecret).Methods(http.MethodPost)
+	router.HandleFunc(common.ApiVersionRoute, authenticationHook(controller.Version)).Methods(http.MethodGet)
+	router.HandleFunc(common.ApiConfigRoute, authenticationHook(controller.Config)).Methods(http.MethodGet)
+	router.HandleFunc(internal.ApiAddSecretRoute, authenticationHook(controller.AddSecret)).Methods(http.MethodPost)
 
 	router.Use(handlers.ProcessCORS(webserver.config.Service.CORSConfiguration))
 
@@ -105,7 +110,10 @@ func (webserver *WebServer) ConfigureStandardRoutes() {
 
 // SetupTriggerRoute adds a route to handle trigger pipeline from REST request
 func (webserver *WebServer) SetupTriggerRoute(path string, handlerForTrigger func(http.ResponseWriter, *http.Request)) {
-	webserver.router.HandleFunc(path, handlerForTrigger)
+	lc := bootstrapContainer.LoggingClientFrom(webserver.dic.Get)
+	secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
+	authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
+	webserver.router.HandleFunc(path, authenticationHook(handlerForTrigger))
 }
 
 // StartWebServer starts the web server
