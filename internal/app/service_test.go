@@ -1029,18 +1029,15 @@ func TestService_Publish(t *testing.T) {
 				MessageBus: config.MessageBusInfo{
 					Disabled: true,
 				},
-				Trigger: common.TriggerInfo{
-					PublishTopic: "test",
-				},
 			},
 			message:       "test",
-			expectedError: errors.New("messagebus is disabled via configuration"),
+			expectedError: errors.New(messageBusDisabledErr),
 		},
 		{
 			name: "valid publish",
 			config: &common.ConfigurationStruct{
 				MessageBus: config.MessageBusInfo{
-					Disabled: false,
+					Disabled:        false,
 					BaseTopicPrefix: "test",
 				},
 				Trigger: common.TriggerInfo{
@@ -1056,7 +1053,7 @@ func TestService_Publish(t *testing.T) {
 			name: "publish error",
 			config: &common.ConfigurationStruct{
 				MessageBus: config.MessageBusInfo{
-					Disabled: false,
+					Disabled:        false,
 					BaseTopicPrefix: "test",
 				},
 				Trigger: common.TriggerInfo{
@@ -1066,7 +1063,7 @@ func TestService_Publish(t *testing.T) {
 			expectedTopic: "test/test",
 			message:       "test",
 			publishErr:    errors.New("failed"),
-			expectedError: errors.New("failed to publish data to messagebus: failed"),
+			expectedError: fmt.Errorf("%v: failed", publishDataErr),
 		},
 	}
 	for _, tt := range tests {
@@ -1078,7 +1075,7 @@ func TestService_Publish(t *testing.T) {
 				mockMessageClient.On("Publish", mock.Anything, tt.expectedTopic).Return(tt.publishErr)
 			}
 
-			dic = di.NewContainer(di.ServiceConstructorMap{
+			publishDic := di.NewContainer(di.ServiceConstructorMap{
 				bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 					return logger.NewMockClient()
 				},
@@ -1091,7 +1088,7 @@ func TestService_Publish(t *testing.T) {
 			})
 
 			svc := &Service{
-				dic:    dic,
+				dic:    publishDic,
 				config: tt.config,
 			}
 
@@ -1119,38 +1116,38 @@ func TestService_PublishWithTopic(t *testing.T) {
 					Disabled: true,
 				},
 			},
-			message:    "test",
-			expectedError: errors.New("messagebus is disabled via configuration"),
-			wantErr:    true,
+			message:       "test",
+			expectedError: errors.New(messageBusDisabledErr),
+			wantErr:       true,
 		},
 		{
 			name: "valid publish",
 			config: &common.ConfigurationStruct{
 				MessageBus: config.MessageBusInfo{
-					Disabled: false,
+					Disabled:        false,
 					BaseTopicPrefix: "test",
 				},
 			},
-			topic:      "test_topic",
+			topic:         "test_topic",
 			expectedTopic: "test/test_topic",
-			message:    "test",
-			publishErr: nil,
-			wantErr:    false,
+			message:       "test",
+			publishErr:    nil,
+			wantErr:       false,
 		},
 		{
 			name: "publish error",
 			config: &common.ConfigurationStruct{
 				MessageBus: config.MessageBusInfo{
-					Disabled: false,
+					Disabled:        false,
 					BaseTopicPrefix: "test",
 				},
 			},
-			topic:      "test_topic",
+			topic:         "test_topic",
 			expectedTopic: "test/test_topic",
-			message:    "test",
-			publishErr: errors.New("failed"),
-			expectedError: errors.New("failed to publish data to messagebus: failed"),
-			wantErr:    true,
+			message:       "test",
+			publishErr:    errors.New("failed"),
+			expectedError: fmt.Errorf("%v: failed", publishDataErr),
+			wantErr:       true,
 		},
 	}
 	for _, tt := range tests {
@@ -1162,7 +1159,7 @@ func TestService_PublishWithTopic(t *testing.T) {
 				mockMessageClient.On("Publish", mock.Anything, tt.expectedTopic).Return(tt.publishErr)
 			}
 
-			dic = di.NewContainer(di.ServiceConstructorMap{
+			publishDic := di.NewContainer(di.ServiceConstructorMap{
 				bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 					return logger.NewMockClient()
 				},
@@ -1176,7 +1173,7 @@ func TestService_PublishWithTopic(t *testing.T) {
 			})
 
 			svc := &Service{
-				dic:    dic,
+				dic:    publishDic,
 				config: tt.config,
 			}
 

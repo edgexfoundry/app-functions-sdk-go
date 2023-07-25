@@ -109,4 +109,8 @@ type AppFunctionContext interface {
 	ApplyValues(format string) (string, error)
 	// PipelineId returns the ID of the pipeline that is executing
 	PipelineId() string
+	// Publish pushes data to the MessageBus using configured topic
+	Publish(data any) error
+	// Publish pushes data to the MessageBus for a given topic
+	PublishWithTopic(topic string, data any) error
 }

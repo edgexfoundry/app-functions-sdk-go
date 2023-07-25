@@ -453,19 +453,19 @@ func TestContext_Publish(t *testing.T) {
 		name            string
 		message         string
 		publishErr      error
-		commonConfig    *appCommon.ConfigurationStruct
+		triggerConfig   *appCommon.ConfigurationStruct
 		bootstrapConfig config.BootstrapConfiguration
 		expectedError   error
 		expectedTopic   string
 	}{
 		{
 			name: "No message bus config",
-			commonConfig: &appCommon.ConfigurationStruct{
+			triggerConfig: &appCommon.ConfigurationStruct{
 				Trigger: appCommon.TriggerInfo{
 					PublishTopic: "test",
 				},
 			},
-			bootstrapConfig:  config.BootstrapConfiguration{
+			bootstrapConfig: config.BootstrapConfiguration{
 				MessageBus: &config.MessageBusInfo{
 					Disabled:        true,
 					BaseTopicPrefix: "test",
@@ -473,16 +473,16 @@ func TestContext_Publish(t *testing.T) {
 			},
 			message:       "test",
 			expectedTopic: "test/test",
-			expectedError: errors.New("messagebus is disabled via configuration"),
+			expectedError: errors.New(messageBusDisabledErr),
 		},
 		{
 			name: "valid publish",
-			commonConfig: &appCommon.ConfigurationStruct{
+			triggerConfig: &appCommon.ConfigurationStruct{
 				Trigger: appCommon.TriggerInfo{
 					PublishTopic: "test",
 				},
 			},
-			bootstrapConfig:  config.BootstrapConfiguration{
+			bootstrapConfig: config.BootstrapConfiguration{
 				MessageBus: &config.MessageBusInfo{
 					Disabled:        false,
 					BaseTopicPrefix: "test",
@@ -495,12 +495,12 @@ func TestContext_Publish(t *testing.T) {
 		},
 		{
 			name: "publish error",
-			commonConfig: &appCommon.ConfigurationStruct{
+			triggerConfig: &appCommon.ConfigurationStruct{
 				Trigger: appCommon.TriggerInfo{
 					PublishTopic: "test",
 				},
 			},
-			bootstrapConfig:  config.BootstrapConfiguration{
+			bootstrapConfig: config.BootstrapConfiguration{
 				MessageBus: &config.MessageBusInfo{
 					Disabled:        false,
 					BaseTopicPrefix: "test",
@@ -525,7 +525,7 @@ func TestContext_Publish(t *testing.T) {
 				mockConfig.On("GetBootstrap").Return(tt.bootstrapConfig)
 			}
 
-			dic = di.NewContainer(di.ServiceConstructorMap{
+			publishDic := di.NewContainer(di.ServiceConstructorMap{
 				bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 					return logger.NewMockClient()
 				},
@@ -537,14 +537,14 @@ func TestContext_Publish(t *testing.T) {
 					return mockMessageClient
 				},
 				container.ConfigurationName: func(get di.Get) interface{} {
-					return tt.commonConfig
+					return tt.triggerConfig
 				},
 				bootstrapContainer.ConfigurationInterfaceName: func(get di.Get) interface{} {
 					return mockConfig
 				},
 			})
 
-			appContext := NewContext("", dic, "")
+			appContext := NewContext("", publishDic, "")
 
 			err := appContext.Publish(tt.message)
 			require.Equal(t, tt.expectedError, err)
@@ -554,29 +554,29 @@ func TestContext_Publish(t *testing.T) {
 
 func TestService_PublishWithTopic(t *testing.T) {
 	tests := []struct {
-		name          string
-		topic         string
-		message       string
-		publishErr    error
-		expectedTopic string
-		expectedError error
-		config        config.BootstrapConfiguration
-		wantErr       bool
+		name            string
+		topic           string
+		message         string
+		publishErr      error
+		expectedTopic   string
+		expectedError   error
+		bootstrapConfig config.BootstrapConfiguration
+		wantErr         bool
 	}{
 		{
 			name: "No message bus config",
-			config: config.BootstrapConfiguration{
+			bootstrapConfig: config.BootstrapConfiguration{
 				MessageBus: &config.MessageBusInfo{
 					Disabled: true,
 				},
 			},
 			message:       "test",
-			expectedError: errors.New("messagebus is disabled via configuration"),
+			expectedError: errors.New(messageBusDisabledErr),
 			wantErr:       true,
 		},
 		{
 			name: "valid publish",
-			config: config.BootstrapConfiguration{
+			bootstrapConfig: config.BootstrapConfiguration{
 				MessageBus: &config.MessageBusInfo{
 					Disabled:        false,
 					BaseTopicPrefix: "test",
@@ -590,7 +590,7 @@ func TestService_PublishWithTopic(t *testing.T) {
 		},
 		{
 			name: "publish error",
-			config: config.BootstrapConfiguration{
+			bootstrapConfig: config.BootstrapConfiguration{
 				MessageBus: &config.MessageBusInfo{
 					Disabled:        false,
 					BaseTopicPrefix: "test",
@@ -608,15 +608,15 @@ func TestService_PublishWithTopic(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var mockMessageClient *messageMocks.MessageClient
 			var mockConfig *bootstrapMocks.Configuration
-			if !tt.config.MessageBus.Disabled {
+			if !tt.bootstrapConfig.MessageBus.Disabled {
 				mockMessageClient = &messageMocks.MessageClient{}
 				mockMessageClient.On("Connect").Return(nil)
 				mockMessageClient.On("Publish", mock.Anything, tt.expectedTopic).Return(tt.publishErr)
 				mockConfig = &bootstrapMocks.Configuration{}
-				mockConfig.On("GetBootstrap").Return(tt.config)
+				mockConfig.On("GetBootstrap").Return(tt.bootstrapConfig)
 			}
 
-			dic = di.NewContainer(di.ServiceConstructorMap{
+			publishDic := di.NewContainer(di.ServiceConstructorMap{
 				bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 					return logger.NewMockClient()
 				},
@@ -632,7 +632,7 @@ func TestService_PublishWithTopic(t *testing.T) {
 				},
 			})
 
-			appContext := NewContext("", dic, "")
+			appContext := NewContext("", publishDic, "")
 
 			err := appContext.PublishWithTopic(tt.topic, tt.message)
 			require.Equal(t, tt.expectedError, err)

@@ -24,8 +24,6 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/edgexfoundry/go-mod-configuration/v3 v3.1.0-dev.3 // indirect
-	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.3.0 // indirect
-	github.com/edgexfoundry/go-mod-secrets/v2 v2.3.0 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v3 v3.1.0-dev.3 // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect

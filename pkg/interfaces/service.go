@@ -135,7 +135,7 @@ type ApplicationService interface {
 	RegisterCustomStoreFactory(name string, factory func(cfg config.Database, cred config.Credentials) (StoreClient, error)) error
 	// AddBackgroundPublisher Adds and returns a BackgroundPublisher which is used to publish
 	// asynchronously to the Edgex MessageBus.
-	// Not valid for use with the HTTP or External MQTT triggers
+	// Not valid for use with the HTTP or External MQTT triggers *DEPRECATED*
 	AddBackgroundPublisher(capacity int) (BackgroundPublisher, error)
 	// AddBackgroundPublisherWithTopic Adds and returns a BackgroundPublisher which is used to publish
 	// asynchronously to the Edgex MessageBus on the specified topic.
@@ -189,8 +189,8 @@ type ApplicationService interface {
 	ListenForCustomConfigChanges(configToWatch interface{}, sectionName string, changedCallback func(interface{})) error
 	// BuildContext allows external callers that may need a context (eg background publishers) to easily create one
 	BuildContext(correlationId string, contentType string) AppFunctionContext
-	// Publish pushes data to the messagebus
-	Publish(v any) error
-	// Publish pushes data to the messagebus for a given topic
+	// Publish pushes data to the MessageBus using configured topic
+	Publish(data any) error
+	// Publish pushes data to the MessageBus using given topic
 	PublishWithTopic(topic string, data any) error
 }

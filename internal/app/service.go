@@ -39,15 +39,15 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/handlers"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	contractsCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
+	contractsCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 
 	clientInterfaces "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	commonConstants "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/models"
 	"github.com/edgexfoundry/go-mod-registry/v3/registry"
 
@@ -70,6 +70,10 @@ const (
 	metricTargetType = "metric"
 	eventTargetType  = "event"
 	emptyTargetType  = ""
+
+	messageBusDisabledErr = "publish failed due to MessageBus disabled via configuration"
+	publishDataErr        = "failed to publish data to MessageBus"
+	publishMarshalErr     = "failed to marshal data for publishing"
 )
 
 // NewService create, initializes and returns new instance of app.Service which implements the
@@ -133,10 +137,10 @@ func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, 
 
 // AddCustomRoute allows you to leverage the existing webserver to add routes.
 func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authentication, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
-	if route == commonConstants.ApiPingRoute ||
-		route == commonConstants.ApiConfigRoute ||
-		route == commonConstants.ApiVersionRoute ||
-		route == commonConstants.ApiSecretRoute ||
+	if route == coreCommon.ApiPingRoute ||
+		route == coreCommon.ApiConfigRoute ||
+		route == coreCommon.ApiVersionRoute ||
+		route == coreCommon.ApiSecretRoute ||
 		route == internal.ApiTriggerRoute {
 		return errors.New("route is reserved")
 	}
@@ -172,7 +176,7 @@ func (svc *Service) AddBackgroundPublisherWithTopic(capacity int, topic string) 
 		return nil, fmt.Errorf("background publishing not supported for %s trigger", svc.config.Trigger.Type)
 	}
 
-	topic = commonConstants.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic)
+	topic = coreCommon.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic)
 
 	bgChan, pub := newBackgroundPublisher(topic, capacity)
 	svc.backgroundPublishChannel = bgChan
@@ -430,7 +434,7 @@ func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, tr
 	// Must add the base topic to all the input topics
 	var fullTopics []string
 	for _, topic := range topics {
-		fullTopics = append(fullTopics, commonConstants.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic))
+		fullTopics = append(fullTopics, coreCommon.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic))
 	}
 
 	err := svc.runtime.AddFunctionsPipeline(id, fullTopics, transforms)
@@ -532,7 +536,7 @@ func (svc *Service) Initialize() error {
 		svc.ctx.appCancelCtx,
 		svc.flags,
 		svc.serviceKey,
-		commonConstants.ConfigStemApp,
+		coreCommon.ConfigStemApp,
 		svc.config,
 		configUpdated,
 		startupTimer,
@@ -737,45 +741,44 @@ func (svc *Service) BuildContext(correlationId string, contentType string) inter
 	return appfunction.NewContext(correlationId, svc.dic, contentType)
 }
 
-// Publish pushes data to the messagebus
-func (svc *Service) Publish(v any) error {
+// Publish pushes data to the MessageBus using configured topic
+func (svc *Service) Publish(data any) error {
 	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
 	if messageClient == nil {
-		return fmt.Errorf("messagebus is disabled via configuration")
+		return fmt.Errorf(messageBusDisabledErr)
 	}
 
 	triggertopic := svc.config.Trigger.PublishTopic
 	baseTopic := svc.config.MessageBus.BaseTopicPrefix
 
-	payload, err := json.Marshal(v)
+	payload, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal data: %v", err)
+		return fmt.Errorf("%v: %v", publishMarshalErr, err)
 	}
 	message := types.NewMessageEnvelope(payload, context.Background())
 	err = messageClient.Publish(message, contractsCommon.BuildTopic(baseTopic, triggertopic))
 	if err != nil {
-		return fmt.Errorf("failed to publish data to messagebus: %v", err)
+		return fmt.Errorf("%v: %v", publishDataErr, err)
 	}
 	return nil
 }
 
-// Publish pushes data to the messagebus for a given topic
+// Publish pushes data to the MessageBus using given topic
 func (svc *Service) PublishWithTopic(topic string, data any) error {
 	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
 	if messageClient == nil {
-		return fmt.Errorf("messagebus is disabled via configuration")
+		return fmt.Errorf(messageBusDisabledErr)
 	}
 
-	full_topic := commonConstants.BuildTopic(svc.config.MessageBus.BaseTopicPrefix, topic)
 	payload, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal data: %v", err)
+		return fmt.Errorf("%v: %v", publishMarshalErr, err)
 	}
 
 	message := types.NewMessageEnvelope(payload, context.Background())
-	err = messageClient.Publish(message, full_topic)
+	err = messageClient.Publish(message, coreCommon.BuildTopic(svc.config.MessageBus.BaseTopicPrefix, topic))
 	if err != nil {
-		return fmt.Errorf("failed to publish data to messagebus: %v", err)
+		return fmt.Errorf("%v: %v", publishDataErr, err)
 	}
 
 	return nil

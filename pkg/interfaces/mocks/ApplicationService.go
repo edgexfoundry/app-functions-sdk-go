@@ -423,13 +423,13 @@ func (_m *ApplicationService) NotificationClient() clientsinterfaces.Notificatio
 	return r0
 }
 
-// Publish provides a mock function with given fields: v
-func (_m *ApplicationService) Publish(v interface{}) error {
-	ret := _m.Called(v)
+// Publish provides a mock function with given fields: data
+func (_m *ApplicationService) Publish(data interface{}) error {
+	ret := _m.Called(data)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(interface{}) error); ok {
-		r0 = rf(v)
+		r0 = rf(data)
 	} else {
 		r0 = ret.Error(0)
 	}
