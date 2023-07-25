@@ -19,18 +19,22 @@ package appfunction
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
@@ -139,54 +143,54 @@ func (appContext *Context) RetryData() []byte {
 
 // SecretProvider returns the SecretProvider instance
 func (appContext *Context) SecretProvider() bootstrapInterfaces.SecretProvider {
-	secretProvider := container.SecretProviderFrom(appContext.Dic.Get)
+	secretProvider := bootstrapContainer.SecretProviderFrom(appContext.Dic.Get)
 	return secretProvider
 }
 
 // LoggingClient returns the Logging client from the dependency injection container
 func (appContext *Context) LoggingClient() logger.LoggingClient {
-	return container.LoggingClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.LoggingClientFrom(appContext.Dic.Get)
 }
 
 // EventClient returns the Event client, which may be nil, from the dependency injection container
 func (appContext *Context) EventClient() clients.EventClient {
-	return container.EventClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.EventClientFrom(appContext.Dic.Get)
 }
 
 // CommandClient returns the Command client, which may be nil, from the dependency injection container
 func (appContext *Context) CommandClient() clients.CommandClient {
-	return container.CommandClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.CommandClientFrom(appContext.Dic.Get)
 }
 
 // DeviceServiceClient returns the DeviceService client, which may be nil, from the dependency injection container
 func (appContext *Context) DeviceServiceClient() clients.DeviceServiceClient {
-	return container.DeviceServiceClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.DeviceServiceClientFrom(appContext.Dic.Get)
 }
 
 // DeviceProfileClient returns the DeviceProfile client, which may be nil, from the dependency injection container
 func (appContext *Context) DeviceProfileClient() clients.DeviceProfileClient {
-	return container.DeviceProfileClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.DeviceProfileClientFrom(appContext.Dic.Get)
 }
 
 // DeviceClient returns the Device client, which may be nil, from the dependency injection container
 func (appContext *Context) DeviceClient() clients.DeviceClient {
-	return container.DeviceClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.DeviceClientFrom(appContext.Dic.Get)
 }
 
 // NotificationClient returns the Notification client, which may be nil, from the dependency injection container
 func (appContext *Context) NotificationClient() clients.NotificationClient {
-	return container.NotificationClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.NotificationClientFrom(appContext.Dic.Get)
 }
 
 // MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
 // github.com/rcrowley/go-metrics
 func (appContext *Context) MetricsManager() bootstrapInterfaces.MetricsManager {
-	return container.MetricsManagerFrom(appContext.Dic.Get)
+	return bootstrapContainer.MetricsManagerFrom(appContext.Dic.Get)
 }
 
 // SubscriptionClient returns the Subscription client, which may be nil, from the dependency injection container
 func (appContext *Context) SubscriptionClient() clients.SubscriptionClient {
-	return container.SubscriptionClientFrom(appContext.Dic.Get)
+	return bootstrapContainer.SubscriptionClientFrom(appContext.Dic.Get)
 }
 
 // AddValue stores a value for access within other functions in pipeline
@@ -268,4 +272,50 @@ func (appContext *Context) ApplyValues(format string) (string, error) {
 func (appContext *Context) PipelineId() string {
 	id, _ := appContext.GetValue(interfaces.PIPELINEID)
 	return id
+}
+
+// Publish pushes data to the messagebus
+func (appContext *Context) Publish(v any) error {
+	messageClient := bootstrapContainer.MessagingClientFrom(appContext.Dic.Get)
+	if messageClient == nil {
+		return fmt.Errorf("messagebus is disabled via configuration")
+	}
+
+	triggerConfig := container.ConfigurationFrom(appContext.Dic.Get).Trigger
+	baseTopic := bootstrapContainer.ConfigurationFrom(appContext.Dic.Get).GetBootstrap().MessageBus.BaseTopicPrefix
+
+	payload, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %v", err)
+	}
+	message := types.NewMessageEnvelope(payload, context.Background())
+	err = messageClient.Publish(message, common.BuildTopic(baseTopic, triggerConfig.PublishTopic))
+	if err != nil {
+		return fmt.Errorf("failed to publish data to messagebus: %v", err)
+	}
+	return nil
+}
+
+// Publish pushes data to the messagebus for a given topic
+func (appContext *Context) PublishWithTopic(topic string, data any) error {
+	messageClient := bootstrapContainer.MessagingClientFrom(appContext.Dic.Get)
+	if messageClient == nil {
+		return fmt.Errorf("messagebus is disabled via configuration")
+	}
+
+	config := bootstrapContainer.ConfigurationFrom(appContext.Dic.Get)
+
+	full_topic := common.BuildTopic(config.GetBootstrap().MessageBus.BaseTopicPrefix, topic)
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %v", err)
+	}
+
+	message := types.NewMessageEnvelope(payload, context.Background())
+	err = messageClient.Publish(message, full_topic)
+	if err != nil {
+		return fmt.Errorf("failed to publish data to messagebus: %v", err)
+	}
+
+	return nil
 }

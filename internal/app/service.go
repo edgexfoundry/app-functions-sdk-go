@@ -18,6 +18,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	nethttp "net/http"
@@ -31,12 +32,14 @@ import (
 
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
+	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/handlers"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
+	contractsCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/runtime"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -732,4 +735,48 @@ func (svc *Service) setServiceKey(profile string) {
 // to easily create one around the service's dic
 func (svc *Service) BuildContext(correlationId string, contentType string) interfaces.AppFunctionContext {
 	return appfunction.NewContext(correlationId, svc.dic, contentType)
+}
+
+// Publish pushes data to the messagebus
+func (svc *Service) Publish(v any) error {
+	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
+	if messageClient == nil {
+		return fmt.Errorf("messagebus is disabled via configuration")
+	}
+
+	triggertopic := svc.config.Trigger.PublishTopic
+	baseTopic := svc.config.MessageBus.BaseTopicPrefix
+
+	payload, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %v", err)
+	}
+	message := types.NewMessageEnvelope(payload, context.Background())
+	err = messageClient.Publish(message, contractsCommon.BuildTopic(baseTopic, triggertopic))
+	if err != nil {
+		return fmt.Errorf("failed to publish data to messagebus: %v", err)
+	}
+	return nil
+}
+
+// Publish pushes data to the messagebus for a given topic
+func (svc *Service) PublishWithTopic(topic string, data any) error {
+	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
+	if messageClient == nil {
+		return fmt.Errorf("messagebus is disabled via configuration")
+	}
+
+	full_topic := commonConstants.BuildTopic(svc.config.MessageBus.BaseTopicPrefix, topic)
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %v", err)
+	}
+
+	message := types.NewMessageEnvelope(payload, context.Background())
+	err = messageClient.Publish(message, full_topic)
+	if err != nil {
+		return fmt.Errorf("failed to publish data to messagebus: %v", err)
+	}
+
+	return nil
 }

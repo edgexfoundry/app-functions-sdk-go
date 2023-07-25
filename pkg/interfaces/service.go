@@ -189,4 +189,8 @@ type ApplicationService interface {
 	ListenForCustomConfigChanges(configToWatch interface{}, sectionName string, changedCallback func(interface{})) error
 	// BuildContext allows external callers that may need a context (eg background publishers) to easily create one
 	BuildContext(correlationId string, contentType string) AppFunctionContext
+	// Publish pushes data to the messagebus
+	Publish(v any) error
+	// Publish pushes data to the messagebus for a given topic
+	PublishWithTopic(topic string, data any) error
 }
