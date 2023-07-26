@@ -18,19 +18,12 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
-
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
@@ -41,7 +34,15 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	builtin "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
-
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/config"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
+	messageMocks "github.com/edgexfoundry/go-mod-messaging/v3/messaging/mocks"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -1011,4 +1012,174 @@ func TestService_AppContext(t *testing.T) {
 	assert.Equal(t, expected, actual)
 	// Linter requires use cancel function
 	cancel()
+}
+
+func TestService_Publish(t *testing.T) {
+	tests := []struct {
+		name          string
+		message       string
+		publishErr    error
+		config        *common.ConfigurationStruct
+		expectedError error
+		expectedTopic string
+	}{
+		{
+			name: "No message bus config",
+			config: &common.ConfigurationStruct{
+				MessageBus: config.MessageBusInfo{
+					Disabled: true,
+				},
+			},
+			message:       "test",
+			expectedError: errors.New(messageBusDisabledErr),
+		},
+		{
+			name: "valid publish",
+			config: &common.ConfigurationStruct{
+				MessageBus: config.MessageBusInfo{
+					Disabled:        false,
+					BaseTopicPrefix: "test",
+				},
+				Trigger: common.TriggerInfo{
+					PublishTopic: "test",
+				},
+			},
+			expectedTopic: "test/test",
+			message:       "test",
+			publishErr:    nil,
+			expectedError: nil,
+		},
+		{
+			name: "publish error",
+			config: &common.ConfigurationStruct{
+				MessageBus: config.MessageBusInfo{
+					Disabled:        false,
+					BaseTopicPrefix: "test",
+				},
+				Trigger: common.TriggerInfo{
+					PublishTopic: "test",
+				},
+			},
+			expectedTopic: "test/test",
+			message:       "test",
+			publishErr:    errors.New("failed"),
+			expectedError: fmt.Errorf("%v: failed", publishDataErr),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var mockMessageClient *messageMocks.MessageClient
+			if !tt.config.MessageBus.Disabled {
+				mockMessageClient = &messageMocks.MessageClient{}
+				mockMessageClient.On("Connect").Return(nil)
+				mockMessageClient.On("Publish", mock.Anything, tt.expectedTopic).Return(tt.publishErr)
+			}
+
+			publishDic := di.NewContainer(di.ServiceConstructorMap{
+				bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
+					return logger.NewMockClient()
+				},
+				bootstrapContainer.MessagingClientName: func(get di.Get) interface{} {
+					if mockMessageClient == nil {
+						return nil
+					}
+					return mockMessageClient
+				},
+			})
+
+			svc := &Service{
+				dic:    publishDic,
+				config: tt.config,
+			}
+
+			err := svc.Publish(tt.message)
+			require.Equal(t, tt.expectedError, err)
+		})
+	}
+}
+
+func TestService_PublishWithTopic(t *testing.T) {
+	tests := []struct {
+		name          string
+		topic         string
+		message       string
+		publishErr    error
+		expectedTopic string
+		expectedError error
+		config        *common.ConfigurationStruct
+		wantErr       bool
+	}{
+		{
+			name: "No message bus config",
+			config: &common.ConfigurationStruct{
+				MessageBus: config.MessageBusInfo{
+					Disabled: true,
+				},
+			},
+			message:       "test",
+			expectedError: errors.New(messageBusDisabledErr),
+			wantErr:       true,
+		},
+		{
+			name: "valid publish",
+			config: &common.ConfigurationStruct{
+				MessageBus: config.MessageBusInfo{
+					Disabled:        false,
+					BaseTopicPrefix: "test",
+				},
+			},
+			topic:         "test_topic",
+			expectedTopic: "test/test_topic",
+			message:       "test",
+			publishErr:    nil,
+			wantErr:       false,
+		},
+		{
+			name: "publish error",
+			config: &common.ConfigurationStruct{
+				MessageBus: config.MessageBusInfo{
+					Disabled:        false,
+					BaseTopicPrefix: "test",
+				},
+			},
+			topic:         "test_topic",
+			expectedTopic: "test/test_topic",
+			message:       "test",
+			publishErr:    errors.New("failed"),
+			expectedError: fmt.Errorf("%v: failed", publishDataErr),
+			wantErr:       true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var mockMessageClient *messageMocks.MessageClient
+			if !tt.config.MessageBus.Disabled {
+				mockMessageClient = &messageMocks.MessageClient{}
+				mockMessageClient.On("Connect").Return(nil)
+				mockMessageClient.On("Publish", mock.Anything, tt.expectedTopic).Return(tt.publishErr)
+			}
+
+			publishDic := di.NewContainer(di.ServiceConstructorMap{
+				bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
+					return logger.NewMockClient()
+				},
+				bootstrapContainer.MessagingClientName: func(get di.Get) interface{} {
+					// ensures nil is returned in PublishWIthTopic
+					if mockMessageClient == nil {
+						return nil
+					}
+					return mockMessageClient
+				},
+			})
+
+			svc := &Service{
+				dic:    publishDic,
+				config: tt.config,
+			}
+
+			err := svc.PublishWithTopic(tt.topic, tt.message)
+			require.Equal(t, tt.expectedError, err)
+
+		})
+	}
 }

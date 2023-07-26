@@ -29,7 +29,7 @@ type backgroundPublisher struct {
 	output chan<- interfaces.BackgroundMessage
 }
 
-// Publish provided message through the configured MessageBus output
+// Publish provided message through the configured MessageBus output *DEPRECATED*
 func (pub *backgroundPublisher) Publish(payload []byte, context interfaces.AppFunctionContext) error {
 	outputEnvelope := types.MessageEnvelope{
 		CorrelationID: context.CorrelationID(),
