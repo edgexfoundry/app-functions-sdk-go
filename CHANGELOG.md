@@ -11,6 +11,12 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+## [v3.0.1] Minnesota - 2023-07-25 (Only compatible with the 3.x releases)
+### Features ✨
+Security - Add missing authentication hooks to standard routes (#1447)
+
+BREAKING CHANGE: EdgeX standard routes, except /ping, will require authentication when running in secure mode
+
 ## [v3.0.0] Minnesota - 2023-05-31 (Only compatible with the 3.x releases)
 
 ### Features ✨
