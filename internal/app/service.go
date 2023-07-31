@@ -33,6 +33,7 @@ import (
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
+	"github.com/google/uuid"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
@@ -43,8 +44,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/webserver"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
-	contractsCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
-
 	clientInterfaces "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
@@ -742,29 +741,16 @@ func (svc *Service) BuildContext(correlationId string, contentType string) inter
 }
 
 // Publish pushes data to the MessageBus using configured topic
-func (svc *Service) Publish(data any) error {
-	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
-	if messageClient == nil {
-		return fmt.Errorf(messageBusDisabledErr)
-	}
-
-	triggertopic := svc.config.Trigger.PublishTopic
-	baseTopic := svc.config.MessageBus.BaseTopicPrefix
-
-	payload, err := json.Marshal(data)
+func (svc *Service) Publish(data any, contentType string) error {
+	err := svc.PublishWithTopic(svc.config.Trigger.PublishTopic, data, contentType)
 	if err != nil {
-		return fmt.Errorf("%v: %v", publishMarshalErr, err)
-	}
-	message := types.NewMessageEnvelope(payload, context.Background())
-	err = messageClient.Publish(message, contractsCommon.BuildTopic(baseTopic, triggertopic))
-	if err != nil {
-		return fmt.Errorf("%v: %v", publishDataErr, err)
+		return err
 	}
 	return nil
 }
 
-// Publish pushes data to the MessageBus using given topic
-func (svc *Service) PublishWithTopic(topic string, data any) error {
+// PublishWithTopic pushes data to the MessageBus using given topic
+func (svc *Service) PublishWithTopic(topic string, data any, contentType string) error {
 	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
 	if messageClient == nil {
 		return fmt.Errorf(messageBusDisabledErr)
@@ -776,6 +762,9 @@ func (svc *Service) PublishWithTopic(topic string, data any) error {
 	}
 
 	message := types.NewMessageEnvelope(payload, context.Background())
+	message.CorrelationID = uuid.NewString()
+	message.ContentType = contentType
+
 	err = messageClient.Publish(message, coreCommon.BuildTopic(svc.config.MessageBus.BaseTopicPrefix, topic))
 	if err != nil {
 		return fmt.Errorf("%v: %v", publishDataErr, err)
