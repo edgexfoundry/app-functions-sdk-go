@@ -190,7 +190,7 @@ type ApplicationService interface {
 	// BuildContext allows external callers that may need a context (eg background publishers) to easily create one
 	BuildContext(correlationId string, contentType string) AppFunctionContext
 	// Publish pushes data to the MessageBus using configured topic
-	Publish(data any) error
-	// Publish pushes data to the MessageBus using given topic
-	PublishWithTopic(topic string, data any) error
+	Publish(data any, contentType string) error
+	// PublishWithTopic pushes data to the MessageBus using given topic
+	PublishWithTopic(topic string, data any, contentType string) error
 }

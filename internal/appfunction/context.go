@@ -28,6 +28,7 @@ import (
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
+	"github.com/google/uuid"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -43,6 +44,7 @@ import (
 const (
 	messageBusDisabledErr = "publish failed due to MessageBus disabled via configuration"
 	publishDataErr        = "failed to publish data to messagebus"
+	topicFormatErr        = "failed to format publish topic"
 )
 
 // NewContext creates, initializes and return a new Context with implements the interfaces.AppFunctionContext interface
@@ -280,29 +282,18 @@ func (appContext *Context) PipelineId() string {
 }
 
 // Publish pushes data to the MessageBus using configured topic
-func (appContext *Context) Publish(data any) error {
-	messageClient := bootstrapContainer.MessagingClientFrom(appContext.Dic.Get)
-	if messageClient == nil {
-		return fmt.Errorf(messageBusDisabledErr)
-	}
+func (appContext *Context) Publish(data any, contentType string) error {
+	topic := container.ConfigurationFrom(appContext.Dic.Get).Trigger.PublishTopic
 
-	triggerConfig := container.ConfigurationFrom(appContext.Dic.Get).Trigger
-	baseTopic := bootstrapContainer.ConfigurationFrom(appContext.Dic.Get).GetBootstrap().MessageBus.BaseTopicPrefix
-
-	payload, err := json.Marshal(data)
+	err := appContext.PublishWithTopic(topic, data, contentType)
 	if err != nil {
-		return fmt.Errorf("failed to marshal data for publishing using configured topic: %v", err)
-	}
-	message := types.NewMessageEnvelope(payload, context.Background())
-	err = messageClient.Publish(message, common.BuildTopic(baseTopic, triggerConfig.PublishTopic))
-	if err != nil {
-		return fmt.Errorf("%v: %v", publishDataErr, err)
+		return err
 	}
 	return nil
 }
 
-// Publish pushes data to the MessageBus for a given topic
-func (appContext *Context) PublishWithTopic(topic string, data any) error {
+// PublishWithTopic pushes data to the MessageBus for a given topic
+func (appContext *Context) PublishWithTopic(topic string, data any, contentType string) error {
 	messageClient := bootstrapContainer.MessagingClientFrom(appContext.Dic.Get)
 	if messageClient == nil {
 		return fmt.Errorf(messageBusDisabledErr)
@@ -310,14 +301,22 @@ func (appContext *Context) PublishWithTopic(topic string, data any) error {
 
 	config := bootstrapContainer.ConfigurationFrom(appContext.Dic.Get)
 
-	full_topic := common.BuildTopic(config.GetBootstrap().MessageBus.BaseTopicPrefix, topic)
+	formattedTopic, err := appContext.ApplyValues(topic)
+	if err != nil {
+		return fmt.Errorf("%v: %v", topicFormatErr, err)
+	}
+
+	fullTopic := common.BuildTopic(config.GetBootstrap().MessageBus.BaseTopicPrefix, formattedTopic)
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal data for publishing using given topic: %v", err)
 	}
 
 	message := types.NewMessageEnvelope(payload, context.Background())
-	err = messageClient.Publish(message, full_topic)
+	message.ContentType = contentType
+	message.CorrelationID = uuid.NewString()
+
+	err = messageClient.Publish(message, fullTopic)
 	if err != nil {
 		return fmt.Errorf("%v: %v", publishDataErr, err)
 	}

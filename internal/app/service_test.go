@@ -41,6 +41,7 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/http"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 	messageMocks "github.com/edgexfoundry/go-mod-messaging/v3/messaging/mocks"
 	"github.com/google/uuid"
@@ -1092,7 +1093,7 @@ func TestService_Publish(t *testing.T) {
 				config: tt.config,
 			}
 
-			err := svc.Publish(tt.message)
+			err := svc.Publish(tt.message, coreCommon.ContentTypeJSON)
 			require.Equal(t, tt.expectedError, err)
 		})
 	}
@@ -1177,7 +1178,7 @@ func TestService_PublishWithTopic(t *testing.T) {
 				config: tt.config,
 			}
 
-			err := svc.PublishWithTopic(tt.topic, tt.message)
+			err := svc.PublishWithTopic(tt.topic, tt.message, coreCommon.ContentTypeJSON)
 			require.Equal(t, tt.expectedError, err)
 
 		})

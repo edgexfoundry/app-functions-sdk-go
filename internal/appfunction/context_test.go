@@ -546,7 +546,7 @@ func TestContext_Publish(t *testing.T) {
 
 			appContext := NewContext("", publishDic, "")
 
-			err := appContext.Publish(tt.message)
+			err := appContext.Publish(tt.message, common.ContentTypeJSON)
 			require.Equal(t, tt.expectedError, err)
 		})
 	}
@@ -634,7 +634,7 @@ func TestService_PublishWithTopic(t *testing.T) {
 
 			appContext := NewContext("", publishDic, "")
 
-			err := appContext.PublishWithTopic(tt.topic, tt.message)
+			err := appContext.PublishWithTopic(tt.topic, tt.message, common.ContentTypeJSON)
 			require.Equal(t, tt.expectedError, err)
 
 		})
