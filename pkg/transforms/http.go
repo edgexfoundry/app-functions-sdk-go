@@ -44,6 +44,7 @@ type HTTPSender struct {
 	secretName          string
 	urlFormatter        StringValuesFormatter
 	httpSizeMetrics     gometrics.Histogram
+	httpRequestHeaders  map[string]string
 }
 
 // NewHTTPSender creates, initializes and returns a new instance of HTTPSender
@@ -187,6 +188,12 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 
 	req.Header.Set("Content-Type", sender.mimeType)
 
+	// Set all the http request headers
+	for key, element := range sender.httpRequestHeaders {
+		req.Header.Set(key, element)
+
+	}
+
 	ctx.LoggingClient().Debugf("POSTing data to %s in pipeline '%s'", sender.url, ctx.PipelineId())
 
 	response, err := client.Do(req)
@@ -254,6 +261,15 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 	}
 
 	return true, responseData
+}
+
+// SetHttpRequestHeaders will set all the header parameters for the http request
+func (sender *HTTPSender) SetHttpRequestHeaders(httpRequestHeaders map[string]string) {
+
+	if httpRequestHeaders != nil {
+		sender.httpRequestHeaders = httpRequestHeaders
+	}
+
 }
 
 func (sender *HTTPSender) determineIfUsingSecrets(ctx interfaces.AppFunctionContext) (bool, error) {

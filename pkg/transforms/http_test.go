@@ -282,3 +282,43 @@ func TestHTTPPutInvalidParameter(t *testing.T) {
 	assert.Equal(t, "marshaling input data to JSON failed, "+
 		"passed in data must be of type []byte, string, or support marshaling to JSON", result.(error).Error())
 }
+
+func TestHTTPPostWithHTTPRequestHeaders(t *testing.T) {
+
+	expectedHTTPRequestHeaders := map[string]string{
+		"Connection": "keep-alive",
+		"From":       "[user@example.com](mailto:user@example.com)",
+	}
+
+	// create test server with handler
+	ts := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+
+		writer.WriteHeader(http.StatusOK)
+
+		for key, expected := range expectedHTTPRequestHeaders {
+			actual := request.Header.Get(key)
+			assert.Equal(t, expected, actual)
+		}
+
+	}))
+	defer ts.Close()
+
+	targetUrl, err := url.Parse(ts.URL)
+	require.NoError(t, err)
+
+	sender := NewHTTPSender(
+		targetUrl.String(),
+		"",
+		false)
+
+	sender.SetHttpRequestHeaders(expectedHTTPRequestHeaders)
+
+	var continuePipeline bool
+	var errPipeline interface{}
+
+	continuePipeline, errPipeline = sender.HTTPPost(ctx, msgStr)
+
+	assert.True(t, continuePipeline)
+	_, ok := errPipeline.(error)
+	assert.False(t, ok)
+}
