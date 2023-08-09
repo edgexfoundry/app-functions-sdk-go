@@ -81,9 +81,6 @@ https://github.com/mitchellh/reflectwalk/blob/master/LICENSE
 mitchellh/go-homedir (MIT) https://github.com/mitchellh/go-homedir
 https://github.com/mitchellh/go-homedir/blob/master/LICENSE
 
-pkg/errors (BSD-2) https://github.com/pkg/errors
-https://github.com/pkg/errors/blob/master/LICENSE
-
 fxamacker/cbor/v2 (MIT) https://github.com/fxamacker/cbor/v2
 https://github.com/fxamacker/cbor/blob/master/LICENSE
 
