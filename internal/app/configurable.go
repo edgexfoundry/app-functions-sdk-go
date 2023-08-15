@@ -17,6 +17,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -80,6 +81,7 @@ const (
 	BatchByTimeAndCount = "bytimecount"
 	IsEventData         = "iseventdata"
 	MergeOnSend         = "mergeonsend"
+	HttpRequestHeaders  = "httprequestheaders"
 )
 
 // Configurable contains the helper functions that return the function pointers for building the configurable function pipeline.
@@ -343,6 +345,17 @@ func (app *Configurable) HTTPExport(parameters map[string]string) interfaces.App
 	}
 
 	transform := transforms.NewHTTPSenderWithOptions(options)
+
+	// Unmarshal and set httpRequestHeaders
+	httpRequestHeaders := map[string]string{}
+	if parameters[HttpRequestHeaders] != "" {
+		if err := json.Unmarshal([]byte(parameters[HttpRequestHeaders]), &httpRequestHeaders); err != nil {
+			app.lc.Error("Unable to unmarshal http request headers : %s", err.Error())
+			return nil
+		}
+	}
+
+	transform.SetHttpRequestHeaders(httpRequestHeaders)
 
 	switch strings.ToLower(method) {
 	case ExportMethodPost:
