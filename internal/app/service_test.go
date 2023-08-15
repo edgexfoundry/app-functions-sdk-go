@@ -45,7 +45,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 	messageMocks "github.com/edgexfoundry/go-mod-messaging/v3/messaging/mocks"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -117,8 +117,8 @@ func TestAddCustomRouteAuthenticated(t *testing.T) {
 
 }
 
-func createSdkAndRouter() (Service, *mux.Router) {
-	router := mux.NewRouter()
+func createSdkAndRouter() (Service, *echo.Echo) {
+	router := echo.New()
 
 	ws := webserver.NewWebServer(dic, router, uuid.NewString())
 
@@ -129,18 +129,14 @@ func createSdkAndRouter() (Service, *mux.Router) {
 	return sdk, router
 }
 
-func verifyPath(t *testing.T, expectedPath string, router *mux.Router) {
+func verifyPath(t *testing.T, expectedPath string, router *echo.Echo) {
 	pathFound := false
-	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		path, err := route.GetPathTemplate()
-		if err != nil {
-			return err
-		}
-		if path == expectedPath {
+	for _, route := range router.Routes() {
+		if route.Path == expectedPath {
 			pathFound = true
+			break
 		}
-		return nil
-	})
+	}
 
 	assert.True(t, pathFound)
 }

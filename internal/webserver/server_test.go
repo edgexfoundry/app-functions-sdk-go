@@ -22,13 +22,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -59,24 +60,22 @@ func TestAddRoute(t *testing.T) {
 	routePath := "/testRoute"
 	testHandler := func(_ http.ResponseWriter, _ *http.Request) {}
 
-	webserver := NewWebServer(dic, mux.NewRouter(), uuid.NewString())
-	err := webserver.AddRoute(routePath, testHandler)
-	assert.NoError(t, err, "Not expecting an error")
+	webserver := NewWebServer(dic, echo.New(), uuid.NewString())
+	webserver.AddRoute(routePath, utils.WrapHandler(testHandler), http.MethodGet)
 
 	// Malformed path no slash
 	routePath = "testRoute"
-	err = webserver.AddRoute(routePath, testHandler)
-	assert.Error(t, err, "Expecting an error")
+	webserver.AddRoute(routePath, utils.WrapHandler(testHandler))
 }
 
 func TestSetupTriggerRoute(t *testing.T) {
 	envDisableSecurity := os.Getenv("EDGEX_DISABLE_JWT_VALIDATION")
-	os.Setenv("EDGEX_DISABLE_JWT_VALIDATION", "true")
+	_ = os.Setenv("EDGEX_DISABLE_JWT_VALIDATION", "true")
 	defer func() {
-		os.Setenv("EDGEX_DISABLE_JWT_VALIDATION", envDisableSecurity)
+		_ = os.Setenv("EDGEX_DISABLE_JWT_VALIDATION", envDisableSecurity)
 	}()
 
-	webserver := NewWebServer(dic, mux.NewRouter(), uuid.NewString())
+	webserver := NewWebServer(dic, echo.New(), uuid.NewString())
 
 	handlerFunctionNotCalled := true
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +87,7 @@ func TestSetupTriggerRoute(t *testing.T) {
 
 	webserver.SetupTriggerRoute(internal.ApiTriggerRoute, handler)
 
-	req, _ := http.NewRequest(http.MethodGet, internal.ApiTriggerRoute, nil)
+	req, _ := http.NewRequest(http.MethodPost, internal.ApiTriggerRoute, nil)
 	rr := httptest.NewRecorder()
 	webserver.router.ServeHTTP(rr, req)
 

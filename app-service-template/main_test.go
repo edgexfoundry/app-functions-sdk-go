@@ -56,6 +56,8 @@ func TestCreateAndRunService_Success(t *testing.T) {
 		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
+		mockAppService.On("AddCustomRoute", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
 		mockAppService.On("Run").Return(nil)
 
 		return mockAppService, true
@@ -156,6 +158,8 @@ func TestCreateAndRunService_Run_Failed(t *testing.T) {
 		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("AddFunctionsPipelineForTopics", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
+		mockAppService.On("AddCustomRoute", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("Run").Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
 			RunCalled = true

@@ -31,9 +31,11 @@ import (
 	"time"
 
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
@@ -58,8 +60,6 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/startup"
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-
-	"github.com/gorilla/mux"
 )
 
 const (
@@ -129,12 +129,15 @@ func (svc *Service) AppContext() context.Context {
 }
 
 // AddRoute allows you to leverage the existing webserver to add routes.
+// DEPRECATED - Use AddCustomRoute
+// TODO: Remove in 4.0
 func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
 	// Legacy behavior is to add unauthenticated route
 	return svc.AddCustomRoute(route, interfaces.Unauthenticated, handler, methods...)
 }
 
 // AddCustomRoute allows you to leverage the existing webserver to add routes.
+// TODO: Change signature in 4.0 to use "handler echo.HandlerFunc" once addContext is removed
 func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authentication, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
 	if route == coreCommon.ApiPingRoute ||
 		route == coreCommon.ApiConfigRoute ||
@@ -148,9 +151,12 @@ func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authe
 		secretProvider := bootstrapContainer.SecretProviderExtFrom(svc.dic.Get)
 		authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
 
-		return svc.webserver.AddRoute(route, authenticationHook(svc.addContext(handler)), methods...)
+		svc.webserver.AddRoute(route, authenticationHook(utils.WrapHandler(svc.addContext(handler))), methods...)
+		return nil
 	}
-	return svc.webserver.AddRoute(route, svc.addContext(handler), methods...)
+
+	svc.webserver.AddRoute(route, utils.WrapHandler(svc.addContext(handler)), methods...)
+	return nil
 }
 
 // AddBackgroundPublisher will create a channel of provided capacity to be
@@ -574,7 +580,7 @@ func (svc *Service) Initialize() error {
 	// to wait to be signaled when the configuration has been updated and then process the changes
 	NewConfigUpdateProcessor(svc).WaitForConfigUpdates(configUpdated)
 
-	svc.webserver = webserver.NewWebServer(svc.dic, mux.NewRouter(), svc.serviceKey)
+	svc.webserver = webserver.NewWebServer(svc.dic, echo.New(), svc.serviceKey)
 	svc.webserver.ConfigureCors()
 
 	svc.lc.Info("Service started in: " + startupTimer.SinceAsString())
@@ -686,6 +692,9 @@ func listParameters(parameters map[string]string) string {
 	return result
 }
 
+// TODO: Remove adding of context in 4.0
+//
+//	There are better ways to have the handler function get access to the Service API
 func (svc *Service) addContext(next func(nethttp.ResponseWriter, *nethttp.Request)) func(nethttp.ResponseWriter, *nethttp.Request) {
 	return func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		ctx := context.WithValue(r.Context(), interfaces.AppServiceContextKey, svc) //nolint: staticcheck
