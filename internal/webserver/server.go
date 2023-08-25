@@ -29,9 +29,10 @@ import (
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/controller"
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 )
 
 // WebServer handles the webserver configuration
@@ -39,12 +40,12 @@ type WebServer struct {
 	dic                 *di.Container
 	config              *sdkCommon.ConfigurationStruct
 	lc                  logger.LoggingClient
-	router              *mux.Router
+	router              *echo.Echo
 	commonApiController *controller.CommonController
 }
 
 // NewWebServer returns a new instance of *WebServer
-func NewWebServer(dic *di.Container, router *mux.Router, serviceName string) *WebServer {
+func NewWebServer(dic *di.Container, router *echo.Echo, serviceName string) *WebServer {
 	ws := &WebServer{
 		lc:                  bootstrapContainer.LoggingClientFrom(dic.Get),
 		config:              container.ConfigurationFrom(dic.Get),
@@ -75,20 +76,15 @@ func (webserver *WebServer) ConfigureCors() {
 
 	router.Use(bootstrapHandlers.ProcessCORS(webserver.config.Service.CORSConfiguration))
 
-	// Handle the CORS preflight request
-	router.Methods(http.MethodOptions).MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
-		return r.Header.Get(bootstrapHandlers.AccessControlRequestMethod) != ""
-	}).HandlerFunc(bootstrapHandlers.HandlePreflight(webserver.config.Service.CORSConfiguration))
+	// handle the CORS preflight request
+	router.Use(bootstrapHandlers.HandlePreflight(webserver.config.Service.CORSConfiguration))
 }
 
 // AddRoute enables support to leverage the existing webserver to add routes.
-func (webserver *WebServer) AddRoute(routePath string, handler func(http.ResponseWriter, *http.Request), methods ...string) error {
+func (webserver *WebServer) AddRoute(routePath string, handler func(e echo.Context) error, methods ...string) {
 	// If authentication is required, caller's handler should implement it
-	route := webserver.router.HandleFunc(routePath, handler).Methods(methods...)
-	if routeErr := route.GetError(); routeErr != nil {
-		return routeErr
-	}
-	return nil
+	webserver.router.Match(methods, routePath, handler)
+	webserver.lc.Debug("Route added", "route", routePath, "methods", fmt.Sprintf("%v", methods))
 }
 
 // SetupTriggerRoute adds a route to handle trigger pipeline from REST request
@@ -96,7 +92,7 @@ func (webserver *WebServer) SetupTriggerRoute(path string, handlerForTrigger fun
 	lc := bootstrapContainer.LoggingClientFrom(webserver.dic.Get)
 	secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
 	authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
-	webserver.router.HandleFunc(path, authenticationHook(handlerForTrigger))
+	webserver.router.Match([]string{http.MethodPost}, path, authenticationHook(utils.WrapHandler(handlerForTrigger)))
 }
 
 // StartWebServer starts the web server

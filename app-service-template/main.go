@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"reflect"
 
@@ -146,6 +147,12 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	//       Remove if no long running functions
 	app.appCtx = app.service.AppContext()
 
+	// TODO: Add any custom routes your service may have for its REST API
+	if err := app.service.AddCustomRoute("/api/v3/hello", true, app.helloHandler, http.MethodGet); err != nil {
+		app.lc.Errorf("AddCustomRoute returned error: %s", err.Error())
+		return -1
+	}
+
 	if err := app.service.Run(); err != nil {
 		app.lc.Errorf("Run returned error: %s", err.Error())
 		return -1
@@ -184,4 +191,9 @@ func (app *myApp) ProcessConfigUpdates(rawWritableConfig interface{}) {
 	if !reflect.DeepEqual(previous.SomeService, updated.SomeService) {
 		app.lc.Infof("AppCustom.SomeService changed to: %v", updated.SomeService)
 	}
+}
+
+func (app *myApp) helloHandler(writer http.ResponseWriter, _ *http.Request) {
+	writer.WriteHeader(http.StatusOK)
+	writer.Write([]byte("hello"))
 }

@@ -3,7 +3,6 @@
 [Github repository](https://github.com/edgexfoundry/app-functions-sdk-go)
 
 ### Change Logs for EdgeX Dependencies
-
 - [go-mod-bootstrap](https://github.com/edgexfoundry/go-mod-bootstrap/blob/main/CHANGELOG.md)
 - [go-mod-core-contracts](https://github.com/edgexfoundry/go-mod-core-contracts/blob/main/CHANGELOG.md)
 - [go-mod-messaging](https://github.com/edgexfoundry/go-mod-messaging/blob/main/CHANGELOG.md)
