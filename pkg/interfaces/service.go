@@ -17,6 +17,7 @@ package interfaces
 
 import (
 	"context"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
 
@@ -97,7 +98,7 @@ type ApplicationService interface {
 	// A reference to this ApplicationService is add the the context that is passed to the handler, which
 	// can be retrieved using the `AppService` key
 	// TODO: Change signature in 4.0 to use "handler echo.HandlerFunc"
-	AddCustomRoute(route string, authentication Authentication, handler func(http.ResponseWriter, *http.Request), methods ...string) error
+	AddCustomRoute(route string, authentication Authentication, handler echo.HandlerFunc, methods ...string) error
 	// RequestTimeout returns the configured request timeout value from [Service] section.
 	RequestTimeout() time.Duration
 	// ApplicationSettings returns the key/value map of custom settings

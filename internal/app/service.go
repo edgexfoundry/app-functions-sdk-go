@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -31,7 +32,6 @@ import (
 	"time"
 
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 	"github.com/google/uuid"
@@ -133,12 +133,12 @@ func (svc *Service) AppContext() context.Context {
 // TODO: Remove in 4.0
 func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
 	// Legacy behavior is to add unauthenticated route
-	return svc.AddCustomRoute(route, interfaces.Unauthenticated, handler, methods...)
+	return svc.AddCustomRoute(route, interfaces.Unauthenticated, utils.WrapHandler(handler), methods...)
 }
 
 // AddCustomRoute allows you to leverage the existing webserver to add routes.
 // TODO: Change signature in 4.0 to use "handler echo.HandlerFunc" once addContext is removed
-func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authentication, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
+func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authentication, handler echo.HandlerFunc, methods ...string) error {
 	if route == coreCommon.ApiPingRoute ||
 		route == coreCommon.ApiConfigRoute ||
 		route == coreCommon.ApiVersionRoute ||
@@ -151,11 +151,11 @@ func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authe
 		secretProvider := bootstrapContainer.SecretProviderExtFrom(svc.dic.Get)
 		authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
 
-		svc.webserver.AddRoute(route, authenticationHook(utils.WrapHandler(svc.addContext(handler))), methods...)
+		svc.webserver.AddRoute(route, svc.addContext(handler), methods, authenticationHook)
 		return nil
 	}
 
-	svc.webserver.AddRoute(route, utils.WrapHandler(svc.addContext(handler)), methods...)
+	svc.webserver.AddRoute(route, svc.addContext(handler), methods)
 	return nil
 }
 
@@ -695,10 +695,11 @@ func listParameters(parameters map[string]string) string {
 // TODO: Remove adding of context in 4.0
 //
 //	There are better ways to have the handler function get access to the Service API
-func (svc *Service) addContext(next func(nethttp.ResponseWriter, *nethttp.Request)) func(nethttp.ResponseWriter, *nethttp.Request) {
-	return func(w nethttp.ResponseWriter, r *nethttp.Request) {
-		ctx := context.WithValue(r.Context(), interfaces.AppServiceContextKey, svc) //nolint: staticcheck
-		next(w, r.WithContext(ctx))
+func (svc *Service) addContext(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := context.WithValue(c.Request().Context(), interfaces.AppServiceContextKey, svc) //nolint: staticcheck
+		c.SetRequest(c.Request().WithContext(ctx))
+		return next(c)
 	}
 }
 

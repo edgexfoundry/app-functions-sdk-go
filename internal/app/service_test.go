@@ -104,7 +104,7 @@ func TestAddCustomRouteUnauthenticated(t *testing.T) {
 	sdk, router := createSdkAndRouter()
 	expectedPath := "/test"
 
-	_ = sdk.AddCustomRoute(expectedPath, interfaces.Unauthenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	_ = sdk.AddCustomRoute(expectedPath, interfaces.Unauthenticated, func(c echo.Context) error { return nil }, http.MethodGet)
 	verifyPath(t, expectedPath, router)
 }
 
@@ -112,7 +112,7 @@ func TestAddCustomRouteAuthenticated(t *testing.T) {
 	sdk, router := createSdkAndRouter()
 	expectedPath := "/test"
 
-	_ = sdk.AddCustomRoute(expectedPath, interfaces.Authenticated, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
+	_ = sdk.AddCustomRoute(expectedPath, interfaces.Authenticated, func(c echo.Context) error { return nil }, http.MethodGet)
 	verifyPath(t, expectedPath, router)
 
 }

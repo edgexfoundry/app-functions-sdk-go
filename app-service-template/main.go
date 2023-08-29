@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"os"
 	"reflect"
@@ -193,7 +194,8 @@ func (app *myApp) ProcessConfigUpdates(rawWritableConfig interface{}) {
 	}
 }
 
-func (app *myApp) helloHandler(writer http.ResponseWriter, _ *http.Request) {
-	writer.WriteHeader(http.StatusOK)
-	writer.Write([]byte("hello"))
+func (app *myApp) helloHandler(c echo.Context) error {
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Write([]byte("hello"))
+	return nil
 }
