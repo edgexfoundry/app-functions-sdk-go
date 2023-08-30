@@ -81,9 +81,9 @@ func (webserver *WebServer) ConfigureCors() {
 }
 
 // AddRoute enables support to leverage the existing webserver to add routes.
-func (webserver *WebServer) AddRoute(routePath string, handler func(e echo.Context) error, methods ...string) {
+func (webserver *WebServer) AddRoute(routePath string, handler func(e echo.Context) error, methods []string, middlewareFunc ...echo.MiddlewareFunc) {
 	// If authentication is required, caller's handler should implement it
-	webserver.router.Match(methods, routePath, handler)
+	webserver.router.Match(methods, routePath, handler, middlewareFunc...)
 	webserver.lc.Debug("Route added", "route", routePath, "methods", fmt.Sprintf("%v", methods))
 }
 

@@ -22,7 +22,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
@@ -58,14 +57,14 @@ func TestMain(m *testing.M) {
 
 func TestAddRoute(t *testing.T) {
 	routePath := "/testRoute"
-	testHandler := func(_ http.ResponseWriter, _ *http.Request) {}
+	testHandler := func(c echo.Context) error { return nil }
 
 	webserver := NewWebServer(dic, echo.New(), uuid.NewString())
-	webserver.AddRoute(routePath, utils.WrapHandler(testHandler), http.MethodGet)
+	webserver.AddRoute(routePath, testHandler, []string{http.MethodGet})
 
 	// Malformed path no slash
 	routePath = "testRoute"
-	webserver.AddRoute(routePath, utils.WrapHandler(testHandler))
+	webserver.AddRoute(routePath, testHandler, nil)
 }
 
 func TestSetupTriggerRoute(t *testing.T) {
