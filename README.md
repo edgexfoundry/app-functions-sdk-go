@@ -4,8 +4,8 @@
 
 Welcome the App Functions SDK for EdgeX. This sdk is meant to provide all the plumbing necessary for developers to get started in processing/transforming/exporting data out of EdgeX. 
 
-For documentation please visit https://docs.edgexfoundry.org/2.0/microservices/application/ApplicationServices/.
-For a list of examples please visit https://docs.edgexfoundry.org/2.0/examples/AppServiceExamples/
+For documentation please visit https://docs.edgexfoundry.org/latest/microservices/application/ApplicationServices/.
+For a list of examples please visit https://docs.edgexfoundry.org/latest/examples/AppServiceExamples/
 
 ## Build Prerequisites
 
