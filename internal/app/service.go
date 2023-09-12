@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -30,6 +29,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
@@ -550,7 +551,7 @@ func (svc *Service) Initialize() error {
 		bootstrapConfig.ServiceTypeApp,
 		[]bootstrapInterfaces.BootstrapHandler{
 			bootstrapHandlers.MessagingBootstrapHandler,
-			bootstrapHandlers.NewClientsBootstrap(svc.flags.InDevMode()).BootstrapHandler,
+			bootstrapHandlers.NewClientsBootstrap().BootstrapHandler,
 			handlers.NewVersionValidator(svc.commandLine.skipVersionCheck, internal.SDKVersion).BootstrapHandler,
 			bootstrapHandlers.NewServiceMetrics(svc.serviceKey).BootstrapHandler,
 		},
