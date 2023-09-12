@@ -75,23 +75,23 @@ func TestConfigureMQTTClientForAuth(t *testing.T) {
 	tests := []struct {
 		Name             string
 		AuthMode         string
-		secrets          messaging.SecretData
+		secrets          *messaging.SecretData
 		ErrorExpectation bool
 		ErrorMessage     string
 	}{
-		{"Username and Password should be set", messaging.AuthModeUsernamePassword, messaging.SecretData{
+		{"Username and Password should be set", messaging.AuthModeUsernamePassword, &messaging.SecretData{
 			Username: messaging.SecretUsernameKey,
 			Password: messaging.SecretPasswordKey,
 		},
 			false, ""},
-		{"No AuthMode", messaging.AuthModeNone, messaging.SecretData{}, false, ""},
-		{"Invalid AuthMode", "", messaging.SecretData{}, false, ""},
+		{"No AuthMode", messaging.AuthModeNone, &messaging.SecretData{}, false, ""},
+		{"Invalid AuthMode", "", &messaging.SecretData{}, false, ""},
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			target.authMode = test.AuthMode
-			result := target.configureMQTTClientForAuth(&test.secrets)
+			result := target.configureMQTTClientForAuth(test.secrets)
 			if test.ErrorExpectation {
 				assert.Error(t, result, "Result should be an error")
 				assert.Equal(t, test.ErrorMessage, result.Error())
