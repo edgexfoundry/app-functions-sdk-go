@@ -859,7 +859,7 @@ func TestService_EventClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.EventClientName: func(get di.Get) interface{} {
-			return clients.NewEventClient(baseUrl+"59880", nil)
+			return clients.NewEventClient(baseUrl+"59880", nil, false)
 		},
 	})
 
@@ -873,7 +873,7 @@ func TestService_CommandClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.CommandClientName: func(get di.Get) interface{} {
-			return clients.NewCommandClient(baseUrl+"59882", nil)
+			return clients.NewCommandClient(baseUrl+"59882", nil, false)
 		},
 	})
 
@@ -887,7 +887,7 @@ func TestService_DeviceServiceClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.DeviceServiceClientName: func(get di.Get) interface{} {
-			return clients.NewDeviceServiceClient(baseUrl+"59881", nil)
+			return clients.NewDeviceServiceClient(baseUrl+"59881", nil, false)
 		},
 	})
 
@@ -902,7 +902,7 @@ func TestService_DeviceProfileClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.DeviceProfileClientName: func(get di.Get) interface{} {
-			return clients.NewDeviceProfileClient(baseUrl+"59881", nil)
+			return clients.NewDeviceProfileClient(baseUrl+"59881", nil, false)
 		},
 	})
 
@@ -916,7 +916,7 @@ func TestService_DeviceClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.DeviceClientName: func(get di.Get) interface{} {
-			return clients.NewDeviceClient(baseUrl+"59881", nil)
+			return clients.NewDeviceClient(baseUrl+"59881", nil, false)
 		},
 	})
 
@@ -931,7 +931,7 @@ func TestService_NotificationClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.NotificationClientName: func(get di.Get) interface{} {
-			return clients.NewNotificationClient(baseUrl+"59860", nil)
+			return clients.NewNotificationClient(baseUrl+"59860", nil, false)
 		},
 	})
 
@@ -946,7 +946,7 @@ func TestService_SubscriptionClient(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.SubscriptionClientName: func(get di.Get) interface{} {
-			return clients.NewSubscriptionClient(baseUrl+"59860", nil)
+			return clients.NewSubscriptionClient(baseUrl+"59860", nil, false)
 		},
 	})
 
