@@ -164,6 +164,11 @@ func (appContext *Context) EventClient() clients.EventClient {
 	return bootstrapContainer.EventClientFrom(appContext.Dic.Get)
 }
 
+// ReadingClient returns the Reading client, which may be nil, from the dependency injection container
+func (appContext *Context) ReadingClient() clients.ReadingClient {
+	return bootstrapContainer.ReadingClientFrom(appContext.Dic.Get)
+}
+
 // CommandClient returns the Command client, which may be nil, from the dependency injection container
 func (appContext *Context) CommandClient() clients.CommandClient {
 	return bootstrapContainer.CommandClientFrom(appContext.Dic.Get)

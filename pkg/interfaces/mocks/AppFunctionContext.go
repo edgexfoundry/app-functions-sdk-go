@@ -327,6 +327,22 @@ func (_m *AppFunctionContext) PublishWithTopic(topic string, data interface{}, c
 	return r0
 }
 
+// ReadingClient provides a mock function with given fields:
+func (_m *AppFunctionContext) ReadingClient() clientsinterfaces.ReadingClient {
+	ret := _m.Called()
+
+	var r0 clientsinterfaces.ReadingClient
+	if rf, ok := ret.Get(0).(func() clientsinterfaces.ReadingClient); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(clientsinterfaces.ReadingClient)
+		}
+	}
+
+	return r0
+}
+
 // RemoveValue provides a mock function with given fields: key
 func (_m *AppFunctionContext) RemoveValue(key string) {
 	_m.Called(key)

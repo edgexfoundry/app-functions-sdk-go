@@ -641,6 +641,11 @@ func (svc *Service) EventClient() clientInterfaces.EventClient {
 	return bootstrapContainer.EventClientFrom(svc.dic.Get)
 }
 
+// ReadingClient returns the Reading client, which may be nil, from the dependency injection container
+func (svc *Service) ReadingClient() clientInterfaces.ReadingClient {
+	return bootstrapContainer.ReadingClientFrom(svc.dic.Get)
+}
+
 // CommandClient returns the Command client, which may be nil, from the dependency injection container
 func (svc *Service) CommandClient() clientInterfaces.CommandClient {
 	return bootstrapContainer.CommandClientFrom(svc.dic.Get)

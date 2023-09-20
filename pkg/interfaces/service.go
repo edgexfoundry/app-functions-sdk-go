@@ -17,9 +17,10 @@ package interfaces
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
+
+	"github.com/labstack/echo/v4"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	gometrics "github.com/rcrowley/go-metrics"
@@ -151,6 +152,9 @@ type ApplicationService interface {
 	// EventClient returns the Event client. Note if Core Data is not specified in the Clients configuration,
 	// this will return nil.
 	EventClient() interfaces.EventClient
+	// ReadingClient returns the Reading client. Note if Core Data is not specified in the Clients configuration,
+	// this will return nil.
+	ReadingClient() interfaces.ReadingClient
 	// CommandClient returns the Command client. Note if Core Command is not specified in the Clients configuration,
 	// this will return nil.
 	CommandClient() interfaces.CommandClient
