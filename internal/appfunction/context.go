@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -162,6 +162,11 @@ func (appContext *Context) LoggingClient() logger.LoggingClient {
 // EventClient returns the Event client, which may be nil, from the dependency injection container
 func (appContext *Context) EventClient() clients.EventClient {
 	return bootstrapContainer.EventClientFrom(appContext.Dic.Get)
+}
+
+// ReadingClient returns the Reading client, which may be nil, from the dependency injection container
+func (appContext *Context) ReadingClient() clients.ReadingClient {
+	return bootstrapContainer.ReadingClientFrom(appContext.Dic.Get)
 }
 
 // CommandClient returns the Command client, which may be nil, from the dependency injection container

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,6 +69,9 @@ type AppFunctionContext interface {
 	// EventClient returns the Event client. Note if Core Data is not specified in the Clients configuration,
 	// this will return nil.
 	EventClient() interfaces.EventClient
+	// ReadingClient returns the Reading client. Note if Core Data is not specified in the Clients configuration,
+	// this will return nil.
+	ReadingClient() interfaces.ReadingClient
 	// CommandClient returns the Command client. Note if Core Command is not specified in the Clients configuration,
 	// this will return nil.
 	CommandClient() interfaces.CommandClient

@@ -867,6 +867,20 @@ func TestService_EventClient(t *testing.T) {
 	assert.NotNil(t, actual)
 }
 
+func TestService_ReadingClient(t *testing.T) {
+	actual := target.ReadingClient()
+	assert.Nil(t, actual)
+
+	dic.Update(di.ServiceConstructorMap{
+		bootstrapContainer.ReadingClientName: func(get di.Get) interface{} {
+			return clients.NewReadingClient(baseUrl+"59880", nil, false)
+		},
+	})
+
+	actual = target.ReadingClient()
+	assert.NotNil(t, actual)
+}
+
 func TestService_CommandClient(t *testing.T) {
 	actual := target.CommandClient()
 	assert.Nil(t, actual)
