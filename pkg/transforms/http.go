@@ -164,7 +164,7 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 	}
 
 	createRegisterMetric(ctx,
-		func() string { return fmt.Sprintf("%s-%s", internal.HttpExportErrorName, parsedUrl.Redacted()) },
+		func() string { return fmt.Sprintf("%s-%s", internal.HttpExportErrorsName, parsedUrl.Redacted()) },
 		func() any { return sender.httpErrorMetric },
 		func() { sender.httpErrorMetric = gometrics.NewCounter() },
 		map[string]string{"url": parsedUrl.Redacted()})

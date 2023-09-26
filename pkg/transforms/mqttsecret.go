@@ -196,7 +196,7 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	tag := map[string]string{"address/topic": tagValue}
 
 	createRegisterMetric(ctx,
-		func() string { return fmt.Sprintf("%s-%s", internal.MqttExportErrorName, tagValue) },
+		func() string { return fmt.Sprintf("%s-%s", internal.MqttExportErrorsName, tagValue) },
 		func() any { return sender.mqttErrorMetric },
 		func() { sender.mqttErrorMetric = gometrics.NewCounter() },
 		tag)
