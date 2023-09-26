@@ -50,6 +50,7 @@ func TestCreateRegisterMetric(t *testing.T) {
 			mockMetricsMgr.On("Register", expectedFullName, mock.Anything, expectedTags).Return(test.RegisterError).Once()
 			mockLogger := &loggerMocks.LoggingClient{}
 			mockLogger.On("Debugf", mock.Anything, mock.Anything)
+			mockLogger.On("Infof", mock.Anything, mock.Anything)
 			mockCtx := &mocks.AppFunctionContext{}
 			mockCtx.On("LoggingClient").Return(mockLogger)
 			if test.NilMetricsManager {
