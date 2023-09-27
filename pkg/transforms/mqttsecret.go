@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package transforms
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -43,6 +42,7 @@ type MQTTSecretSender struct {
 	secretsLastRetrieved time.Time
 	topicFormatter       StringValuesFormatter
 	mqttSizeMetrics      gometrics.Histogram
+	mqttErrorMetric      gometrics.Counter
 }
 
 // MQTTSecretConfig ...
@@ -187,14 +187,38 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		}
 	}
 
+	publishTopic, err := sender.topicFormatter.invoke(sender.mqttConfig.Topic, ctx, data)
+	if err != nil {
+		return false, fmt.Errorf("in pipeline '%s', MQTT topic formatting failed: %s", ctx.PipelineId(), err.Error())
+	}
+
+	tagValue := fmt.Sprintf("%s/%s", sender.mqttConfig.BrokerAddress, publishTopic)
+	tag := map[string]string{"address/topic": tagValue}
+
+	createRegisterMetric(ctx,
+		func() string { return fmt.Sprintf("%s-%s", internal.MqttExportErrorsName, tagValue) },
+		func() any { return sender.mqttErrorMetric },
+		func() { sender.mqttErrorMetric = gometrics.NewCounter() },
+		tag)
+
+	createRegisterMetric(ctx,
+		func() string { return fmt.Sprintf("%s-%s", internal.MqttExportSizeName, tagValue) },
+		func() any { return sender.mqttSizeMetrics },
+		func() {
+			sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		},
+		tag)
+
 	if !sender.client.IsConnected() {
 		err := sender.connectToBroker(ctx, exportData)
 		if err != nil {
+			sender.mqttErrorMetric.Inc(1)
 			return false, err
 		}
 	}
 
 	if !sender.client.IsConnectionOpen() {
+		sender.mqttErrorMetric.Inc(1)
 		sender.setRetryData(ctx, exportData)
 		subMessage := "dropping event"
 		if sender.persistOnError {
@@ -203,38 +227,18 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		return false, fmt.Errorf("in pipeline '%s', connection to mqtt server for export not open, %s", ctx.PipelineId(), subMessage)
 	}
 
-	publishTopic, err := sender.topicFormatter.invoke(sender.mqttConfig.Topic, ctx, data)
-	if err != nil {
-		return false, fmt.Errorf("in pipeline '%s', MQTT topic formatting failed: %s", ctx.PipelineId(), err.Error())
-	}
-
 	token := sender.client.Publish(publishTopic, sender.mqttConfig.QoS, sender.mqttConfig.Retain, exportData)
 	token.Wait()
 	if token.Error() != nil {
+		sender.mqttErrorMetric.Inc(1)
 		sender.setRetryData(ctx, exportData)
 		return false, token.Error()
 	}
+
 	// capture the size for metrics
 	exportDataBytes := len(exportData)
-	if sender.mqttSizeMetrics == nil {
-		var err error
-		tag := fmt.Sprintf("%s/%s", sender.mqttConfig.BrokerAddress, publishTopic)
-		metricName := fmt.Sprintf("%s-%s", internal.MqttExportSizeName, tag)
-		ctx.LoggingClient().Debugf("Initializing metric %s.", metricName)
-		sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
-		metricsManger := ctx.MetricsManager()
-		if metricsManger != nil {
-			err = metricsManger.Register(metricName, sender.mqttSizeMetrics, map[string]string{"address/topic": tag})
-		} else {
-			err = errors.New("metrics manager not available")
-		}
-
-		if err != nil {
-			ctx.LoggingClient().Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", internal.MqttExportSizeName, err.Error())
-		}
-
-	}
 	sender.mqttSizeMetrics.Update(int64(exportDataBytes))
+
 	ctx.LoggingClient().Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s'", exportDataBytes, ctx.PipelineId())
 	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
 

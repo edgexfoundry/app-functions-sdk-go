@@ -40,7 +40,9 @@ const (
 	PipelineMessageProcessingTimeName = "PipelineMessageProcessingTime-" + PipelineIdTxt
 	PipelineProcessingErrorsName      = "PipelineProcessingErrors-" + PipelineIdTxt
 	HttpExportSizeName                = "HttpExportSize"
+	HttpExportErrorsName              = "HttpExportErrors"
 	MqttExportSizeName                = "MqttExportSize"
+	MqttExportErrorsName              = "MqttExportErrors"
 	MessageBusSubscribeTopics         = "SubscribeTopics"
 	MessageBusPublishTopic            = "PublishTopic"
 )

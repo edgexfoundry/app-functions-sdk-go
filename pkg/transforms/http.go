@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2023 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package transforms
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -44,6 +43,7 @@ type HTTPSender struct {
 	secretName          string
 	urlFormatter        StringValuesFormatter
 	httpSizeMetrics     gometrics.Histogram
+	httpErrorMetric     gometrics.Counter
 	httpRequestHeaders  map[string]string
 }
 
@@ -154,16 +154,28 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 	}
 
 	formattedUrl, err := sender.urlFormatter.invoke(sender.url, ctx, data)
-
 	if err != nil {
 		return false, err
 	}
 
 	parsedUrl, err := url.Parse(formattedUrl)
-
 	if err != nil {
 		return false, err
 	}
+
+	createRegisterMetric(ctx,
+		func() string { return fmt.Sprintf("%s-%s", internal.HttpExportErrorsName, parsedUrl.Redacted()) },
+		func() any { return sender.httpErrorMetric },
+		func() { sender.httpErrorMetric = gometrics.NewCounter() },
+		map[string]string{"url": parsedUrl.Redacted()})
+
+	createRegisterMetric(ctx,
+		func() string { return fmt.Sprintf("%s-%s", internal.HttpExportSizeName, parsedUrl.Redacted()) },
+		func() any { return sender.httpSizeMetrics },
+		func() {
+			sender.httpSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+		},
+		map[string]string{"url": parsedUrl.Redacted()})
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, parsedUrl.String(), bytes.NewReader(exportData))
@@ -194,7 +206,7 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 
 	}
 
-	ctx.LoggingClient().Debugf("POSTing data to %s in pipeline '%s'", sender.url, ctx.PipelineId())
+	ctx.LoggingClient().Debugf("POSTing data to %s in pipeline '%s'", parsedUrl.Redacted(), ctx.PipelineId())
 
 	response, err := client.Do(req)
 	// Pipeline continues if we get a 2xx response, non-2xx response may stop pipeline
@@ -204,6 +216,8 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 		} else {
 			err = fmt.Errorf("export failed in pipeline '%s': %s", ctx.PipelineId(), err.Error())
 		}
+
+		sender.httpErrorMetric.Inc(1)
 
 		// If continuing on send error then can't be persisting on error since Store and Forward retries starting
 		// with the function that failed and stopped the execution of the pipeline.
@@ -222,25 +236,6 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 
 	// capture the size into metrics
 	exportDataBytes := len(exportData)
-	if sender.httpSizeMetrics == nil {
-		var err error
-		lc.Debugf("Initializing metric %s.", internal.HttpExportSizeName)
-		sender.httpSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
-		metricsManger := ctx.MetricsManager()
-		if metricsManger != nil {
-			metricName := fmt.Sprintf("%s-%s", internal.HttpExportSizeName, sender.url)
-
-			err = metricsManger.Register(metricName, sender.httpSizeMetrics, map[string]string{"url": sender.url})
-		} else {
-			err = errors.New("metrics manager not available")
-		}
-
-		if err != nil {
-			lc.Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", internal.HttpExportSizeName, err.Error())
-		}
-
-	}
-
 	sender.httpSizeMetrics.Update(int64(exportDataBytes))
 
 	ctx.LoggingClient().Debugf("Sent %d bytes of data in pipeline '%s'. Response status is %s", exportDataBytes, ctx.PipelineId(), response.Status)
