@@ -5,15 +5,15 @@ go 1.21
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.3.0
 	github.com/eclipse/paho.mqtt.golang v1.4.3
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.1.0-dev.47
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.1.0-dev.49
 	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.1.0-dev.16
-	github.com/edgexfoundry/go-mod-messaging/v3 v3.1.0-dev.25
+	github.com/edgexfoundry/go-mod-messaging/v3 v3.1.0-dev.27
 	github.com/edgexfoundry/go-mod-registry/v3 v3.1.0-dev.7
 	github.com/fxamacker/cbor/v2 v2.5.0
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.3.1
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/labstack/echo/v4 v4.11.1
+	github.com/labstack/echo/v4 v4.11.2
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/stretchr/testify v1.8.4
 )
@@ -65,12 +65,12 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zeebo/errs v1.3.0 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.13.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
