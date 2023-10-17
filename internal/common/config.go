@@ -85,6 +85,19 @@ type HttpConfig struct {
 	HTTPSKeyName string
 }
 
+type WillConfig struct {
+	// Enabled enables Last Will capability on the client connection
+	Enabled bool
+	// Payload is the Last Will Message sent to other clients that are subscribed to the will topic
+	Payload string
+	// Qos is the Quality of Service for the will topic
+	Qos byte
+	// Retained is the "retain" setting for the will topic
+	Retained bool
+	// Topic is the topic for Last Will
+	Topic string
+}
+
 // ExternalMqttConfig contains the MQTT broker configuration for MQTT Trigger
 type ExternalMqttConfig struct {
 	// Url contains the fully qualified URL to connect to the MQTT broker
@@ -112,6 +125,8 @@ type ExternalMqttConfig struct {
 	RetryDuration int
 	// RetryInterval indicates the time (in seconds) that will be waited between attempts to create MQTT client
 	RetryInterval int
+	// Will contains the Last Will configuration for the MQTT Client
+	Will WillConfig
 }
 
 // PipelineInfo defines the top level data for configurable pipelines
