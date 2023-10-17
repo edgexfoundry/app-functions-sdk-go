@@ -69,7 +69,7 @@ func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigge
 
 // Initialize initializes the Trigger for an external MQTT broker
 func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
-	// Convenience short cuts
+	// Convenience shortcuts
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
 
@@ -108,6 +108,12 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 	}
 	opts.KeepAlive = brokerConfig.KeepAlive
 	opts.Servers = []*url.URL{brokerUrl}
+
+	will := brokerConfig.Will
+	if will.Enabled {
+		opts.SetWill(will.Topic, will.Payload, will.Qos, will.Retained)
+		lc.Infof("Last Will options set for MQTT Trigger: %+v", will)
+	}
 
 	if brokerConfig.RetryDuration <= 0 {
 		brokerConfig.RetryDuration = defaultRetryDuration
@@ -148,7 +154,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 }
 
 func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
-	// Convenience short cuts
+	// Convenience shortcuts
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
 	topics := util.DeleteEmptyAndTrim(strings.FieldsFunc(config.Trigger.SubscribeTopics, util.SplitComma))
@@ -166,7 +172,7 @@ func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
 }
 
 func (trigger *Trigger) messageHandler(_ pahoMqtt.Client, mqttMessage pahoMqtt.Message) {
-	// Convenience short cuts
+	// Convenience shortcuts
 	lc := trigger.serviceBinding.LoggingClient()
 
 	data := mqttMessage.Payload()
