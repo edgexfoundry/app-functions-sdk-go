@@ -4,8 +4,6 @@ module app-new-service
 
 go 1.21
 
-toolchain go1.21.0
-
 // To build local docker image of the template App you must
 // comment out this replace statement and update the SDK version to latest
 replace github.com/edgexfoundry/app-functions-sdk-go/v3 => ../
@@ -24,7 +22,7 @@ require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/diegoholiveira/jsonlogic/v3 v3.3.0 // indirect
+	github.com/diegoholiveira/jsonlogic/v3 v3.3.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.1.0-dev.49 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v3 v3.1.0-dev.7 // indirect

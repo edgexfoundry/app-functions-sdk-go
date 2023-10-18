@@ -24,7 +24,8 @@ import (
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
+	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	gometrics "github.com/rcrowley/go-metrics"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -70,6 +71,8 @@ type MQTTSecretConfig struct {
 	// AuthMode indicates what to use when connecting to the broker. Options are "none", "cacert" , "usernamepassword", "clientcert".
 	// If a CA Cert exists in the SecretName then it will be used for all modes except "none".
 	AuthMode string
+	// Will contains the Last Will configuration for the MQTT Client
+	Will common.WillConfig
 }
 
 // NewMQTTSecretSender ...
@@ -111,6 +114,8 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 		return nil
 	}
 
+	ctx.LoggingClient().Info("Initializing MQTT Client")
+
 	config := sender.mqttConfig
 	mqttFactory := secure.NewMqttFactory(ctx.SecretProvider(), ctx.LoggingClient(), config.AuthMode, config.SecretName, config.SkipCertVerify)
 
@@ -130,6 +135,11 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 		}
 
 		sender.opts.SetConnectTimeout(timeout)
+	}
+
+	if config.Will.Enabled {
+		sender.opts.SetWill(config.Will.Topic, config.Will.Payload, config.Will.Qos, config.Will.Retained)
+		ctx.LoggingClient().Infof("Last Will options set for MQTT Export: %+v", config.Will)
 	}
 
 	client, err := mqttFactory.Create(sender.opts)
@@ -240,7 +250,7 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	sender.mqttSizeMetrics.Update(int64(exportDataBytes))
 
 	ctx.LoggingClient().Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s'", exportDataBytes, ctx.PipelineId())
-	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), common.CorrelationHeader, ctx.CorrelationID())
+	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), coreCommon.CorrelationHeader, ctx.CorrelationID())
 
 	return true, nil
 }

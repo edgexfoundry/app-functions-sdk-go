@@ -356,9 +356,91 @@ func TestMQTTExport(t *testing.T) {
 	params[AuthMode] = "none"
 	params[ConnectTimeout] = "5s"
 	params[KeepAlive] = "6s"
+	params[WillEnabled] = "true"
+	params[WillTopic] = "will"
+	params[WillPayload] = "goodbye"
 
 	trx := configurable.MQTTExport(params)
 	assert.NotNil(t, trx, "return result from MQTTSecretSend should not be nil")
+}
+
+func TestMQTTExportWillOptions(t *testing.T) {
+	configurable := Configurable{lc: lc}
+
+	goodWillOptions := make(map[string]string)
+	goodWillOptions[WillEnabled] = "true"
+	goodWillOptions[WillTopic] = "will"
+	goodWillOptions[WillPayload] = "goodbye"
+	goodWillOptions[WillRetained] = "true"
+	goodWillOptions[WillQos] = "2"
+	emptyWill := make(map[string]string)
+
+	willDisabled := make(map[string]string)
+	willDisabled[WillEnabled] = "false"
+
+	badEnabled := make(map[string]string)
+	badEnabled[WillEnabled] = "junk"
+
+	missingTopic := copyMap(goodWillOptions)
+	delete(missingTopic, WillTopic)
+	emptyTopic := copyMap(goodWillOptions)
+	emptyTopic[WillTopic] = ""
+
+	missingPayload := copyMap(goodWillOptions)
+	delete(missingPayload, WillPayload)
+	emptyPayload := copyMap(goodWillOptions)
+	emptyPayload[WillTopic] = ""
+
+	badRetained := copyMap(goodWillOptions)
+	badRetained[WillRetained] = "junk"
+
+	badQos := copyMap(goodWillOptions)
+	badQos[WillQos] = "junk"
+
+	tests := []struct {
+		Name        string
+		Params      map[string]string
+		ExpectError bool
+	}{
+		{"Happy Path all options", goodWillOptions, false},
+		{"Happy Path no options", emptyWill, false},
+		{"Happy Path will disabled", emptyWill, false},
+		{"Bad WillEnabled", badEnabled, true},
+		{"Bad WillRetained", badRetained, true},
+		{"Bad WillQos", badQos, true},
+		{"Missing Topic", missingTopic, true},
+		{"Empty Topic", emptyTopic, true},
+		{"Missing Payload", missingPayload, true},
+		{"Empty Payload", emptyPayload, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Params[BrokerAddress] = "mqtt://broker:8883"
+			test.Params[Topic] = "topic"
+			test.Params[SecretName] = "my-secret"
+			test.Params[ClientID] = "clientid"
+			test.Params[AuthMode] = "none"
+
+			trx := configurable.MQTTExport(test.Params)
+
+			if test.ExpectError {
+				assert.Nil(t, trx)
+				return
+			}
+
+			assert.NotNil(t, trx)
+		})
+	}
+}
+
+func copyMap(src map[string]string) map[string]string {
+	dst := make(map[string]string)
+	for k, v := range src {
+		dst[k] = v
+	}
+
+	return dst
 }
 
 func TestAddTags(t *testing.T) {
