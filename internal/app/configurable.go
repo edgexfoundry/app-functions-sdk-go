@@ -22,11 +22,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 )
 
 const (
@@ -82,10 +83,15 @@ const (
 	IsEventData         = "iseventdata"
 	MergeOnSend         = "mergeonsend"
 	HttpRequestHeaders  = "httprequestheaders"
+	WillEnabled         = "willenabled"
+	WillTopic           = "willtopic"
+	WillQos             = "willqos"
+	WillPayload         = "willpayload"
+	WillRetained        = "willretained"
 )
 
 // Configurable contains the helper functions that return the function pointers for building the configurable function pipeline.
-// They transform the parameters map from the Pipeline configuration in to the actual actual parameters required by the function.
+// They transform the parameters map from the Pipeline configuration in to the actual parameters required by the function.
 type Configurable struct {
 	lc logger.LoggingClient
 }
@@ -225,14 +231,14 @@ func (app *Configurable) WrapIntoEvent(parameters map[string]string) interfaces.
 	var transform *transforms.EventWrapper
 
 	// Converts to upper case and validates it is a valid ValueType
-	valueType, err := common.NormalizeValueType(valueType)
+	valueType, err := coreCommon.NormalizeValueType(valueType)
 	if err != nil {
 		app.lc.Error(err.Error())
 		return nil
 	}
 
 	switch valueType {
-	case common.ValueTypeBinary:
+	case coreCommon.ValueTypeBinary:
 		mediaType, ok := parameters[MediaType]
 		if !ok {
 			app.lc.Error("Could not find " + MediaType)
@@ -247,7 +253,7 @@ func (app *Configurable) WrapIntoEvent(parameters map[string]string) interfaces.
 		}
 
 		transform = transforms.NewEventWrapperBinaryReading(profileName, deviceName, resourceName, mediaType)
-	case common.ValueTypeObject:
+	case coreCommon.ValueTypeObject:
 		transform = transforms.NewEventWrapperObjectReading(profileName, deviceName, resourceName)
 
 	default:
@@ -381,6 +387,7 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 	retain := false
 	autoReconnect := false
 	skipCertVerify := false
+	willEnabled := false
 
 	brokerAddress, ok := parameters[BrokerAddress]
 	if !ok {
@@ -441,6 +448,57 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 		}
 	}
 
+	will := common.WillConfig{}
+
+	willEnabledVal := parameters[WillEnabled]
+	if len(willEnabledVal) > 0 {
+		willEnabled, err = strconv.ParseBool(willEnabledVal)
+		if err != nil {
+			app.lc.Errorf("Could not parse '%s' to a bool for '%s' parameter: %s", willEnabledVal, WillEnabled, err.Error())
+			return nil
+		}
+	}
+
+	if willEnabled {
+		will.Enabled = true
+
+		payloadVal := parameters[WillPayload]
+		if len(payloadVal) == 0 {
+			app.lc.Errorf("WillPayload must be present and non-empty when WillEnabled set to true")
+			return nil
+		}
+		will.Payload = payloadVal
+
+		topicVal := parameters[WillTopic]
+		if len(topicVal) == 0 {
+			app.lc.Errorf("WillTopic must be present and non-empty when WillEnabled set to true")
+			return nil
+		}
+		will.Topic = topicVal
+
+		qosVal := parameters[WillQos]
+		if len(qosVal) > 0 {
+			qos, err = strconv.Atoi(qosVal)
+			if err != nil {
+				app.lc.Errorf("Could not parse '%s' to a int for '%s' parameter: %s", qosVal, WillQos, err.Error())
+				return nil
+			}
+
+			will.Qos = byte(qos)
+		}
+
+		retainedVal := parameters[WillRetained]
+		if len(retainedVal) > 0 {
+			retained, err := strconv.ParseBool(retainedVal)
+			if err != nil {
+				app.lc.Errorf("Could not parse '%s' to a bool for '%s' parameter: %s", retainedVal, WillRetained, err.Error())
+				return nil
+			}
+
+			will.Retained = retained
+		}
+	}
+
 	// These are optional and blank values result in MQTT defaults being used.
 	keepAlive := parameters[KeepAlive]
 	connectTimeout := parameters[ConnectTimeout]
@@ -457,7 +515,9 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 		SecretName:     secretName,
 		Topic:          topic,
 		AuthMode:       authMode,
+		Will:           will,
 	}
+
 	// PersistOnError is optional and is false by default.
 	persistOnError := false
 	value, ok := parameters[PersistOnError]

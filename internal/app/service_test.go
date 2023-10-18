@@ -59,7 +59,7 @@ var mockSecretProvider bootstrapInterfaces.SecretProvider
 
 func TestMain(m *testing.M) {
 	// No remote and no file results in STDOUT logging only
-	lc = logger.NewMockClient()
+	lc = logger.NewClient("test", "DEBUG")
 	mockMetricsManager := &mocks.MetricsManager{}
 	mockMetricsManager.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	mockMetricsManager.On("Unregister", mock.Anything)
