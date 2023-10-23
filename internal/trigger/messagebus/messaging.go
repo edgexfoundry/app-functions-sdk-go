@@ -58,13 +58,12 @@ func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor, dic *di
 
 // Initialize ...
 func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
-	var err error
-
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
 
 	lc.Infof("Initializing EdgeX Message Bus Trigger for '%s'", config.MessageBus.Type)
 
+	// MessageBus client is now created and connected by the MessageBus bootstrap handler and placed in the DIC.
 	trigger.client = container.MessagingClientFrom(trigger.dic.Get)
 	if trigger.client == nil {
 		return nil, errors.New("unable to find MessageBus Client. Make sure it is configured properly")
@@ -86,11 +85,6 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 	}
 
 	messageErrors := make(chan error)
-
-	err = trigger.client.Connect()
-	if err != nil {
-		return nil, err
-	}
 
 	trigger.publishTopic = strings.TrimSpace(config.Trigger.PublishTopic)
 	if len(trigger.publishTopic) > 0 {
