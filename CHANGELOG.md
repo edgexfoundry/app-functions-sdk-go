@@ -10,6 +10,59 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+## [v3.1.0] - 2023-11-15
+
+### ✨  Features
+
+- *(security)* Add authentication hooks to routes ([fa33c88…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/fa33c8818e39435006b252659f14dd198b089407))
+- *(transforms)* Add support for specifying http request headers for HTTP export ([29a8308…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/29a8308438a52756633efa2928cd912ea29901d8))
+- *(transforms)* Implement regular expressions functionality in filtering ([377d8bc…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/377d8bcab7f9c5389ea67e40c6b451eeacc8140e))
+- Add MQTT Will configuration for MQTT Export ([#1495](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1495)) ([03e14d6…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/03e14d6ac2154e00287343458ccf4c49dd067c30))
+- Add Will configuration elements for External MQTT trigger config ([#1493](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1493)) ([005c7e8…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/005c7e87a5134e2e1ce3947859ec42151b916ebd))
+- Add error metrics for HTTP and MQTT export errors ([#1484](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1484)) ([21b9ff9…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/21b9ff91ff1279982b4b2aea63e5c9deeb6fc021))
+- Add new ReadingClient API to service and context ([#1482](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1482)) ([94620e0…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/94620e08945efc3d49423e79e21dbc69100e8b9d))
+- Change AddCustomRoute to use Echo handler signature ([#1469](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1469)) ([33d4442…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/33d44429a9498c15e578a0be58f0c4871add9a92))
+- Replace gorilla/mux router with echo ([#1464](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1464)) ([929e0b7…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/929e0b70ce7078e5e88b197ca2323a707769f0c7))
+- Add capability to Publish to MessageBus when using non-MessageBus triggers ([0caaaeb…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/0caaaebd40a45a6e51014b4b14b4e0a7df63fdbd))
+- Use the latest version of go-mod-bootstrap in go.mod ([d7d7027…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/d7d702765a528ea0d8bfd876ec68df3850e2e04c))
+- Fix logic to better error handling when common config is missing when runs in hybrid mode ([2f8bfc8…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/2f8bfc83e72f7dced844fa18c4d9c78a4832a8dc))
+- Add API to get SDK's App Context ([7d6e55d…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/7d6e55dc6bd62283f61808fe7a2de34e05c34eba))
+
+
+### ♻ Code Refactoring
+
+- Remove github.com/pkg/errors from Attribution.txt ([5701c44…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/5701c445dd947cf79adf1dd098ddc88862106282))
+- Use new Common Controller for handling common APIs ([9cb48b4…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/9cb48b4aec5a900f82148c20e3365e8c0cd25941))
+
+
+### 🐛 Bug Fixes
+
+- *(security)* Mark AddRoute(unauthenticated) as Deprecated ([2327eac…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/2327eac455ce180c49238c2079dee450e2abf9dc))
+- Remove attempt to connect to the MessageBus from trigger ([#1498](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1498)) ([5a64b07…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/5a64b07e1eaaa059273bf5e9866e7e4b90813524))
+- Add missing contentType to new Publish APIs ([9b07666…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/9b0766643c54a9d38aaf55b8b3ca9ae9097b1a5d))
+- Update Copy right and added call to ConfigureCors() ([bbc2a8d…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/bbc2a8d80baa15e01ea5a5a307f937445405cbce))
+- Improve clarity of error messages in regexp filtering ([0cf7aa9…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/0cf7aa9c76c0f8f6d7a1931e602fcb4d4ca61e2f))
+- Fixed linter issue in unit test ([af96062…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/af9606269dc80863ec7f926677df755345d0f9f4))
+- Use released SDK version in App Template ([67af729…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/67af72965b6a00c94f9c396d8d366ed5553d460e))
+
+
+### 📖 Documentation
+
+- Update README for new docs structure ([#1504](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1504)) ([d171ac5…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/d171ac54f182122f57871769b28168ec7a996a36))
+- Update repo links to point to latest docs ([#1471](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1471)) ([7349b9b…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/7349b9be848274ef723bef49ff950827f6d90d45))
+
+
+### 👷 Build
+
+- Upgrade to go-1.21, Linter1.54.2 and Alpine 3.18 ([#1475](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1475)) ([534a8b2…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/534a8b21a43fc6feaa29292196610f3d89cfc830))
+
+
+### 🤖 Continuous Integration
+
+- Add automated release workflow on tag creation ([b94b540…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/b94b5404e8106da3e8ee900e0a44b0aa8b7c76cf))
+
+
+
 ## [v3.0.1] Minnesota - 2023-07-25 (Only compatible with the 3.x releases)
 ### Features ✨
 Security - Add missing authentication hooks to standard routes (#1447)
