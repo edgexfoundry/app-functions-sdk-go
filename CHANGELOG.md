@@ -24,7 +24,6 @@
 - Change AddCustomRoute to use Echo handler signature ([#1469](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1469)) ([33d4442…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/33d44429a9498c15e578a0be58f0c4871add9a92))
 - Replace gorilla/mux router with echo ([#1464](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1464)) ([929e0b7…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/929e0b70ce7078e5e88b197ca2323a707769f0c7))
 - Add capability to Publish to MessageBus when using non-MessageBus triggers ([0caaaeb…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/0caaaebd40a45a6e51014b4b14b4e0a7df63fdbd))
-- Use the latest version of go-mod-bootstrap in go.mod ([d7d7027…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/d7d702765a528ea0d8bfd876ec68df3850e2e04c))
 - Fix logic to better error handling when common config is missing when runs in hybrid mode ([2f8bfc8…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/2f8bfc83e72f7dced844fa18c4d9c78a4832a8dc))
 - Add API to get SDK's App Context ([7d6e55d…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/7d6e55dc6bd62283f61808fe7a2de34e05c34eba))
 
