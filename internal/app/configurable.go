@@ -80,6 +80,11 @@ const (
 	BatchByTimeAndCount = "bytimecount"
 	IsEventData         = "iseventdata"
 	MergeOnSend         = "mergeonsend"
+	ExchangeName        = "exchangename"
+	ExchangeType        = "exchangetype"
+	RoutingKey          = "routingKey"
+	Mandatory           = "Mandatory"
+	Immediate           = "Immediate"
 )
 
 // Configurable contains the helper functions that return the function pointers for building the configurable function pipeline.
