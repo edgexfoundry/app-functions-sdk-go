@@ -5,7 +5,7 @@ info:
   version: 3.0.0
 
 servers:
-  - url: http://localhost:/api/v2
+  - url: http://localhost:/api/v3
     description: URL for local development and testing
 
 components:
@@ -22,7 +22,7 @@ components:
         apiVersion:
           description: "A version number shows the API version in DTOs."
           type: string
-          example: "v2"
+          example: "v3"
     BaseResponse:
       description: "Defines basic properties which all use-case specific response DTO instances should support"
       type: object
