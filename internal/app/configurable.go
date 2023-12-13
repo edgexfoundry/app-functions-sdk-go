@@ -21,85 +21,96 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 )
 
 const (
-	ProfileNames        = "profilenames"
-	DeviceNames         = "devicenames"
-	SourceNames         = "sourcenames"
-	ResourceNames       = "resourcenames"
-	FilterOut           = "filterout"
-	EncryptionKey       = "key"
-	InitVector          = "initvector"
-	Url                 = "url"
-	ExportMethod        = "method"
-	ExportMethodPost    = "post"
-	ExportMethodPut     = "put"
-	MimeType            = "mimetype"
-	PersistOnError      = "persistonerror"
-	ContinueOnSendError = "continueonsenderror"
-	ReturnInputData     = "returninputdata"
-	SkipVerify          = "skipverify"
-	Qos                 = "qos"
-	Retain              = "retain"
-	AutoReconnect       = "autoreconnect"
-	ConnectTimeout      = "connecttimeout"
-	ProfileName         = "profilename"
-	DeviceName          = "devicename"
-	ResourceName        = "resourcename"
-	ValueType           = "valuetype"
-	MediaType           = "mediatype"
-	Rule                = "rule"
-	BatchThreshold      = "batchthreshold"
-	TimeInterval        = "timeinterval"
-	HeaderName          = "headername"
-	SecretName          = "secretname"
-	SecretValueKey      = "secretvaluekey"
-	BrokerAddress       = "brokeraddress"
-	ClientID            = "clientid"
-	KeepAlive           = "keepalive"
-	Topic               = "topic"
-	TransformType       = "type"
-	TransformXml        = "xml"
-	TransformJson       = "json"
-	AuthMode            = "authmode"
-	Tags                = "tags"
-	ResponseContentType = "responsecontenttype"
-	Algorithm           = "algorithm"
-	CompressGZIP        = "gzip"
-	CompressZLIB        = "zlib"
-	EncryptAES256       = "aes256"
-	Mode                = "mode"
-	BatchByCount        = "bycount"
-	BatchByTime         = "bytime"
-	BatchByTimeAndCount = "bytimecount"
-	IsEventData         = "iseventdata"
-	MergeOnSend         = "mergeonsend"
-	HttpRequestHeaders  = "httprequestheaders"
-	WillEnabled         = "willenabled"
-	WillTopic           = "willtopic"
-	WillQos             = "willqos"
-	WillPayload         = "willpayload"
-	WillRetained        = "willretained"
+	ProfileNames            = "profilenames"
+	DeviceNames             = "devicenames"
+	SourceNames             = "sourcenames"
+	ResourceNames           = "resourcenames"
+	FilterOut               = "filterout"
+	EncryptionKey           = "key"
+	InitVector              = "initvector"
+	Url                     = "url"
+	ExportMethod            = "method"
+	ExportMethodPost        = "post"
+	ExportMethodPut         = "put"
+	MimeType                = "mimetype"
+	PersistOnError          = "persistonerror"
+	ContinueOnSendError     = "continueonsenderror"
+	ReturnInputData         = "returninputdata"
+	SkipVerify              = "skipverify"
+	Qos                     = "qos"
+	Retain                  = "retain"
+	AutoReconnect           = "autoreconnect"
+	ConnectTimeout          = "connecttimeout"
+	ProfileName             = "profilename"
+	DeviceName              = "devicename"
+	ResourceName            = "resourcename"
+	ValueType               = "valuetype"
+	MediaType               = "mediatype"
+	Rule                    = "rule"
+	BatchThreshold          = "batchthreshold"
+	TimeInterval            = "timeinterval"
+	HeaderName              = "headername"
+	SecretName              = "secretname"
+	SecretValueKey          = "secretvaluekey"
+	BrokerAddress           = "brokeraddress"
+	ClientID                = "clientid"
+	KeepAlive               = "keepalive"
+	Topic                   = "topic"
+	TransformType           = "type"
+	TransformXml            = "xml"
+	TransformJson           = "json"
+	AuthMode                = "authmode"
+	Tags                    = "tags"
+	ResponseContentType     = "responsecontenttype"
+	Algorithm               = "algorithm"
+	CompressGZIP            = "gzip"
+	CompressZLIB            = "zlib"
+	EncryptAES256           = "aes256"
+	Mode                    = "mode"
+	BatchByCount            = "bycount"
+	BatchByTime             = "bytime"
+	BatchByTimeAndCount     = "bytimecount"
+	IsEventData             = "iseventdata"
+	MergeOnSend             = "mergeonsend"
+	HttpRequestHeaders      = "httprequestheaders"
+	WillEnabled             = "willenabled"
+	WillTopic               = "willtopic"
+	WillQos                 = "willqos"
+	WillPayload             = "willpayload"
+	WillRetained            = "willretained"
+	MaxReconnectInterval    = "maxreconnectinterval"
+	PreConnect              = "preconnect"
+	PreConnectRetryCount    = "preconnectretrycount"
+	PreConnectRetryInterval = "preconnectretryinterval"
+
+	PreConnectRetryCountDefault    = 6
+	PreConnectRetryIntervalDefault = time.Second * 10
 )
 
 // Configurable contains the helper functions that return the function pointers for building the configurable function pipeline.
 // They transform the parameters map from the Pipeline configuration in to the actual parameters required by the function.
 type Configurable struct {
 	lc logger.LoggingClient
+	sp bootstrapInterfaces.SecretProvider
 }
 
 // NewConfigurable returns a new instance of Configurable
-func NewConfigurable(lc logger.LoggingClient) *Configurable {
+func NewConfigurable(lc logger.LoggingClient, sp bootstrapInterfaces.SecretProvider) *Configurable {
 	return &Configurable{
 		lc: lc,
+		sp: sp,
 	}
 }
 
@@ -499,23 +510,65 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 		}
 	}
 
+	preConnect := false
+	preConnectRetryCount := PreConnectRetryCountDefault
+	preConnectRetryInterval := PreConnectRetryIntervalDefault
+
+	boolValue := parameters[PreConnect]
+	if len(boolValue) > 0 {
+		preConnect, err = strconv.ParseBool(boolValue)
+		if err != nil {
+			app.lc.Errorf("Could not parse '%s' to a bool for '%s' parameter: %s", boolValue, PreConnect, err.Error())
+			return nil
+		}
+	}
+
+	countValue := parameters[PreConnectRetryCount]
+	if len(countValue) > 0 {
+		preConnectRetryCount, err = strconv.Atoi(countValue)
+		if err != nil {
+			app.lc.Errorf("Could not parse '%s' to an int for '%s' parameter: %s", countValue, PreConnectRetryCount, err.Error())
+			return nil
+		}
+	}
+
+	intervalValue := parameters[PreConnectRetryInterval]
+	if len(intervalValue) > 0 {
+		preConnectRetryInterval, err = time.ParseDuration(intervalValue)
+		if err != nil {
+			app.lc.Errorf("Could not parse '%s' to a Duration for '%s' parameter: %s", intervalValue, PreConnectRetryInterval, err.Error())
+			return nil
+		}
+	}
+
+	intervalValue = parameters[MaxReconnectInterval]
+	if len(intervalValue) > 0 {
+		_, err = time.ParseDuration(intervalValue)
+		if err != nil {
+			app.lc.Errorf("Could not parse '%s' to a Duration for '%s' parameter: %s", intervalValue, MaxReconnectInterval, err.Error())
+			return nil
+		}
+
+	}
+
 	// These are optional and blank values result in MQTT defaults being used.
 	keepAlive := parameters[KeepAlive]
 	connectTimeout := parameters[ConnectTimeout]
 
 	mqttConfig := transforms.MQTTSecretConfig{
-		Retain:         retain,
-		SkipCertVerify: skipCertVerify,
-		AutoReconnect:  autoReconnect,
-		ConnectTimeout: connectTimeout,
-		KeepAlive:      keepAlive,
-		QoS:            byte(qos),
-		BrokerAddress:  brokerAddress,
-		ClientId:       clientID,
-		SecretName:     secretName,
-		Topic:          topic,
-		AuthMode:       authMode,
-		Will:           will,
+		Retain:               retain,
+		SkipCertVerify:       skipCertVerify,
+		AutoReconnect:        autoReconnect,
+		ConnectTimeout:       connectTimeout,
+		KeepAlive:            keepAlive,
+		QoS:                  byte(qos),
+		BrokerAddress:        brokerAddress,
+		ClientId:             clientID,
+		SecretName:           secretName,
+		Topic:                topic,
+		AuthMode:             authMode,
+		Will:                 will,
+		MaxReconnectInterval: parameters[MaxReconnectInterval], // Validated above
 	}
 
 	// PersistOnError is optional and is false by default.
@@ -529,6 +582,9 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 		}
 	}
 	transform := transforms.NewMQTTSecretSender(mqttConfig, persistOnError)
+	if preConnect {
+		transform.ConnectToBroker(app.lc, app.sp, preConnectRetryCount, preConnectRetryInterval)
+	}
 	return transform.MQTTSend
 }
 
