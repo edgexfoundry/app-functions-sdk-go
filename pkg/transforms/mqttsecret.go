@@ -315,10 +315,12 @@ func (sender *MQTTSecretSender) ConnectToBroker(lc logger.LoggingClient, sp boot
 
 		for i := 0; i < retryCount; i++ {
 			token = sender.client.Connect()
-			if token.Wait() && token.Error() != nil {
-				lc.Warnf("failed to pre-connect to mqtt server for export: %v. trying again in %v", token.Error(), retryInterval)
-				time.Sleep(retryInterval)
+			if token.Wait() && token.Error() == nil {
+				break
 			}
+
+			lc.Warnf("failed to pre-connect to mqtt server for export: %v. trying again in %v", token.Error(), retryInterval)
+			time.Sleep(retryInterval)
 		}
 
 		if !sender.client.IsConnected() {
