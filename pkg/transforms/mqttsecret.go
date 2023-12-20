@@ -25,6 +25,8 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 	gometrics "github.com/rcrowley/go-metrics"
 
@@ -36,6 +38,7 @@ import (
 // MQTTSecretSender ...
 type MQTTSecretSender struct {
 	lock                 sync.Mutex
+	lc                   logger.LoggingClient
 	client               MQTT.Client
 	mqttConfig           MQTTSecretConfig
 	persistOnError       bool
@@ -44,6 +47,7 @@ type MQTTSecretSender struct {
 	topicFormatter       StringValuesFormatter
 	mqttSizeMetrics      gometrics.Histogram
 	mqttErrorMetric      gometrics.Counter
+	preConnected         bool
 }
 
 // MQTTSecretConfig ...
@@ -60,6 +64,8 @@ type MQTTSecretConfig struct {
 	KeepAlive string
 	// ConnectTimeout is the duration for timing out on connecting to the broker
 	ConnectTimeout string
+	// MaxReconnectInterval is the max duration for attempting to reconnect to the broker
+	MaxReconnectInterval string
 	// Topic that you wish to publish to
 	Topic string
 	// QoS for MQTT Connection
@@ -89,8 +95,12 @@ func NewMQTTSecretSender(mqttConfig MQTTSecretConfig, persistOnError bool) *MQTT
 		client:         nil,
 		mqttConfig:     mqttConfig,
 		persistOnError: persistOnError,
-		opts:           opts,
 	}
+
+	opts.OnConnect = sender.onConnected
+	opts.OnConnectionLost = sender.onConnectionLost
+	opts.OnReconnecting = sender.onReconnecting
+	sender.opts = opts
 
 	return sender
 }
@@ -103,26 +113,25 @@ func NewMQTTSecretSenderWithTopicFormatter(mqttConfig MQTTSecretConfig, persistO
 	return sender
 }
 
-func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionContext) error {
+func (sender *MQTTSecretSender) initializeMQTTClient(lc logger.LoggingClient, secretProvider bootstrapInterfaces.SecretProvider) error {
 	sender.lock.Lock()
 	defer sender.lock.Unlock()
 
 	// If the conditions changed while waiting for the lock, i.e. other thread completed the initialization,
 	// then skip doing anything
-	secretProvider := ctx.SecretProvider()
 	if sender.client != nil && !sender.secretsLastRetrieved.Before(secretProvider.SecretsLastUpdated()) {
 		return nil
 	}
 
-	ctx.LoggingClient().Info("Initializing MQTT Client")
+	lc.Info("Initializing MQTT Client")
 
 	config := sender.mqttConfig
-	mqttFactory := secure.NewMqttFactory(ctx.SecretProvider(), ctx.LoggingClient(), config.AuthMode, config.SecretName, config.SkipCertVerify)
+	mqttFactory := secure.NewMqttFactory(secretProvider, lc, config.AuthMode, config.SecretName, config.SkipCertVerify)
 
 	if len(sender.mqttConfig.KeepAlive) > 0 {
 		keepAlive, err := time.ParseDuration(sender.mqttConfig.KeepAlive)
 		if err != nil {
-			return fmt.Errorf("in pipeline '%s', unable to parse KeepAlive value of '%s': %s", ctx.PipelineId(), sender.mqttConfig.KeepAlive, err.Error())
+			return fmt.Errorf("unable to parse MQTT Export KeepAlive value of '%s': %s", sender.mqttConfig.KeepAlive, err.Error())
 		}
 
 		sender.opts.SetKeepAlive(keepAlive)
@@ -131,20 +140,29 @@ func (sender *MQTTSecretSender) initializeMQTTClient(ctx interfaces.AppFunctionC
 	if len(sender.mqttConfig.ConnectTimeout) > 0 {
 		timeout, err := time.ParseDuration(sender.mqttConfig.ConnectTimeout)
 		if err != nil {
-			return fmt.Errorf("in pipeline '%s', unable to parse ConnectTimeout value of '%s': %s", ctx.PipelineId(), sender.mqttConfig.ConnectTimeout, err.Error())
+			return fmt.Errorf("unable to parse MQTT Export ConnectTimeout value of '%s': %s", sender.mqttConfig.ConnectTimeout, err.Error())
 		}
 
 		sender.opts.SetConnectTimeout(timeout)
 	}
 
+	if len(sender.mqttConfig.MaxReconnectInterval) > 0 {
+		interval, err := time.ParseDuration(sender.mqttConfig.MaxReconnectInterval)
+		if err != nil {
+			return fmt.Errorf("unable to parse MQTT Export MaxReconnectInterval value of '%s': %s", sender.mqttConfig.MaxReconnectInterval, err.Error())
+		}
+
+		sender.opts.SetMaxReconnectInterval(interval)
+	}
+
 	if config.Will.Enabled {
 		sender.opts.SetWill(config.Will.Topic, config.Will.Payload, config.Will.Qos, config.Will.Retained)
-		ctx.LoggingClient().Infof("Last Will options set for MQTT Export: %+v", config.Will)
+		lc.Infof("Last Will options set for MQTT Export: %+v", config.Will)
 	}
 
 	client, err := mqttFactory.Create(sender.opts)
 	if err != nil {
-		return fmt.Errorf("in pipeline '%s', unable to create MQTT Client: %s", ctx.PipelineId(), err.Error())
+		return fmt.Errorf("unable to create MQTT Client for export: %s", err.Error())
 	}
 
 	sender.client = client
@@ -176,9 +194,32 @@ func (sender *MQTTSecretSender) connectToBroker(ctx interfaces.AppFunctionContex
 	return nil
 }
 
+func (sender *MQTTSecretSender) setRetryData(ctx interfaces.AppFunctionContext, exportData []byte) {
+	if sender.persistOnError {
+		ctx.SetRetryData(exportData)
+	}
+}
+
+func (sender *MQTTSecretSender) onConnected(_ MQTT.Client) {
+	sender.lc.Tracef("MQTT Broker for export connected")
+}
+
+func (sender *MQTTSecretSender) onConnectionLost(_ MQTT.Client, _ error) {
+	sender.lc.Tracef("MQTT Broker for export lost connection")
+
+}
+
+func (sender *MQTTSecretSender) onReconnecting(_ MQTT.Client, _ *MQTT.ClientOptions) {
+	sender.lc.Tracef("MQTT Broker for export re-connecting")
+}
+
 // MQTTSend sends data from the previous function to the specified MQTT broker.
 // If no previous function exists, then the event that triggered the pipeline will be used.
 func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+	if sender.lc == nil {
+		sender.lc = ctx.LoggingClient()
+	}
+
 	if data == nil {
 		// We didn't receive a result
 		return false, fmt.Errorf("function MQTTSend in pipeline '%s': No Data Received", ctx.PipelineId())
@@ -191,7 +232,7 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	// if we haven't initialized the client yet OR the cache has been invalidated (due to new/updated secrets) we need to (re)initialize the client
 	secretProvider := ctx.SecretProvider()
 	if sender.client == nil || sender.secretsLastRetrieved.Before(secretProvider.SecretsLastUpdated()) {
-		err := sender.initializeMQTTClient(ctx)
+		err := sender.initializeMQTTClient(ctx.LoggingClient(), ctx.SecretProvider())
 		if err != nil {
 			return false, err
 		}
@@ -219,7 +260,7 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		},
 		tag)
 
-	if !sender.client.IsConnected() {
+	if !sender.client.IsConnected() && !sender.preConnected {
 		err := sender.connectToBroker(ctx, exportData)
 		if err != nil {
 			sender.mqttErrorMetric.Inc(1)
@@ -249,14 +290,45 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	exportDataBytes := len(exportData)
 	sender.mqttSizeMetrics.Update(int64(exportDataBytes))
 
-	ctx.LoggingClient().Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s'", exportDataBytes, ctx.PipelineId())
-	ctx.LoggingClient().Tracef("Data exported", "Transport", "MQTT", "pipeline", ctx.PipelineId(), coreCommon.CorrelationHeader, ctx.CorrelationID())
+	sender.lc.Debugf("Sent %d bytes of data to MQTT Broker in pipeline '%s' to topic '%s'", exportDataBytes, ctx.PipelineId(), publishTopic)
+	sender.lc.Tracef("Data exported to MQTT Broker in pipeline '%s': %s=%s", ctx.PipelineId(), coreCommon.CorrelationHeader, ctx.CorrelationID())
 
 	return true, nil
 }
 
-func (sender *MQTTSecretSender) setRetryData(ctx interfaces.AppFunctionContext, exportData []byte) {
-	if sender.persistOnError {
-		ctx.SetRetryData(exportData)
+// ConnectToBroker attempts to connect to the MQTT broker for export prior to processing the first data to be exported.
+// If a failure occurs the connection is retried when processing the first data to be exported.
+func (sender *MQTTSecretSender) ConnectToBroker(lc logger.LoggingClient, sp bootstrapInterfaces.SecretProvider, retryCount int, retryInterval time.Duration) {
+	sender.lc = lc
+
+	if sender.client == nil {
+		if err := sender.initializeMQTTClient(lc, sp); err != nil {
+			lc.Errorf("Failed to pre-connect to MQTT Broker: %v. Will try again on first export", err)
+			return
+		}
+	}
+
+	if !sender.client.IsConnected() {
+		var token MQTT.Token
+
+		lc.Info("Attempting to Pre-Connect to mqtt server for export")
+
+		for i := 0; i < retryCount; i++ {
+			token = sender.client.Connect()
+			if token.Wait() && token.Error() == nil {
+				break
+			}
+
+			lc.Warnf("failed to pre-connect to mqtt server for export: %v. trying again in %v", token.Error(), retryInterval)
+			time.Sleep(retryInterval)
+		}
+
+		if !sender.client.IsConnected() {
+			lc.Errorf("failed to pre-connect to mqtt server for export: %v. Will try again on first export", token.Error())
+			return
+		}
+
+		lc.Infof("Pre-Connected to mqtt server for export")
+		sender.preConnected = true
 	}
 }

@@ -295,7 +295,7 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 		return nil, fmt.Errorf("pipline TargetType of '%s' is not supported", svc.config.Writable.Pipeline.TargetType)
 	}
 
-	configurable := reflect.ValueOf(NewConfigurable(svc.lc))
+	configurable := reflect.ValueOf(NewConfigurable(svc.lc, svc.SecretProvider()))
 	pipelineConfig := svc.config.Writable.Pipeline
 
 	defaultExecutionOrder := strings.TrimSpace(pipelineConfig.ExecutionOrder)

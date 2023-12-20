@@ -526,7 +526,8 @@ func TestGetAppSettingStringsNoAppSettings(t *testing.T) {
 
 func TestLoadConfigurableFunctionPipelinesDefaultNotFound(t *testing.T) {
 	service := Service{
-		lc: lc,
+		lc:  lc,
+		dic: dic,
 		config: &common.ConfigurationStruct{
 			Writable: common.WritableInfo{
 				Pipeline: common.PipelineInfo{
@@ -572,7 +573,8 @@ func TestLoadConfigurableFunctionPipelinesNotABuiltInSdkFunction(t *testing.T) {
 	functions["Bogus"] = common.PipelineFunction{}
 
 	sdk := Service{
-		lc: lc,
+		lc:  lc,
+		dic: dic,
 		config: &common.ConfigurationStruct{
 			Writable: common.WritableInfo{
 				Pipeline: common.PipelineInfo{
@@ -604,7 +606,8 @@ func TestLoadConfigurableFunctionPipelinesNumFunctions(t *testing.T) {
 	transforms["SetResponseData"] = common.PipelineFunction{}
 
 	sdk := Service{
-		lc: lc,
+		lc:  lc,
+		dic: dic,
 		config: &common.ConfigurationStruct{
 			Writable: common.WritableInfo{
 				Pipeline: common.PipelineInfo{
@@ -661,7 +664,8 @@ func TestTargetType(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			sdk := Service{
-				lc: lc,
+				lc:  lc,
+				dic: dic,
 				config: &common.ConfigurationStruct{
 					Writable: common.WritableInfo{
 						Pipeline: common.PipelineInfo{
@@ -821,11 +825,12 @@ func TestStop(t *testing.T) {
 func TestFindMatchingFunction(t *testing.T) {
 	svc := Service{
 		lc:                       lc,
+		dic:                      dic,
 		serviceKey:               "MyAppService",
 		profileSuffixPlaceholder: interfaces.ProfileSuffixPlaceholder,
 	}
 
-	configurable := reflect.ValueOf(NewConfigurable(svc.lc))
+	configurable := reflect.ValueOf(NewConfigurable(svc.lc, svc.SecretProvider()))
 
 	tests := []struct {
 		Name         string

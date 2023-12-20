@@ -22,7 +22,7 @@ require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/diegoholiveira/jsonlogic/v3 v3.3.2 // indirect
+	github.com/diegoholiveira/jsonlogic/v3 v3.4.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.6 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.1 // indirect

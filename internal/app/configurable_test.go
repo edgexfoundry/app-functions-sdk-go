@@ -359,6 +359,9 @@ func TestMQTTExport(t *testing.T) {
 	params[WillEnabled] = "true"
 	params[WillTopic] = "will"
 	params[WillPayload] = "goodbye"
+	params[PreConnectRetryCount] = "10"
+	params[PreConnectRetryInterval] = "6s"
+	params[MaxReconnectInterval] = "10s"
 
 	trx := configurable.MQTTExport(params)
 	assert.NotNil(t, trx, "return result from MQTTSecretSend should not be nil")
