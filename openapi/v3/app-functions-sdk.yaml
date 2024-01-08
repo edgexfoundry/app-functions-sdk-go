@@ -2,10 +2,10 @@ openapi: 3.0.0
 info:
   title: EdgeX Foundry - Application Services API
   description: This is the definition of the API for Application Functions services in the EdgeX Foundry IOT microservice platform. Application Services provides the means for processing/transforming/exporting data out of EdgeX. 
-  version: 3.0.0
+  version: 3.2.0
 
 servers:
-  - url: http://localhost:/api/v2
+  - url: http://localhost:/api/v3
     description: URL for local development and testing
 
 components:
@@ -22,7 +22,7 @@ components:
         apiVersion:
           description: "A version number shows the API version in DTOs."
           type: string
-          example: "v2"
+          example: "v3"
     BaseResponse:
       description: "Defines basic properties which all use-case specific response DTO instances should support"
       type: object
@@ -245,7 +245,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: Object type must match the Application Service's Target Type. Currently Target Type defaults to EdgeX model.Events from go-mod-core-contracts. This will change to default to a V2 dtos.Event in the future.
+              description: Object type must match the Application Service's Target Type. Currently Target Type defaults to EdgeX model.Events from go-mod-core-contracts. This will change to default to a v3 dtos.Event in the future.
         required: true
       responses:
         '200':
