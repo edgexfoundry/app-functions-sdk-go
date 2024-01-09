@@ -62,6 +62,8 @@ type AppFunctionContext interface {
 	// SetRetryData set the data that is to be retried later as part of the Store and Forward capability.
 	// Used when there was failure sending the data to an external source.
 	SetRetryData(data []byte)
+	// TriggerRetryFailedData sets the flag to trigger the retry of any stored failed export data.
+	TriggerRetryFailedData()
 	// SecretProvider returns the SecretProvider instance
 	SecretProvider() bootstrapInterfaces.SecretProvider
 	// LoggingClient returns the Logger client

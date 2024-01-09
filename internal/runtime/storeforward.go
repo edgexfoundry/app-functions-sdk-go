@@ -21,15 +21,17 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	gometrics "github.com/rcrowley/go-metrics"
 )
 
 const (
@@ -37,8 +39,25 @@ const (
 )
 
 type storeForwardInfo struct {
-	runtime *FunctionsPipelineRuntime
-	dic     *di.Container
+	runtime         *FunctionsPipelineRuntime
+	dic             *di.Container
+	lc              logger.LoggingClient
+	serviceKey      string
+	dataCount       gometrics.Counter
+	retryInProgress atomic.Bool
+}
+
+func newStoreAndForward(runtime *FunctionsPipelineRuntime, dic *di.Container, serviceKey string) *storeForwardInfo {
+	return &storeForwardInfo{
+		runtime:    runtime,
+		dic:        dic,
+		lc:         bootstrapContainer.LoggingClientFrom(dic.Get),
+		serviceKey: serviceKey,
+		// Using counter metric now for the retry on success feature because it is thread safe
+		// and will also be used in future metrics feature to track size of the S&F queue.
+		// TODO: Register counter metric when using it for the metrics capability
+		dataCount: gometrics.NewCounter(),
+	}
 }
 
 func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
@@ -52,7 +71,17 @@ func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
 	enabledWg.Add(1)
 
 	config := container.ConfigurationFrom(sf.dic.Get)
-	lc := bootstrapContainer.LoggingClientFrom(sf.dic.Get)
+	storeClient := container.StoreClientFrom(sf.dic.Get)
+
+	sf.serviceKey = serviceKey
+
+	items, err := storeClient.RetrieveFromStore(serviceKey)
+	if err != nil {
+		sf.lc.Errorf("Unable to initialize Store and Forward data count: Failed to load items from DB: %v", err)
+	} else {
+		sf.dataCount.Clear()
+		sf.dataCount.Inc(int64(len(items)))
+	}
 
 	go func() {
 		defer appWg.Done()
@@ -60,25 +89,27 @@ func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
 
 		retryInterval, err := time.ParseDuration(config.Writable.StoreAndForward.RetryInterval)
 		if err != nil {
-			lc.Warn(
+			sf.lc.Warn(
 				fmt.Sprintf("StoreAndForward RetryInterval failed to parse, defaulting to %s",
 					defaultMinRetryInterval.String()))
 			retryInterval = defaultMinRetryInterval
 		} else if retryInterval < defaultMinRetryInterval {
-			lc.Warn(
+			sf.lc.Warn(
 				fmt.Sprintf("StoreAndForward RetryInterval value %s is less than the allowed minimum value, defaulting to %s",
 					retryInterval.String(), defaultMinRetryInterval.String()))
 			retryInterval = defaultMinRetryInterval
 		}
 
 		if config.Writable.StoreAndForward.MaxRetryCount < 0 {
-			lc.Warn("StoreAndForward MaxRetryCount can not be less than 0, defaulting to 1")
+			sf.lc.Warn("StoreAndForward MaxRetryCount can not be less than 0, defaulting to 1")
 			config.Writable.StoreAndForward.MaxRetryCount = 1
 		}
 
-		lc.Info(
-			fmt.Sprintf("Starting StoreAndForward Retry Loop with %s RetryInterval and %d max retries",
-				retryInterval.String(), config.Writable.StoreAndForward.MaxRetryCount))
+		sf.lc.Info(
+			fmt.Sprintf("Starting StoreAndForward Retry Loop with %s RetryInterval and %d max retries. %d stored items waiting for retry.",
+				retryInterval.String(),
+				config.Writable.StoreAndForward.MaxRetryCount,
+				len(items)))
 
 	exit:
 		for {
@@ -97,7 +128,7 @@ func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
 			}
 		}
 
-		lc.Info("Exiting StoreAndForward Retry Loop")
+		sf.lc.Info("Exiting StoreAndForward Retry Loop")
 	}()
 }
 
@@ -126,9 +157,18 @@ func (sf *storeForwardInfo) storeForLaterRetry(
 	if _, err := storeClient.Store(item); err != nil {
 		appContext.LoggingClient().Errorf("Failed to store item for later retry for pipeline '%s': %s", pipeline.Id, err.Error())
 	}
+
+	sf.dataCount.Inc(1)
 }
 
 func (sf *storeForwardInfo) retryStoredData(serviceKey string) {
+	// Skip if another thread is already doing the retry
+	if sf.retryInProgress.Load() {
+		return
+	}
+
+	sf.retryInProgress.Store(true)
+	defer sf.retryInProgress.Store(false)
 
 	storeClient := container.StoreClientFrom(sf.dic.Get)
 	lc := bootstrapContainer.LoggingClientFrom(sf.dic.Get)
@@ -145,7 +185,7 @@ func (sf *storeForwardInfo) retryStoredData(serviceKey string) {
 		itemsToRemove, itemsToUpdate := sf.processRetryItems(items)
 
 		lc.Debugf(" %d stored data items will be removed post retry", len(itemsToRemove))
-		lc.Debugf(" %d stored data items will be update post retry", len(itemsToUpdate))
+		lc.Debugf(" %d stored data items will be updated post retry", len(itemsToUpdate))
 
 		for _, item := range itemsToRemove {
 			if err := storeClient.RemoveFromStore(item); err != nil {
@@ -164,6 +204,8 @@ func (sf *storeForwardInfo) retryStoredData(serviceKey string) {
 					item.ID)
 			}
 		}
+
+		sf.dataCount.Dec(int64(len(itemsToRemove)))
 	}
 }
 
@@ -245,4 +287,11 @@ func (sf *storeForwardInfo) retryExportFunction(item interfaces.StoredObject, pi
 		pipeline,
 		item.PipelinePosition,
 		true) == nil
+}
+
+func (sf *storeForwardInfo) triggerRetry() {
+	if sf.dataCount.Count() > 0 {
+		sf.lc.Debug("Triggering Store and Forward retry of failed data")
+		sf.retryStoredData(sf.serviceKey)
+	}
 }

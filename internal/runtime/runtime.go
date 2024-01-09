@@ -74,7 +74,7 @@ type FunctionsPipelineRuntime struct {
 	ServiceKey    string
 	pipelines     map[string]*interfaces.FunctionPipeline
 	isBusyCopying sync.Mutex
-	storeForward  storeForwardInfo
+	storeForward  *storeForwardInfo
 	lc            logger.LoggingClient
 	dic           *di.Container
 }
@@ -97,8 +97,7 @@ func NewFunctionPipelineRuntime(serviceKey string, targetType interface{}, dic *
 		pipelines:  make(map[string]*interfaces.FunctionPipeline),
 	}
 
-	fpr.storeForward.dic = dic
-	fpr.storeForward.runtime = fpr
+	fpr.storeForward = newStoreAndForward(fpr, dic, serviceKey)
 	fpr.lc = bootstrapContainer.LoggingClientFrom(fpr.dic.Get)
 
 	return fpr
@@ -309,6 +308,8 @@ func (fpr *FunctionsPipelineRuntime) ExecutePipeline(
 	var result interface{}
 	var continuePipeline bool
 
+	lc := appContext.LoggingClient()
+
 	for functionIndex, trxFunc := range pipeline.Transforms {
 		if functionIndex < startPosition {
 			continue
@@ -325,8 +326,7 @@ func (fpr *FunctionsPipelineRuntime) ExecutePipeline(
 		if !continuePipeline {
 			if result != nil {
 				if err, ok := result.(error); ok {
-					appContext.LoggingClient().Errorf(
-						"Pipeline (%s) function #%d resulted in error: %s (%s=%s)",
+					lc.Errorf("Pipeline (%s) function #%d resulted in error: %s (%s=%s)",
 						pipeline.Id,
 						functionIndex,
 						err.Error(),
@@ -341,6 +341,11 @@ func (fpr *FunctionsPipelineRuntime) ExecutePipeline(
 				}
 			}
 			break
+		}
+
+		if !isRetry && appContext.RetryTriggerFlag() {
+			go fpr.storeForward.triggerRetry()
+			appContext.ClearRetryTriggerFlag()
 		}
 	}
 
