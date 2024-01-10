@@ -24,6 +24,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
@@ -48,16 +49,29 @@ type storeForwardInfo struct {
 }
 
 func newStoreAndForward(runtime *FunctionsPipelineRuntime, dic *di.Container, serviceKey string) *storeForwardInfo {
-	return &storeForwardInfo{
+	sf := &storeForwardInfo{
 		runtime:    runtime,
 		dic:        dic,
 		lc:         bootstrapContainer.LoggingClientFrom(dic.Get),
 		serviceKey: serviceKey,
-		// Using counter metric now for the retry on success feature because it is thread safe
-		// and will also be used in future metrics feature to track size of the S&F queue.
-		// TODO: Register counter metric when using it for the metrics capability
-		dataCount: gometrics.NewCounter(),
+		dataCount:  gometrics.NewCounter(),
 	}
+
+	metricsManager := bootstrapContainer.MetricsManagerFrom(dic.Get)
+	if metricsManager == nil {
+		sf.lc.Errorf("Unable to register %s metric: MetricsManager is not available.", internal.StoreForwardQueueSizeName)
+		return sf
+	}
+
+	err := metricsManager.Register(internal.StoreForwardQueueSizeName, sf.dataCount, nil)
+	if err != nil {
+		sf.lc.Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %v",
+			internal.StoreForwardQueueSizeName, err)
+	}
+
+	sf.lc.Infof("%s metric has been registered and will be reported (if enabled)", internal.StoreForwardQueueSizeName)
+
+	return sf
 }
 
 func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
