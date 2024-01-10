@@ -160,9 +160,9 @@ func (appContext *Context) ClearRetryTriggerFlag() {
 	appContext.triggerRetry = false
 }
 
-// RetryTriggerFlag gets the flag to trigger retry of failed data. This function is not part of the AppFunctionContext interface,
+// IsRetryTriggered gets the flag to trigger retry of failed data. This function is not part of the AppFunctionContext interface,
 // so it is internal SDK use only
-func (appContext *Context) RetryTriggerFlag() bool {
+func (appContext *Context) IsRetryTriggered() bool {
 	return appContext.triggerRetry
 }
 

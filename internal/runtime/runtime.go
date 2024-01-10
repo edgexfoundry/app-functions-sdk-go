@@ -343,7 +343,7 @@ func (fpr *FunctionsPipelineRuntime) ExecutePipeline(
 			break
 		}
 
-		if !isRetry && appContext.RetryTriggerFlag() {
+		if !isRetry && appContext.IsRetryTriggered() {
 			go fpr.storeForward.triggerRetry()
 			appContext.ClearRetryTriggerFlag()
 		}
