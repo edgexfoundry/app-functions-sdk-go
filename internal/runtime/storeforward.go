@@ -289,6 +289,12 @@ func (sf *storeForwardInfo) retryExportFunction(item interfaces.StoredObject, pi
 
 func (sf *storeForwardInfo) triggerRetry() {
 	if sf.dataCount.Count() > 0 {
+		config := container.ConfigurationFrom(sf.dic.Get)
+		if !config.Writable.StoreAndForward.Enabled {
+			sf.lc.Debug("Store and Forward not enabled, skipping triggering retry of failed data")
+			return
+		}
+
 		sf.lc.Debug("Triggering Store and Forward retry of failed data")
 		sf.retryStoredData(sf.serviceKey)
 	}
