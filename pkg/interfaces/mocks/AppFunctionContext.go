@@ -425,6 +425,11 @@ func (_m *AppFunctionContext) SubscriptionClient() clientsinterfaces.Subscriptio
 	return r0
 }
 
+// TriggerRetryFailedData provides a mock function with given fields:
+func (_m *AppFunctionContext) TriggerRetryFailedData() {
+	_m.Called()
+}
+
 type mockConstructorTestingTNewAppFunctionContext interface {
 	mock.TestingT
 	Cleanup(func())

@@ -21,7 +21,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
 	mocks2 "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
+	loggerMocks "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger/mocks"
+	common2 "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces/mocks"
 
@@ -185,6 +188,7 @@ func TestDoStoreAndForwardRetry(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			runtime := NewFunctionPipelineRuntime(serviceKey, nil, updateDicWithMockStoreClient())
+			runtime.storeForward.dataCount.Inc(1)
 
 			var pipeline *interfaces.FunctionPipeline
 
@@ -209,13 +213,54 @@ func TestDoStoreAndForwardRetry(t *testing.T) {
 			runtime.storeForward.retryStoredData(serviceKey)
 
 			objects := mockRetrieveObjects(serviceKey)
+			assert.Equal(t, int64(len(objects)), runtime.storeForward.dataCount.Count())
+
 			if assert.Equal(t, test.ExpectedObjectCount, len(objects)) && test.ExpectedObjectCount > 0 {
 				assert.Equal(t, test.ExpectedRetryCount, objects[0].RetryCount)
 				assert.Equal(t, serviceKey, objects[0].AppServiceKey, "AppServiceKey not as expected")
 				assert.Equal(t, object.CorrelationID, objects[0].CorrelationID, "CorrelationID not as expected")
 			}
+
 		})
 	}
+}
+
+func TestStoreForLaterRetry(t *testing.T) {
+	payload := []byte("My Payload")
+
+	pipeline := &interfaces.FunctionPipeline{
+		Id:   "pipeline.Id",
+		Hash: "pipeline.Hash",
+	}
+
+	updateDicWithMockStoreClient()
+	ctx := appfunction.NewContext(uuid.NewString(), dic, common2.ContentTypeJSON)
+	runtime := NewFunctionPipelineRuntime(serviceKey, nil, dic)
+	assert.Equal(t, int64(0), runtime.storeForward.dataCount.Count())
+	runtime.storeForward.storeForLaterRetry(payload, ctx, pipeline, 0)
+	assert.Equal(t, int64(1), runtime.storeForward.dataCount.Count())
+}
+
+func TestTriggerRetry(t *testing.T) {
+	mockLogger := &loggerMocks.LoggingClient{}
+	dic.Update(di.ServiceConstructorMap{
+		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
+			return mockLogger
+		},
+	})
+	updateDicWithMockStoreClient()
+	runtime := NewFunctionPipelineRuntime(serviceKey, nil, dic)
+
+	// Run test with data count at default of 0
+	runtime.storeForward.triggerRetry()
+	mockLogger.AssertNotCalled(t, "Debugf", mock.Anything, mock.Anything)
+
+	// Run test with data count at 1 to verify retry code is executed
+	runtime.storeForward.dataCount.Inc(1)
+	mockLogger.On("Debugf", mock.Anything, mock.Anything)
+	mockLogger.On("Debug", "Triggering Store and Forward retry of failed data")
+	runtime.storeForward.triggerRetry()
+	mockLogger.AssertCalled(t, "Debugf", mock.Anything, mock.Anything)
 }
 
 var mockObjectStore map[string]interfaces.StoredObject

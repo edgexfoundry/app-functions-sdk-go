@@ -67,6 +67,7 @@ type Context struct {
 	inputContentType     string
 	responseData         []byte
 	retryData            []byte
+	triggerRetry         bool
 	responseContentType  string
 	contextData          map[string]string
 	valuePlaceholderSpec *regexp.Regexp
@@ -146,6 +147,23 @@ func (appContext *Context) SetRetryData(payload []byte) {
 // so it is internal SDK use only
 func (appContext *Context) RetryData() []byte {
 	return appContext.retryData
+}
+
+// TriggerRetryFailedData sets the flag to trigger retry of failed data.
+func (appContext *Context) TriggerRetryFailedData() {
+	appContext.triggerRetry = true
+}
+
+// ClearRetryTriggerFlag clears the flag to trigger retry of failed data. This function is not part of the AppFunctionContext interface,
+// so it is internal SDK use only
+func (appContext *Context) ClearRetryTriggerFlag() {
+	appContext.triggerRetry = false
+}
+
+// IsRetryTriggered gets the flag to trigger retry of failed data. This function is not part of the AppFunctionContext interface,
+// so it is internal SDK use only
+func (appContext *Context) IsRetryTriggered() bool {
+	return appContext.triggerRetry
 }
 
 // SecretProvider returns the SecretProvider instance

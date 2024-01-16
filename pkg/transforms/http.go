@@ -234,6 +234,11 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 		return true, data
 	}
 
+	// Data successfully sent, so retry any failed data, if Store and Forward enabled and data has been saved
+	if sender.persistOnError {
+		ctx.TriggerRetryFailedData()
+	}
+
 	// capture the size into metrics
 	exportDataBytes := len(exportData)
 	sender.httpSizeMetrics.Update(int64(exportDataBytes))

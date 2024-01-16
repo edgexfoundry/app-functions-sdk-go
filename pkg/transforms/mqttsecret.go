@@ -286,6 +286,11 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 		return false, token.Error()
 	}
 
+	// Data successfully sent, so retry any failed data, if Store and Forward enabled and data has been saved
+	if sender.persistOnError {
+		ctx.TriggerRetryFailedData()
+	}
+
 	// capture the size for metrics
 	exportDataBytes := len(exportData)
 	sender.mqttSizeMetrics.Update(int64(exportDataBytes))
