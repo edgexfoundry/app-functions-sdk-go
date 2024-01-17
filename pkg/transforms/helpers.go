@@ -17,30 +17,30 @@
 package transforms
 
 import (
-	"errors"
-
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 )
 
-func createRegisterMetric(ctx interfaces.AppFunctionContext,
-	fullNameFunc func() string, getMetric func() any, setMetric func(),
-	tags map[string]string) {
-	// Only need to create and register the metric if it hasn't been created yet.
-	if getMetric() == nil {
-		lc := ctx.LoggingClient()
+func registerMetric(ctx interfaces.AppFunctionContext, fullNameFunc func() string, getMetric func() any, tags map[string]string) {
+	lc := ctx.LoggingClient()
+	fullName := fullNameFunc()
+
+	metricsManger := ctx.MetricsManager()
+	if metricsManger == nil {
+		lc.Errorf("Metrics manager not available. Unable to register %s metric", fullName)
+		return
+	}
+
+	// Only register the metric if it hasn't been registered yet.
+	if !metricsManger.IsRegistered(fullName) {
 		var err error
-		fullName := fullNameFunc()
-		lc.Debugf("Initializing metric %s.", fullName)
-		setMetric()
-		metricsManger := ctx.MetricsManager()
-		if metricsManger != nil {
-			err = metricsManger.Register(fullName, getMetric(), tags)
-		} else {
-			err = errors.New("metrics manager not available")
-		}
+		lc.Debugf("Registering metric %s.", fullName)
+		err = metricsManger.Register(fullName, getMetric(), tags)
 
 		if err != nil {
-			lc.Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", fullName, err.Error())
+			// In case of race condition, check again if metric was registered by another thread
+			if !metricsManger.IsRegistered(fullName) {
+				lc.Errorf("Unable to register metric %s. Collection will continue, but metric will not be reported: %s", fullName, err.Error())
+			}
 			return
 		}
 

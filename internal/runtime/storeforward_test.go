@@ -56,6 +56,7 @@ func TestMain(m *testing.M) {
 	mockMetricsManager := &mocks2.MetricsManager{}
 	mockMetricsManager.On("Register", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	mockMetricsManager.On("Unregister", mock.Anything)
+	mockMetricsManager.On("IsRegistered", mock.Anything).Return(false)
 
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		container.ConfigurationName: func(get di.Get) interface{} {
