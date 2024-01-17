@@ -80,6 +80,8 @@ func NewHTTPSenderWithOptions(options HTTPSenderOptions) *HTTPSender {
 		secretValueKey:      options.SecretValueKey,
 		secretName:          options.SecretName,
 		urlFormatter:        options.URLFormatter,
+		httpErrorMetric:     gometrics.NewCounter(),
+		httpSizeMetrics:     gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize)),
 	}
 }
 
@@ -163,18 +165,14 @@ func (sender *HTTPSender) httpSend(ctx interfaces.AppFunctionContext, data inter
 		return false, err
 	}
 
-	createRegisterMetric(ctx,
+	registerMetric(ctx,
 		func() string { return fmt.Sprintf("%s-%s", internal.HttpExportErrorsName, parsedUrl.Redacted()) },
 		func() any { return sender.httpErrorMetric },
-		func() { sender.httpErrorMetric = gometrics.NewCounter() },
 		map[string]string{"url": parsedUrl.Redacted()})
 
-	createRegisterMetric(ctx,
+	registerMetric(ctx,
 		func() string { return fmt.Sprintf("%s-%s", internal.HttpExportSizeName, parsedUrl.Redacted()) },
 		func() any { return sender.httpSizeMetrics },
-		func() {
-			sender.httpSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
-		},
 		map[string]string{"url": parsedUrl.Redacted()})
 
 	client := &http.Client{}

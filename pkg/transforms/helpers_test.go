@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateRegisterMetric(t *testing.T) {
+func TestRegisterMetric(t *testing.T) {
 	expectedName := "testCounter"
 	expectedFullName := expectedName + "-https://somewhere.com"
 	expectedUrl := "https://somewhere.com"
@@ -38,15 +38,18 @@ func TestCreateRegisterMetric(t *testing.T) {
 		Name              string
 		NilMetricsManager bool
 		RegisterError     error
+		alreadyRegistered bool
 	}{
-		{"Happy Path", false, nil},
-		{"Error - No Metrics Manager", true, nil},
-		{"Error - Register error", false, errors.New("register failed")},
+		{"Happy Path", false, nil, false},
+		{"Happy Path - already registered", false, nil, false},
+		{"Error - No Metrics Manager", true, nil, false},
+		{"Error - Register error", false, errors.New("register failed"), false},
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			mockMetricsMgr := &mocks2.MetricsManager{}
+			mockMetricsMgr.On("IsRegistered", mock.Anything).Return(test.alreadyRegistered)
 			mockMetricsMgr.On("Register", expectedFullName, mock.Anything, expectedTags).Return(test.RegisterError).Once()
 			mockLogger := &loggerMocks.LoggingClient{}
 			mockLogger.On("Debugf", mock.Anything, mock.Anything)
@@ -55,7 +58,7 @@ func TestCreateRegisterMetric(t *testing.T) {
 			mockCtx.On("LoggingClient").Return(mockLogger)
 			if test.NilMetricsManager {
 				mockCtx.On("MetricsManager").Return(nil)
-				mockLogger.On("Errorf", mock.Anything, expectedFullName, "metrics manager not available")
+				mockLogger.On("Errorf", "Metrics manager not available. Unable to register %s metric", expectedFullName)
 			} else {
 				mockCtx.On("MetricsManager").Return(mockMetricsMgr)
 			}
@@ -64,11 +67,10 @@ func TestCreateRegisterMetric(t *testing.T) {
 				mockLogger.On("Errorf", mock.Anything, expectedFullName, "register failed")
 			}
 
-			var metric gometrics.Counter
-			createRegisterMetric(mockCtx,
+			metric := gometrics.NewCounter()
+			registerMetric(mockCtx,
 				func() string { return expectedFullName },
 				func() any { return metric },
-				func() { metric = gometrics.NewCounter() },
 				expectedTags)
 			require.NotNil(t, metric)
 

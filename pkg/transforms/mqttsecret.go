@@ -102,6 +102,9 @@ func NewMQTTSecretSender(mqttConfig MQTTSecretConfig, persistOnError bool) *MQTT
 	opts.OnReconnecting = sender.onReconnecting
 	sender.opts = opts
 
+	sender.mqttErrorMetric = gometrics.NewCounter()
+	sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
+
 	return sender
 }
 
@@ -246,18 +249,14 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	tagValue := fmt.Sprintf("%s/%s", sender.mqttConfig.BrokerAddress, publishTopic)
 	tag := map[string]string{"address/topic": tagValue}
 
-	createRegisterMetric(ctx,
+	registerMetric(ctx,
 		func() string { return fmt.Sprintf("%s-%s", internal.MqttExportErrorsName, tagValue) },
 		func() any { return sender.mqttErrorMetric },
-		func() { sender.mqttErrorMetric = gometrics.NewCounter() },
 		tag)
 
-	createRegisterMetric(ctx,
+	registerMetric(ctx,
 		func() string { return fmt.Sprintf("%s-%s", internal.MqttExportSizeName, tagValue) },
 		func() any { return sender.mqttSizeMetrics },
-		func() {
-			sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
-		},
 		tag)
 
 	if !sender.client.IsConnected() && !sender.preConnected {
