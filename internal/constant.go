@@ -16,14 +16,7 @@
 
 package internal
 
-import (
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
-)
-
-const (
-	ApiTriggerRoute   = common.ApiBase + "/trigger"
-	ApiAddSecretRoute = common.ApiBase + "/secret"
-)
+import "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
 
 // SDKVersion indicates the version of the SDK - will be overwritten by build
 var SDKVersion = "0.0.0"
@@ -31,7 +24,13 @@ var SDKVersion = "0.0.0"
 // ApplicationVersion indicates the version of the application itself, not the SDK - will be overwritten by build
 var ApplicationVersion = "0.0.0"
 
-// Names for the Common Application Service Metrics
+// Misc Constants
+const (
+	ApiTriggerRoute           = common.ApiBase + "/trigger"
+	MessageBusSubscribeTopics = "SubscribeTopics"
+)
+
+// Common Application Service Metrics constants
 const (
 	MessagesReceivedName              = "MessagesReceived"
 	InvalidMessagesReceivedName       = "InvalidMessagesReceived"
@@ -43,9 +42,8 @@ const (
 	HttpExportErrorsName              = "HttpExportErrors"
 	MqttExportSizeName                = "MqttExportSize"
 	MqttExportErrorsName              = "MqttExportErrors"
-	MessageBusSubscribeTopics         = "SubscribeTopics"
-	MessageBusPublishTopic            = "PublishTopic"
-)
+	StoreForwardQueueSizeName         = "StoreForwardQueueSize"
 
-// MetricsReservoirSize is the default Metrics Sample Reservoir size
-const MetricsReservoirSize = 1028
+	// MetricsReservoirSize is the default Metrics Sample Reservoir size
+	MetricsReservoirSize = 1028
+)

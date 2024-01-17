@@ -243,6 +243,8 @@ func TestStoreForLaterRetry(t *testing.T) {
 
 func TestTriggerRetry(t *testing.T) {
 	mockLogger := &loggerMocks.LoggingClient{}
+	mockLogger.On("Infof", "%s metric has been registered and will be reported (if enabled)", "StoreForwardQueueSize")
+
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return mockLogger
