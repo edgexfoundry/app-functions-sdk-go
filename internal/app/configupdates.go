@@ -22,7 +22,9 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/config"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
 )
 
 // ConfigUpdateProcessor contains the data need to process configuration updates
@@ -47,7 +49,8 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 		lc := svc.LoggingClient()
 		lc.Info("Waiting for App Service configuration updates...")
 
-		previousWriteable := svc.config.Writable
+		var previousWriteable common.WritableInfo
+		_ = utils.DeepCopy(&svc.config.Writable, &previousWriteable)
 
 		for {
 			select {
@@ -82,13 +85,15 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 					processor.processConfigChangedStoreForwardEnabled()
 					lc.Infof("StoreAndForward Enabled changed to %v", currentWritable.StoreAndForward.Enabled)
 
-				default:
-					// Assume change is in the pipeline since all others have been checked appropriately
+				case !reflect.DeepEqual(previousWriteable.Pipeline, currentWritable.Pipeline):
 					processor.processConfigChangedPipeline()
+
+				default:
+					lc.Info("No configuration changes detected that need special processing")
 				}
 
 				// grab new copy of the writeable configuration for comparing against when next update occurs
-				previousWriteable = currentWritable
+				_ = utils.DeepCopy(&svc.config.Writable, &previousWriteable)
 			}
 		}
 	}()
