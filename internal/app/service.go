@@ -351,6 +351,9 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 	configurable reflect.Value) ([]interfaces.AppFunction, error) {
 	var transforms []interfaces.AppFunction
 
+	// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
+	setPipelineFunctionParameterNamesLowercase(svc.config.Writable.Pipeline.Functions)
+
 	for _, functionName := range executionOrder {
 		functionName = strings.TrimSpace(functionName)
 		configuration, ok := functions[functionName]
@@ -365,12 +368,6 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 
 		// determine number of parameters required for function call
 		inputParameters := make([]reflect.Value, functionType.NumIn())
-		// set keys to be all lowercase to avoid casing issues from configuration
-		for key := range configuration.Parameters {
-			value := configuration.Parameters[key]
-			delete(configuration.Parameters, key) // Make sure the old key has been removed so don't have multiples
-			configuration.Parameters[strings.ToLower(key)] = value
-		}
 		for index := range inputParameters {
 			parameter := functionType.In(index)
 

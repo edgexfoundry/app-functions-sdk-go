@@ -49,6 +49,9 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 		lc := svc.LoggingClient()
 		lc.Info("Waiting for App Service configuration updates...")
 
+		// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
+		setPipelineFunctionParameterNamesLowercase(svc.config.Writable.Pipeline.Functions)
+
 		var previousWriteable common.WritableInfo
 		_ = utils.DeepCopy(&svc.config.Writable, &previousWriteable)
 
@@ -59,6 +62,8 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 				return
 
 			case <-configUpdated:
+				// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
+				setPipelineFunctionParameterNamesLowercase(svc.config.Writable.Pipeline.Functions)
 				currentWritable := svc.config.Writable
 				lc.Info("Processing App Service configuration updates")
 
@@ -181,4 +186,14 @@ func (svc *Service) findMatchingFunction(configurable reflect.Value, functionNam
 
 	functionType := functionValue.Type()
 	return functionValue, functionType, nil
+}
+
+func setPipelineFunctionParameterNamesLowercase(functions map[string]common.PipelineFunction) {
+	for _, function := range functions {
+		for key := range function.Parameters {
+			value := function.Parameters[key]
+			delete(function.Parameters, key) // Make sure the old key has been removed so don't have multiples
+			function.Parameters[strings.ToLower(key)] = value
+		}
+	}
 }
