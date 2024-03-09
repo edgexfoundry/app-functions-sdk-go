@@ -336,3 +336,10 @@ func (sender *MQTTSecretSender) ConnectToBroker(lc logger.LoggingClient, sp boot
 		sender.preConnected = true
 	}
 }
+
+// SetOnConnect sets the OnConnect Handler before client is connected so client can be captured.
+func (sender *MQTTSecretSender) SetOnConnectHandler(onConnect MQTT.OnConnectHandler) {
+
+	sender.opts.SetOnConnectHandler(onConnect)
+
+}
