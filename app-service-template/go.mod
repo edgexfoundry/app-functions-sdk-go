@@ -24,10 +24,10 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.4.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.18 // indirect
-	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.2 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.22 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.3 // indirect
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.12 // indirect
-	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.2 // indirect
+	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.3 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v3 v3.2.0-dev.5 // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
@@ -83,6 +83,6 @@ require (
 	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	google.golang.org/grpc v1.60.1 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
