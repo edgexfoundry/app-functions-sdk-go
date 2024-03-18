@@ -19,7 +19,9 @@ package webserver
 import (
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
@@ -28,8 +30,11 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/controller"
+
+	bscfg "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/config"
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/zerotrust"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/labstack/echo/v4"
@@ -120,12 +125,47 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 	}
 	addr := fmt.Sprintf("%s:%d", bindAddress, config.Service.Port)
 
+	var ln net.Listener
+	var err error
+	listenMode := strings.ToLower(config.Service.SecurityOptions[bscfg.SecurityModeKey])
+	switch listenMode {
+	case zerotrust.ConfigKey:
+		ozUrl := config.Service.SecurityOptions["OpenZitiController"]
+		lc.Infof("service is configured for zerotrust with %s/%s", ozUrl, config.Service.SecurityOptions[bscfg.OpenZitiServiceNameKey])
+
+		secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
+		ozToken, jwtErr := secretProvider.GetSelfJWT()
+		if jwtErr != nil {
+			panic(fmt.Errorf("could not load jwt: %v", jwtErr))
+		}
+		ctx, authErr := zerotrust.AuthToOpenZiti(ozUrl, ozToken)
+		if authErr != nil {
+			panic(fmt.Errorf("could not authenticate to OpenZiti: %v", authErr))
+		}
+
+		serviceName := config.Service.SecurityOptions["OpenZitiServiceName"]
+		lc.Infof("listening on overlay network. ListenMode '%s' at %s", listenMode, addr)
+		ln, err = ctx.Listen(serviceName)
+
+		if err != nil {
+			lc.Errorf("could not bind service %s: %v", serviceName, err)
+		}
+
+	case "http":
+		fallthrough
+	default:
+		lc.Infof("listening on underlay network. ListenMode '%s' at %s", listenMode, addr)
+		ln, err = net.Listen("tcp", addr)
+	}
+	if err != nil {
+		panic(fmt.Errorf("could not start weblistener: %v", err))
+	}
+
 	svr := &http.Server{
 		Addr:              addr,
 		Handler:           http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"),
 		ReadHeaderTimeout: serviceTimeout,
 	}
-
 	if config.HttpServer.Protocol == "https" {
 		provider := bootstrapContainer.SecretProviderFrom(webserver.dic.Get)
 		httpsSecretData, err := provider.GetSecret(config.HttpServer.SecretName)
@@ -134,21 +174,18 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			errChannel <- err
 			return
 		}
-
 		httpsCert, ok := httpsSecretData[config.HttpServer.HTTPSCertName]
 		if !ok {
 			lc.Errorf("unable to find HTTPS Cert in Secret Data as %s. Check configuration", config.HttpServer.HTTPSCertName, err)
 			errChannel <- err
 			return
 		}
-
 		httpsKey, ok := httpsSecretData[config.HttpServer.HTTPSKeyName]
 		if !ok {
 			lc.Errorf("unable to find HTTPS Key in Secret Data as %s. Check configuration.", config.HttpServer.HTTPSKeyName, err)
 			errChannel <- err
 			return
 		}
-
 		// ListenAndServeTLS below takes filenames for the certificate and key but the raw data is coming from Vault, so must generate the tlsConfig from raw data first.
 		tlsConfig, err := webserver.generateTLSConfig([]byte(httpsCert), []byte(httpsKey))
 		if err != nil {
@@ -156,17 +193,14 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			errChannel <- err
 			return
 		}
-
 		svr.TLSConfig = tlsConfig
-
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
-
 		// ListenAndServeTLS takes filenames for the certificate and key but the raw data is coming from Vault
 		// empty strings will make the server use the certificate and key from tls.Config{}
 		errChannel <- svr.ListenAndServeTLS("", "")
 	} else {
 		lc.Infof("Starting HTTP Web Server on address %s", addr)
-		errChannel <- svr.ListenAndServe()
+		errChannel <- svr.Serve(ln)
 	}
 }
 
