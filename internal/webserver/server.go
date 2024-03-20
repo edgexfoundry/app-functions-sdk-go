@@ -170,6 +170,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		Handler:           http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"),
 		ReadHeaderTimeout: serviceTimeout,
 	}
+
 	if config.HttpServer.Protocol == "https" {
 		provider := bootstrapContainer.SecretProviderFrom(webserver.dic.Get)
 		httpsSecretData, err := provider.GetSecret(config.HttpServer.SecretName)
@@ -199,9 +200,10 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		}
 		svr.TLSConfig = tlsConfig
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
+
 		// ListenAndServeTLS takes filenames for the certificate and key but the raw data is coming from Vault
 		// empty strings will make the server use the certificate and key from tls.Config{}
-		errChannel <- svr.ListenAndServeTLS("", "")
+		errChannel <- svr.ServeTLS(ln, "", "")
 	} else {
 		lc.Infof("Starting HTTP Web Server on address %s", addr)
 		errChannel <- svr.Serve(ln)
