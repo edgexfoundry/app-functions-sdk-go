@@ -138,11 +138,14 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		ozToken, jwtErr := secretProvider.GetSelfJWT()
 		if jwtErr != nil {
 			lc.Errorf("zero trust mode enabled, but could not load jwt: %v", jwtErr)
+			errChannel <- err
 			return
 		}
+
 		ctx, authErr := zerotrust.AuthToOpenZiti(ozUrl, ozToken)
 		if authErr != nil {
 			lc.Errorf("could not authenticate to OpenZiti: %v", authErr)
+			errChannel <- err
 			return
 		}
 
@@ -162,7 +165,9 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		ln, err = net.Listen("tcp", addr)
 	}
 	if err != nil {
-		panic(fmt.Errorf("could not start web listener: %v", err))
+		lc.Errorf("could not start web listener: %v", err)
+		errChannel <- err
+		return
 	}
 
 	svr := &http.Server{
@@ -179,18 +184,21 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			errChannel <- err
 			return
 		}
+
 		httpsCert, ok := httpsSecretData[config.HttpServer.HTTPSCertName]
 		if !ok {
 			lc.Errorf("unable to find HTTPS Cert in Secret Data as %s. Check configuration", config.HttpServer.HTTPSCertName, err)
 			errChannel <- err
 			return
 		}
+
 		httpsKey, ok := httpsSecretData[config.HttpServer.HTTPSKeyName]
 		if !ok {
 			lc.Errorf("unable to find HTTPS Key in Secret Data as %s. Check configuration.", config.HttpServer.HTTPSKeyName, err)
 			errChannel <- err
 			return
 		}
+
 		// ListenAndServeTLS below takes filenames for the certificate and key but the raw data is coming from Vault, so must generate the tlsConfig from raw data first.
 		tlsConfig, err := webserver.generateTLSConfig([]byte(httpsCert), []byte(httpsKey))
 		if err != nil {
@@ -199,6 +207,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			return
 		}
 		svr.TLSConfig = tlsConfig
+
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
 
 		// ListenAndServeTLS takes filenames for the certificate and key but the raw data is coming from Vault
