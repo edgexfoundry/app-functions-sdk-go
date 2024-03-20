@@ -206,6 +206,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			errChannel <- err
 			return
 		}
+		
 		svr.TLSConfig = tlsConfig
 
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
