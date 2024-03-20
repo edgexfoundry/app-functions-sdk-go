@@ -47,6 +47,7 @@ type WebServer struct {
 	lc                  logger.LoggingClient
 	router              *echo.Echo
 	commonApiController *controller.CommonController
+	serviceName         string
 }
 
 // NewWebServer returns a new instance of *WebServer
@@ -57,6 +58,7 @@ func NewWebServer(dic *di.Container, router *echo.Echo, serviceName string) *Web
 		router:              router,
 		commonApiController: controller.NewCommonController(dic, router, serviceName, internal.ApplicationVersion),
 		dic:                 dic,
+		serviceName:         serviceName,
 	}
 
 	ws.lc.Info("Registering standard routes...")
@@ -129,9 +131,8 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 	var err error
 	listenMode := strings.ToLower(config.Service.SecurityOptions[bscfg.SecurityModeKey])
 	switch listenMode {
-	case zerotrust.ConfigKey:
+	case zerotrust.ZeroTrustMode:
 		ozUrl := config.Service.SecurityOptions["OpenZitiController"]
-		lc.Infof("service is configured for zerotrust with %s/%s", ozUrl, config.Service.SecurityOptions[bscfg.OpenZitiServiceNameKey])
 
 		secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
 		ozToken, jwtErr := secretProvider.GetSelfJWT()
@@ -143,12 +144,13 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			panic(fmt.Errorf("could not authenticate to OpenZiti: %v", authErr))
 		}
 
-		serviceName := config.Service.SecurityOptions["OpenZitiServiceName"]
+		ozServiceName := zerotrust.OpenZitiServicePrefix + webserver.serviceName
+		lc.Infof("Using OpenZiti service name: %s", ozServiceName)
 		lc.Infof("listening on overlay network. ListenMode '%s' at %s", listenMode, addr)
-		ln, err = ctx.Listen(serviceName)
+		ln, err = ctx.Listen(ozServiceName)
 
 		if err != nil {
-			lc.Errorf("could not bind service %s: %v", serviceName, err)
+			lc.Errorf("could not bind service %s: %v", ozServiceName, err)
 		}
 
 	case "http":

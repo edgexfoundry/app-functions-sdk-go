@@ -24,7 +24,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.4.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.24 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.27 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.3 // indirect
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.14 // indirect
 	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.3 // indirect
@@ -75,7 +75,7 @@ require (
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
