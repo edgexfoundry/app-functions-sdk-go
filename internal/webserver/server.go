@@ -156,6 +156,8 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 
 		if err != nil {
 			lc.Errorf("could not bind service %s: %v", ozServiceName, err)
+			errChannel <- err
+			return
 		}
 
 	case "http":
@@ -206,7 +208,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 			errChannel <- err
 			return
 		}
-		
+
 		svr.TLSConfig = tlsConfig
 
 		lc.Infof("Starting HTTPS Web Server on address %s", addr)
