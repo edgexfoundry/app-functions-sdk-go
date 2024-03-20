@@ -137,11 +137,13 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
 		ozToken, jwtErr := secretProvider.GetSelfJWT()
 		if jwtErr != nil {
-			panic(fmt.Errorf("could not load jwt: %v", jwtErr))
+			lc.Errorf("zero trust mode enabled, but could not load jwt: %v", jwtErr)
+			return
 		}
 		ctx, authErr := zerotrust.AuthToOpenZiti(ozUrl, ozToken)
 		if authErr != nil {
-			panic(fmt.Errorf("could not authenticate to OpenZiti: %v", authErr))
+			lc.Errorf("could not authenticate to OpenZiti: %v", authErr)
+			return
 		}
 
 		ozServiceName := zerotrust.OpenZitiServicePrefix + webserver.serviceName
@@ -160,7 +162,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		ln, err = net.Listen("tcp", addr)
 	}
 	if err != nil {
-		panic(fmt.Errorf("could not start weblistener: %v", err))
+		panic(fmt.Errorf("could not start web listener: %v", err))
 	}
 
 	svr := &http.Server{
