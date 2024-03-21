@@ -10,7 +10,7 @@ replace github.com/edgexfoundry/app-functions-sdk-go/v3 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v3 v3.1.0
-	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.8
+	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.13
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
@@ -24,9 +24,9 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.4.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.22 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.27 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.3 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.12 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.14 // indirect
 	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.3 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v3 v3.2.0-dev.5 // indirect
 	github.com/fatih/color v1.14.1 // indirect
@@ -37,12 +37,12 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.18.0 // indirect
+	github.com/go-playground/validator/v10 v10.19.0 // indirect
 	github.com/go-redis/redis/v7 v7.3.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/hashicorp/consul/api v1.27.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -72,12 +72,12 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zeebo/errs v1.3.0 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sync v0.4.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846 // indirect

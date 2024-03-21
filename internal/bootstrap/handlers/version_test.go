@@ -29,6 +29,7 @@ import (
 	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/startup"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
@@ -58,6 +59,10 @@ func TestValidateVersionMatch(t *testing.T) {
 	lc := logger.NewMockClient()
 	var registryClient registry.Client = nil
 
+	mockSecretProvider := &mocks.SecretProviderExt{}
+	mockSecretProvider.On("HttpTransport").Return(&http.Transport{})
+	mockSecretProvider.On("GetSelfJWT").Return("anything", nil)
+
 	dic := di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
 			return lc
@@ -67,6 +72,9 @@ func TestValidateVersionMatch(t *testing.T) {
 		},
 		container.ConfigurationName: func(get di.Get) interface{} {
 			return configuration
+		},
+		bootstrapContainer.SecretProviderExtName: func(get di.Get) interface{} {
+			return mockSecretProvider
 		},
 	})
 

@@ -19,7 +19,9 @@ package webserver
 import (
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal"
@@ -28,8 +30,11 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/controller"
+
+	bscfg "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/config"
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/utils"
+	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/zerotrust"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 	"github.com/labstack/echo/v4"
@@ -42,6 +47,7 @@ type WebServer struct {
 	lc                  logger.LoggingClient
 	router              *echo.Echo
 	commonApiController *controller.CommonController
+	serviceName         string
 }
 
 // NewWebServer returns a new instance of *WebServer
@@ -52,6 +58,7 @@ func NewWebServer(dic *di.Container, router *echo.Echo, serviceName string) *Web
 		router:              router,
 		commonApiController: controller.NewCommonController(dic, router, serviceName, internal.ApplicationVersion),
 		dic:                 dic,
+		serviceName:         serviceName,
 	}
 
 	ws.lc.Info("Registering standard routes...")
@@ -120,6 +127,51 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 	}
 	addr := fmt.Sprintf("%s:%d", bindAddress, config.Service.Port)
 
+	var ln net.Listener
+	var err error
+	listenMode := strings.ToLower(config.Service.SecurityOptions[bscfg.SecurityModeKey])
+	switch listenMode {
+	case zerotrust.ZeroTrustMode:
+		ozUrl := config.Service.SecurityOptions["OpenZitiController"]
+
+		secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
+		ozToken, jwtErr := secretProvider.GetSelfJWT()
+		if jwtErr != nil {
+			lc.Errorf("zero trust mode enabled, but could not load jwt: %v", jwtErr)
+			errChannel <- err
+			return
+		}
+
+		ctx, authErr := zerotrust.AuthToOpenZiti(ozUrl, ozToken)
+		if authErr != nil {
+			lc.Errorf("could not authenticate to OpenZiti: %v", authErr)
+			errChannel <- err
+			return
+		}
+
+		ozServiceName := zerotrust.OpenZitiServicePrefix + webserver.serviceName
+		lc.Infof("Using OpenZiti service name: %s", ozServiceName)
+		lc.Infof("listening on overlay network. ListenMode '%s' at %s", listenMode, addr)
+		ln, err = ctx.Listen(ozServiceName)
+
+		if err != nil {
+			lc.Errorf("could not bind service %s: %v", ozServiceName, err)
+			errChannel <- err
+			return
+		}
+
+	case "http":
+		fallthrough
+	default:
+		lc.Infof("listening on underlay network. ListenMode '%s' at %s", listenMode, addr)
+		ln, err = net.Listen("tcp", addr)
+	}
+	if err != nil {
+		lc.Errorf("could not start web listener: %v", err)
+		errChannel <- err
+		return
+	}
+
 	svr := &http.Server{
 		Addr:              addr,
 		Handler:           http.TimeoutHandler(webserver.router, serviceTimeout, "Request timed out"),
@@ -163,10 +215,10 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 
 		// ListenAndServeTLS takes filenames for the certificate and key but the raw data is coming from Vault
 		// empty strings will make the server use the certificate and key from tls.Config{}
-		errChannel <- svr.ListenAndServeTLS("", "")
+		errChannel <- svr.ServeTLS(ln, "", "")
 	} else {
 		lc.Infof("Starting HTTP Web Server on address %s", addr)
-		errChannel <- svr.ListenAndServe()
+		errChannel <- svr.Serve(ln)
 	}
 }
 
