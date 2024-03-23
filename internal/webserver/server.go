@@ -138,14 +138,14 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		ozToken, jwtErr := secretProvider.GetSelfJWT()
 		if jwtErr != nil {
 			lc.Errorf("zero trust mode enabled, but could not load jwt: %v", jwtErr)
-			errChannel <- err
+			errChannel <- jwtErr
 			return
 		}
 
 		ctx, authErr := zerotrust.AuthToOpenZiti(ozUrl, ozToken)
 		if authErr != nil {
 			lc.Errorf("could not authenticate to OpenZiti: %v", authErr)
-			errChannel <- err
+			errChannel <- authErr
 			return
 		}
 
