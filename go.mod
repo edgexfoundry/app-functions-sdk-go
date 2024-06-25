@@ -9,7 +9,7 @@ require (
 	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.24
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.26
 	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.8
-	github.com/fxamacker/cbor/v2 v2.6.0
+	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
