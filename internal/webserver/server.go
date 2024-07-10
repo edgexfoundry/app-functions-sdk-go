@@ -152,8 +152,16 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 		ozServiceName := zerotrust.OpenZitiServicePrefix + webserver.serviceName
 		lc.Infof("Using OpenZiti service name: %s", ozServiceName)
 		lc.Infof("listening on overlay network. ListenMode '%s' at %s", listenMode, addr)
-		ln, err = ctx.Listen(ozServiceName)
+		for startupTimer.HasNotElapsed() {
+			endpoint, err = cb.registry.GetServiceEndpoint(serviceKey)
+			if err == nil {
+				break
+			}
 
+			lc.Warnf("unable to Get service endpoint for '%s': %s. retrying...", serviceKey, err.Error())
+			startupTimer.SleepForInterval()
+		}
+		ln, err = ctx.Listen(ozServiceName)
 		if err != nil {
 			lc.Errorf("could not bind service %s: %v", ozServiceName, err)
 			errChannel <- err
