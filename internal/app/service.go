@@ -21,6 +21,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mqtt"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -201,13 +203,13 @@ func (svc *Service) Stop() {
 // Run initializes and starts the trigger as specified in the
 // configuration. It will also configure the webserver and start listening on
 // the specified port.
-func (svc *Service) Run() error {
+func (svc *Service) Run() (pahoMqtt.Client, error) {
 
 	config := container.ConfigurationFrom(svc.dic.Get)
 
 	err := initializeStoreClient(config, svc)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	runCtx, stop := context.WithCancel(context.Background())
@@ -222,14 +224,14 @@ func (svc *Service) Run() error {
 	// determine input type and create trigger for it
 	t := svc.setupTrigger(svc.config)
 	if t == nil {
-		return errors.New("failed to create Trigger")
+		return nil, errors.New("failed to create Trigger")
 	}
 
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
 	deferred, err := t.Initialize(svc.ctx.appWg, svc.ctx.appCtx, svc.backgroundPublishChannel)
 	if err != nil {
 		svc.lc.Error(err.Error())
-		return errors.New("failed to initialize Trigger")
+		return nil, errors.New("failed to initialize Trigger")
 	}
 
 	// deferred is a function that needs to be called when services exits.
@@ -273,7 +275,7 @@ func (svc *Service) Run() error {
 		deferredFunc()
 	}
 
-	return err
+	return t.(*mqtt.Trigger).MqttClient, err
 }
 
 // LoadConfigurableFunctionPipelines return the configured function pipelines (default and per topic) from configuration.

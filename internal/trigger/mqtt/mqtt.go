@@ -52,7 +52,7 @@ const (
 type Trigger struct {
 	messageProcessor trigger.MessageProcessor
 	serviceBinding   trigger.ServiceBinding
-	mqttClient       pahoMqtt.Client
+	MqttClient       pahoMqtt.Client
 	qos              byte
 	retain           bool
 	publishTopic     string
@@ -145,10 +145,10 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 
 	deferred := func() {
 		lc.Info("Disconnecting from broker for MQTT trigger")
-		trigger.mqttClient.Disconnect(0)
+		trigger.MqttClient.Disconnect(0)
 	}
 
-	trigger.mqttClient = mqttClient
+	trigger.MqttClient = mqttClient
 
 	return deferred, nil
 }
@@ -221,7 +221,7 @@ func (trigger *Trigger) responseHandler(appContext interfaces.AppFunctionContext
 			return err
 		}
 
-		if token := trigger.mqttClient.Publish(formattedTopic, trigger.qos, trigger.retain, appContext.ResponseData()); token.Wait() && token.Error() != nil {
+		if token := trigger.MqttClient.Publish(formattedTopic, trigger.qos, trigger.retain, appContext.ResponseData()); token.Wait() && token.Error() != nil {
 			lc.Errorf("MQTT trigger: Could not publish to topic '%s' for pipeline '%s': %s",
 				formattedTopic,
 				pipeline.Id,

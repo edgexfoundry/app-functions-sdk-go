@@ -17,6 +17,7 @@ package interfaces
 
 import (
 	"context"
+	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"net/http"
 	"time"
 
@@ -129,7 +130,7 @@ type ApplicationService interface {
 	// the service is stopped or Stop() is called.
 	// An error is returned if the trigger can not be created or initialized or if the internal webserver
 	// encounters an error.
-	Run() error
+	Run() (pahoMqtt.Client, error)
 	// Stop stops the configured trigger so that the functions pipeline no longer executes.
 	// An error is returned
 	Stop()
