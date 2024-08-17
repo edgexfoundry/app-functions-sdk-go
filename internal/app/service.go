@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mqtt"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -278,7 +277,7 @@ func (svc *Service) Run() (pahoMqtt.Client, error) {
 		deferredFunc()
 	}
 
-	return t.(*mqtt.Trigger).MqttClient, err
+	return x, err
 }
 
 // LoadConfigurableFunctionPipelines return the configured function pipelines (default and per topic) from configuration.
