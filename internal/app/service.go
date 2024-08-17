@@ -202,7 +202,7 @@ func (svc *Service) Stop() {
 // Run initializes and starts the trigger as specified in the
 // configuration. It will also configure the webserver and start listening on
 // the specified port.
-func (svc *Service) Run() (pahoMqtt.Client, error) {
+func (svc *Service) Run() (*pahoMqtt.Client, error) {
 
 	config := container.ConfigurationFrom(svc.dic.Get)
 
@@ -234,7 +234,7 @@ func (svc *Service) Run() (pahoMqtt.Client, error) {
 	}
 
 	x := mqttTrigger.MqttClient
-	x.Publish("/sys/xpsYHExTKPFaQMS7/0005002403260001/s/event/rawReport", 0, false, "{\"good\":\"good\"}")
+	//x.Publish("/sys/xpsYHExTKPFaQMS7/0005002403260001/s/event/rawReport", 0, false, "{\"good\":\"good\"}")
 
 	// deferred is a function that needs to be called when services exits.
 	svc.addDeferred(deferred)
@@ -277,7 +277,7 @@ func (svc *Service) Run() (pahoMqtt.Client, error) {
 		deferredFunc()
 	}
 
-	return x, err
+	return &x, err
 }
 
 // LoadConfigurableFunctionPipelines return the configured function pipelines (default and per topic) from configuration.
