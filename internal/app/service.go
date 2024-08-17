@@ -228,11 +228,14 @@ func (svc *Service) Run() (pahoMqtt.Client, error) {
 	}
 
 	// Initialize the trigger (i.e. start a web server, or connect to message bus)
-	deferred, err := t.Initialize(svc.ctx.appWg, svc.ctx.appCtx, svc.backgroundPublishChannel)
+	mqttTrigger, deferred, err := t.Initialize(svc.ctx.appWg, svc.ctx.appCtx, svc.backgroundPublishChannel)
 	if err != nil {
 		svc.lc.Error(err.Error())
 		return nil, errors.New("failed to initialize Trigger")
 	}
+
+	x := mqttTrigger.MqttClient
+	x.Publish("/sys/xpsYHExTKPFaQMS7/0005002403260001/s/event/rawReport", 0, false, "{\"good\":\"good\"}")
 
 	// deferred is a function that needs to be called when services exits.
 	svc.addDeferred(deferred)

@@ -23,8 +23,6 @@ import (
 	"strings"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/http"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/messagebus"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mqtt"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 )
@@ -36,39 +34,43 @@ const (
 	TriggerTypeHTTP       = "HTTP"
 )
 
-func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) interfaces.Trigger {
-	var t interfaces.Trigger
+func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) *mqtt.Trigger {
+	var t *mqtt.Trigger
+	//var t interfaces.Trigger
 
 	serviceBinding := NewTriggerServiceBinding(svc)
 	messageProcessor := NewTriggerMessageProcessor(serviceBinding, svc.MetricsManager())
 
-	switch triggerType := strings.ToUpper(configuration.Trigger.Type); triggerType {
-	case TriggerTypeHTTP:
-		svc.LoggingClient().Info("HTTP trigger selected")
-		t = http.NewTrigger(serviceBinding, messageProcessor, svc.webserver)
+	//switch triggerType := strings.ToUpper(configuration.Trigger.Type); triggerType {
+	//case TriggerTypeHTTP:
+	//	svc.LoggingClient().Info("HTTP trigger selected")
+	//	t = http.NewTrigger(serviceBinding, messageProcessor, svc.webserver)
+	//
+	//case TriggerTypeMessageBus:
+	//	svc.LoggingClient().Info("EdgeX MessageBus trigger selected")
+	//	t = messagebus.NewTrigger(serviceBinding, messageProcessor, svc.dic)
+	//
+	//case TriggerTypeMQTT:
+	//	svc.LoggingClient().Info("External MQTT trigger selected")
+	//	t = mqtt.NewTrigger(serviceBinding, messageProcessor)
+	//
+	//default:
+	//	if factory, found := svc.customTriggerFactories[triggerType]; found {
+	//		var err error
+	//		t, err = factory(svc)
+	//		if err != nil {
+	//			svc.LoggingClient().Errorf("failed to initialize custom trigger [%s]: %s", triggerType, err.Error())
+	//			return nil
+	//		}
+	//	} else if len(configuration.Trigger.Type) == 0 {
+	//		svc.LoggingClient().Error("Trigger type not found, missing common config? Use -cp or -cc flags for common config")
+	//	} else {
+	//		svc.LoggingClient().Errorf("Invalid Trigger type of '%s' specified", configuration.Trigger.Type)
+	//	}
+	//}
 
-	case TriggerTypeMessageBus:
-		svc.LoggingClient().Info("EdgeX MessageBus trigger selected")
-		t = messagebus.NewTrigger(serviceBinding, messageProcessor, svc.dic)
-
-	case TriggerTypeMQTT:
-		svc.LoggingClient().Info("External MQTT trigger selected")
-		t = mqtt.NewTrigger(serviceBinding, messageProcessor)
-
-	default:
-		if factory, found := svc.customTriggerFactories[triggerType]; found {
-			var err error
-			t, err = factory(svc)
-			if err != nil {
-				svc.LoggingClient().Errorf("failed to initialize custom trigger [%s]: %s", triggerType, err.Error())
-				return nil
-			}
-		} else if len(configuration.Trigger.Type) == 0 {
-			svc.LoggingClient().Error("Trigger type not found, missing common config? Use -cp or -cc flags for common config")
-		} else {
-			svc.LoggingClient().Errorf("Invalid Trigger type of '%s' specified", configuration.Trigger.Type)
-		}
-	}
+	svc.LoggingClient().Info("External MQTT trigger selected")
+	t = mqtt.NewTrigger(serviceBinding, messageProcessor)
 
 	return t
 }

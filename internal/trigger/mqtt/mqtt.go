@@ -68,7 +68,7 @@ func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigge
 }
 
 // Initialize initializes the Trigger for an external MQTT broker
-func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, background <-chan interfaces.BackgroundMessage) (bootstrap.Deferred, error) {
+func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, background <-chan interfaces.BackgroundMessage) (*Trigger, bootstrap.Deferred, error) {
 	// Convenience shortcuts
 	lc := trigger.serviceBinding.LoggingClient()
 	config := trigger.serviceBinding.Config()
@@ -83,16 +83,16 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 	lc.Info("Initializing MQTT Trigger")
 
 	if background != nil {
-		return nil, errors.New("background publishing not supported for services using MQTT trigger")
+		return trigger, nil, errors.New("background publishing not supported for services using MQTT trigger")
 	}
 
 	if len(strings.TrimSpace(topics)) == 0 {
-		return nil, fmt.Errorf("missing SubscribeTopics for MQTT Trigger. Must be present in [Trigger.ExternalMqtt] section")
+		return trigger, nil, fmt.Errorf("missing SubscribeTopics for MQTT Trigger. Must be present in [Trigger.ExternalMqtt] section")
 	}
 
 	brokerUrl, err := url.Parse(brokerConfig.Url)
 	if err != nil {
-		return nil, fmt.Errorf("invalid MQTT Broker Url '%s': %s", config.Trigger.ExternalMqtt.Url, err.Error())
+		return trigger, nil, fmt.Errorf("invalid MQTT Broker Url '%s': %s", config.Trigger.ExternalMqtt.Url, err.Error())
 	}
 
 	opts := pahoMqtt.NewClientOptions()
@@ -102,7 +102,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 	if len(brokerConfig.ConnectTimeout) > 0 {
 		duration, err := time.ParseDuration(brokerConfig.ConnectTimeout)
 		if err != nil {
-			return nil, fmt.Errorf("invalid MQTT ConnectTimeout '%s': %s", brokerConfig.ConnectTimeout, err.Error())
+			return trigger, nil, fmt.Errorf("invalid MQTT ConnectTimeout '%s': %s", brokerConfig.ConnectTimeout, err.Error())
 		}
 		opts.ConnectTimeout = duration
 	}
@@ -132,7 +132,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 		}
 		select {
 		case <-ctx.Done():
-			return nil, errors.New("aborted MQTT Trigger initialization")
+			return trigger, nil, errors.New("aborted MQTT Trigger initialization")
 		default:
 			lc.Warnf("%s. Attempt to create MQTT client again after %d seconds...", err.Error(), brokerConfig.RetryInterval)
 			timer.SleepForInterval()
@@ -140,7 +140,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to create MQTT Client: %s", err.Error())
+		return trigger, nil, fmt.Errorf("unable to create MQTT Client: %s", err.Error())
 	}
 
 	deferred := func() {
@@ -150,7 +150,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 
 	trigger.MqttClient = mqttClient
 
-	return deferred, nil
+	return trigger, deferred, nil
 }
 
 func (trigger *Trigger) onConnectHandler(mqttClient pahoMqtt.Client) {
