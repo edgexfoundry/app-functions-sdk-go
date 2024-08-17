@@ -130,7 +130,7 @@ type ApplicationService interface {
 	// the service is stopped or Stop() is called.
 	// An error is returned if the trigger can not be created or initialized or if the internal webserver
 	// encounters an error.
-	Run() (*pahoMqtt.Client, error)
+	Run() error
 	// Stop stops the configured trigger so that the functions pipeline no longer executes.
 	// An error is returned
 	Stop()
@@ -177,6 +177,8 @@ type ApplicationService interface {
 	// RegistryClient returns the Registry client. Note the registry must been enable, otherwise this will return nil.
 	// Useful if service needs to add additional health checks or needs to get endpoint of another registered service
 	RegistryClient() registry.Client
+	//TriggerMqttClient returns the pahoMqtt.Client.
+	TriggerMqttClient() (*pahoMqtt.Client, error)
 	// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
 	// github.com/rcrowley/go-metrics
 	MetricsManager() bootstrapInterfaces.MetricsManager
