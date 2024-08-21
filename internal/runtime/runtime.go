@@ -250,43 +250,46 @@ func (fpr *FunctionsPipelineRuntime) DecodeMessage(appContext *appfunction.Conte
 	// Must make a copy of the type so that data isn't retained between calls for custom types
 	target := reflect.New(reflect.ValueOf(fpr.TargetType).Elem().Type()).Interface()
 
-	switch target.(type) {
-	case *[]byte:
-		fpr.lc.Debug("Expecting raw byte data")
-		target = &envelope.Payload
+	//switch target.(type) {
+	//case *[]byte:
+	//	fpr.lc.Debug("Expecting raw byte data")
+	//	target = &envelope.Payload
+	//
+	//case *dtos.Event:
+	//	fpr.lc.Debug("Expecting an AddEventRequest or Event DTO")
+	//
+	//	// Dynamically process either AddEventRequest or Event DTO
+	//	event, err := fpr.processEventPayload(envelope)
+	//	if err != nil {
+	//		err = fmt.Errorf("unable to process payload %s", err.Error())
+	//		fpr.logError(err, envelope.CorrelationID)
+	//		return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
+	//	}
+	//
+	//	if fpr.lc.LogLevel() == models.DebugLog {
+	//		fpr.debugLogEvent(event)
+	//	}
+	//
+	//	appContext.AddValue(interfaces.DEVICENAME, event.DeviceName)
+	//	appContext.AddValue(interfaces.PROFILENAME, event.ProfileName)
+	//	appContext.AddValue(interfaces.SOURCENAME, event.SourceName)
+	//
+	//	target = event
+	//
+	//default:
+	//	customTypeName := di.TypeInstanceToName(target)
+	//	fpr.lc.Debugf("Expecting a custom type of %s", customTypeName)
+	//
+	//	// Expecting a custom type so just unmarshal into the target type.
+	//	if err := fpr.unmarshalPayload(envelope, target); err != nil {
+	//		err = fmt.Errorf("unable to process custom object received of type '%s': %s", customTypeName, err.Error())
+	//		fpr.logError(err, envelope.CorrelationID)
+	//		return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
+	//	}
+	//}
 
-	case *dtos.Event:
-		fpr.lc.Debug("Expecting an AddEventRequest or Event DTO")
-
-		// Dynamically process either AddEventRequest or Event DTO
-		event, err := fpr.processEventPayload(envelope)
-		if err != nil {
-			err = fmt.Errorf("unable to process payload %s", err.Error())
-			fpr.logError(err, envelope.CorrelationID)
-			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
-		}
-
-		if fpr.lc.LogLevel() == models.DebugLog {
-			fpr.debugLogEvent(event)
-		}
-
-		appContext.AddValue(interfaces.DEVICENAME, event.DeviceName)
-		appContext.AddValue(interfaces.PROFILENAME, event.ProfileName)
-		appContext.AddValue(interfaces.SOURCENAME, event.SourceName)
-
-		target = event
-
-	default:
-		customTypeName := di.TypeInstanceToName(target)
-		fpr.lc.Debugf("Expecting a custom type of %s", customTypeName)
-
-		// Expecting a custom type so just unmarshal into the target type.
-		if err := fpr.unmarshalPayload(envelope, target); err != nil {
-			err = fmt.Errorf("unable to process custom object received of type '%s': %s", customTypeName, err.Error())
-			fpr.logError(err, envelope.CorrelationID)
-			return nil, &MessageError{Err: err, ErrorCode: http.StatusBadRequest}, true
-		}
-	}
+	fpr.lc.Debug("Expecting raw byte data")
+	target = &envelope.Payload
 
 	appContext.SetCorrelationID(envelope.CorrelationID)
 	appContext.SetInputContentType(envelope.ContentType)
