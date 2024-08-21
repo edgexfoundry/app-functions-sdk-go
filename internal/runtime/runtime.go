@@ -37,6 +37,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos/requests"
 	edgexErrors "github.com/edgexfoundry/go-mod-core-contracts/v3/errors"
+	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
 
 	"github.com/fxamacker/cbor/v2"
 	gometrics "github.com/rcrowley/go-metrics"
