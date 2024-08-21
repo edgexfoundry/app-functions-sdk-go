@@ -383,11 +383,13 @@ func (fpr *FunctionsPipelineRuntime) processEventPayload(envelope types.MessageE
 	event := &dtos.Event{}
 	err := fpr.unmarshalPayload(envelope, event)
 	if err == nil {
-		err = common.Validate(event)
-		if err == nil {
-			fpr.lc.Debug("Using Event DTO received")
-			return event, nil
-		}
+		//err = common.Validate(event)
+		//if err == nil {
+		//	fpr.lc.Debug("Using Event DTO received")
+		//	return event, nil
+		//}
+		fpr.lc.Debug("Using Event DTO received")
+		return event, nil
 	}
 
 	// Check for validation error
