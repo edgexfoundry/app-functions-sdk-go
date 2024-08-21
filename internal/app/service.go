@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	nethttp "net/http"
 	"os"
 	"os/signal"
@@ -219,21 +220,24 @@ func (svc *Service) Run() error {
 
 	svc.webserver.StartWebServer(httpErrors)
 
-	// determine input type and create trigger for it
-	t := svc.setupTrigger(svc.config)
-	if t == nil {
-		return errors.New("failed to create Trigger")
-	}
-
-	// Initialize the trigger (i.e. start a web server, or connect to message bus)
-	deferred, err := t.Initialize(svc.ctx.appWg, svc.ctx.appCtx, svc.backgroundPublishChannel)
-	if err != nil {
-		svc.lc.Error(err.Error())
-		return errors.New("failed to initialize Trigger")
-	}
-
-	// deferred is a function that needs to be called when services exits.
-	svc.addDeferred(deferred)
+	//// determine input type and create trigger for it
+	//t := svc.setupTrigger(svc.config)
+	//if t == nil {
+	//	return nil, errors.New("failed to create Trigger")
+	//}
+	//
+	//// Initialize the trigger (i.e. start a web server, or connect to message bus)
+	//mqttTrigger, deferred, err := t.Initialize(svc.ctx.appWg, svc.ctx.appCtx, svc.backgroundPublishChannel)
+	//if err != nil {
+	//	svc.lc.Error(err.Error())
+	//	return nil, errors.New("failed to initialize Trigger")
+	//}
+	//
+	//x := mqttTrigger.MqttClient
+	////x.Publish("/sys/xpsYHExTKPFaQMS7/0005002403260001/s/event/rawReport", 0, false, "{\"good\":\"good\"}")
+	//
+	//// deferred is a function that needs to be called when services exits.
+	//svc.addDeferred(deferred)
 
 	if svc.config.Writable.StoreAndForward.Enabled {
 		svc.startStoreForward()
@@ -634,6 +638,30 @@ func (svc *Service) LoggingClient() logger.LoggingClient {
 // RegistryClient returns the Registry client, which may be nil, from the dependency injection container
 func (svc *Service) RegistryClient() registry.Client {
 	return bootstrapContainer.RegistryFrom(svc.dic.Get)
+}
+
+// TriggerMqttClient returns the pahoMqtt.Client.
+func (svc *Service) TriggerMqttClient() (*pahoMqtt.Client, error) {
+	// determine input type and create trigger for it
+	t := svc.setupTrigger(svc.config)
+	if t == nil {
+		return nil, errors.New("failed to create Trigger")
+	}
+
+	// Initialize the trigger (i.e. start a web server, or connect to message bus)
+	mqttTrigger, deferred, err := t.Initialize(svc.ctx.appWg, svc.ctx.appCtx, svc.backgroundPublishChannel)
+	if err != nil {
+		svc.lc.Error(err.Error())
+		return nil, errors.New("failed to initialize Trigger")
+	}
+
+	x := mqttTrigger.MqttClient
+	//x.Publish("/sys/xpsYHExTKPFaQMS7/0005002403260001/s/event/rawReport", 0, false, "{\"good\":\"good\"}")
+
+	// deferred is a function that needs to be called when services exits.
+	svc.addDeferred(deferred)
+
+	return &x, nil
 }
 
 // EventClient returns the Event client, which may be nil, from the dependency injection container

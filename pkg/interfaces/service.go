@@ -17,6 +17,7 @@ package interfaces
 
 import (
 	"context"
+	pahoMqtt "github.com/eclipse/paho.mqtt.golang"
 	"net/http"
 	"time"
 
@@ -176,6 +177,8 @@ type ApplicationService interface {
 	// RegistryClient returns the Registry client. Note the registry must been enable, otherwise this will return nil.
 	// Useful if service needs to add additional health checks or needs to get endpoint of another registered service
 	RegistryClient() registry.Client
+	//TriggerMqttClient returns the pahoMqtt.Client.
+	TriggerMqttClient() (*pahoMqtt.Client, error)
 	// MetricsManager returns the Metrics Manager used to register counter, gauge, gaugeFloat64 or timer metric types from
 	// github.com/rcrowley/go-metrics
 	MetricsManager() bootstrapInterfaces.MetricsManager
