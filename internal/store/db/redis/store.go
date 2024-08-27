@@ -22,9 +22,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/models"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/redis/models"
 
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 
