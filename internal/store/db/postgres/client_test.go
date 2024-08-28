@@ -58,8 +58,7 @@ var TestCredential = bootstrapConfig.Credentials{Username: "postgres", Password:
 
 func TestClient_NewClient(t *testing.T) {
 	tests := []struct {
-		name string
-		//config        db.DatabaseInfo
+		name          string
 		config        bootstrapConfig.Database
 		expectedError bool
 	}{
@@ -69,8 +68,7 @@ func TestClient_NewClient(t *testing.T) {
 	lc := logger.NewMockClient()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client, err := NewClient(context.Background(), test.config, TestCredential, "", "", lc)
-			defer client.CloseSession()
+			_, err := NewClient(context.Background(), test.config, TestCredential, "", "", lc)
 
 			if test.expectedError {
 				require.Error(t, err)
