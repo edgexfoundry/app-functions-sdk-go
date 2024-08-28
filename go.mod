@@ -10,7 +10,7 @@ require (
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.31
 	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.13
 	github.com/fxamacker/cbor/v2 v2.7.0
-	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438

@@ -23,9 +23,11 @@ const (
 	appSvcSchema = "app_svc"
 	// constants relate to the postgres db table names
 	storeTableName = appSvcSchema + ".store"
+	// constants relate to the storeObject fields
+	appServiceKeyField = "appServiceKey"
 )
 
-// Store persists a stored object to the data store and returns the assigned UUID.
+// Store persists a stored object to the store table and returns the assigned UUID
 func (c Client) Store(o interfaces.StoredObject) (string, error) {
 	err := o.ValidateContract(false)
 	if err != nil {
@@ -60,7 +62,7 @@ func (c Client) Store(o interfaces.StoredObject) (string, error) {
 	return model.ID, nil
 }
 
-// RetrieveFromStore gets an object from the data store.
+// RetrieveFromStore gets an object from the table with content column contains the appServiceKey
 func (c Client) RetrieveFromStore(appServiceKey string) ([]interfaces.StoredObject, error) {
 	// do not satisfy requests for a blank ASK
 	if appServiceKey == "" {
@@ -69,12 +71,13 @@ func (c Client) RetrieveFromStore(appServiceKey string) ([]interfaces.StoredObje
 
 	ctx := context.Background()
 
-	queryObj := map[string]any{"appServiceKey": appServiceKey}
+	queryObj := map[string]any{appServiceKeyField: appServiceKey}
 	queryBytes, err := json.Marshal(queryObj)
 	if err != nil {
 		return nil, wrapDBError("failed to encode appServiceKey query obj", err)
 	}
 
+	// query from the store table with content contains {"appServiceKey": appServiceKey}
 	rows, err := c.connPool.Query(ctx, sqlQueryContentByJSONField(storeTableName), queryBytes)
 	if err != nil {
 		return nil, wrapDBError(fmt.Sprintf("failed to query app svc store record with key '%s'", appServiceKey), err)
@@ -98,7 +101,7 @@ func (c Client) RetrieveFromStore(appServiceKey string) ([]interfaces.StoredObje
 	return objects, nil
 }
 
-// Update replaces the data currently in the store with the provided data.
+// Update replaces the data currently in the store table by the StoredObject ID
 func (c Client) Update(o interfaces.StoredObject) error {
 	err := o.ValidateContract(true)
 	if err != nil {
@@ -125,7 +128,7 @@ func (c Client) Update(o interfaces.StoredObject) error {
 	return nil
 }
 
-// RemoveFromStore removes an object from the data store.
+// RemoveFromStore removes an object from the store table by StoredObject ID
 func (c Client) RemoveFromStore(o interfaces.StoredObject) error {
 	err := o.ValidateContract(true)
 	if err != nil {
