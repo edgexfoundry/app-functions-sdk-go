@@ -10,7 +10,7 @@ replace github.com/edgexfoundry/app-functions-sdk-go/v3 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v3 v3.1.1
-	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.30
+	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.32
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
@@ -26,10 +26,10 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.5.3 // indirect
-	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.48 // indirect
-	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.11 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.29 // indirect
+	github.com/eclipse/paho.mqtt.golang v1.5.0 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.52 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v3 v3.2.0-dev.12 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.31 // indirect
 	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.13 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v3 v3.2.0-dev.9 // indirect
 	github.com/fatih/color v1.16.0 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/consul/api v1.29.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -75,6 +75,11 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/serf v0.10.1 // indirect
+	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgx/v5 v5.6.0 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kataras/go-events v0.0.3 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
@@ -134,7 +139,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
-	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
@@ -142,7 +146,6 @@ require (
 	golang.org/x/term v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
 	google.golang.org/grpc v1.64.1 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect

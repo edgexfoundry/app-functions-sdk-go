@@ -1,6 +1,7 @@
 /*******************************************************************************
  * Copyright 2019 Dell Inc.
  * Copyright (c) 2021 Intel Corporation
+ * Copyright (C) 2024 IOTech Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -20,7 +21,8 @@ import "errors"
 
 const (
 	// Database providers
-	RedisDB = "redisdb"
+	RedisDB  = "redisdb"
+	Postgres = "postgres"
 )
 
 var (

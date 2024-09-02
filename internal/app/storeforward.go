@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2021 One Track Consulting
+// Copyright (C) 2024 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +26,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/postgres"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/redis"
 	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
@@ -33,6 +35,8 @@ import (
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
 	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
 )
+
+const baseScriptPath = "./res/db/sql"
 
 // RegisterCustomStoreFactory allows registration of alternative storage implementation to back the Store&Forward loop
 func (svc *Service) RegisterCustomStoreFactory(name string, factory func(cfg bootstrapConfig.Database, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)) error {
@@ -53,6 +57,8 @@ func (svc *Service) createStoreClient(database bootstrapConfig.Database, credent
 	switch strings.ToLower(database.Type) {
 	case db.RedisDB:
 		return redis.NewClient(database, credentials)
+	case db.Postgres:
+		return postgres.NewClient(svc.ctx.appCtx, database, credentials, baseScriptPath, "", svc.lc)
 	default:
 		if factory, found := svc.customStoreClientFactories[strings.ToUpper(database.Type)]; found {
 			return factory(database, credentials)
