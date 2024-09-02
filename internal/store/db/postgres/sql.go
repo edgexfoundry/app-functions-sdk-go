@@ -20,9 +20,9 @@ func sqlInsertContent(table string) string {
 	return fmt.Sprintf("INSERT INTO %s(%s, %s) VALUES ($1, $2)", table, idCol, contentCol)
 }
 
-// sqlQueryCountByJSONField returns the SQL statement for selecting content column in the table by the given JSON query string
+// sqlQueryCountByJSONField returns the SQL statement for selecting content column in the table by the given JSON query string ordered by created column
 func sqlQueryContentByJSONField(table string) string {
-	return fmt.Sprintf("SELECT content FROM %s WHERE content @> $1::jsonb", table)
+	return fmt.Sprintf("SELECT content FROM %s WHERE content @> $1::jsonb ORDER BY created", table)
 }
 
 // sqlCheckExistsById returns the SQL statement for checking if a row exists in the table by id
