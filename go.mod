@@ -5,10 +5,10 @@ go 1.21
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.5.3
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.52
-	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.32
+	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.54
+	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.43
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.31
-	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.13
+	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.16
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.6.0
@@ -62,7 +62,7 @@ require (
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/hashicorp/consul/api v1.29.2 // indirect
+	github.com/hashicorp/consul/api v1.29.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
