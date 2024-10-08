@@ -86,7 +86,7 @@ var postgresClient *Client
 // setupPostgresClient is called before the tests run
 func setupPostgresClient() {
 	lc := logger.NewMockClient()
-	client, _ := NewClient(context.Background(), TestValidNoAuthConfig, TestCredential, "", "", lc)
+	client, _ := NewClient(context.Background(), TestValidNoAuthConfig, TestCredential, "", "", lc, "svcKey")
 	postgresClient = client
 }
 
@@ -345,4 +345,9 @@ func TestClient_RemoveFromStore(t *testing.T) {
 			require.Len(t, actual, 0)
 		})
 	}
+}
+
+func TestClient_getFullStoreTableName(t *testing.T) {
+	result := postgresClient.getFullStoreTableName()
+	require.Equal(t, `"svcKey".store`, result)
 }

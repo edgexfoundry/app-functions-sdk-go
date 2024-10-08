@@ -58,7 +58,7 @@ func (svc *Service) createStoreClient(database bootstrapConfig.Database, credent
 	case db.RedisDB:
 		return redis.NewClient(database, credentials)
 	case db.Postgres:
-		return postgres.NewClient(svc.ctx.appCtx, database, credentials, baseScriptPath, "", svc.lc)
+		return postgres.NewClient(svc.ctx.appCtx, database, credentials, baseScriptPath, "", svc.lc, svc.serviceKey)
 	default:
 		if factory, found := svc.customStoreClientFactories[strings.ToUpper(database.Type)]; found {
 			return factory(database, credentials)

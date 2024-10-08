@@ -19,13 +19,17 @@ import (
 )
 
 const (
-	// constants relate to the postgres db schema names
-	appSvcSchema = "app_svc"
 	// constants relate to the postgres db table names
-	storeTableName = appSvcSchema + ".store"
+	storeTableName = "store"
+
 	// constants relate to the storeObject fields
 	appServiceKeyField = "appServiceKey"
 )
+
+// getFullStoreTableName returns the table name with schema as prefix
+func (c Client) getFullStoreTableName() string {
+	return fmt.Sprintf(`"%s".%s`, c.appServiceKey, storeTableName)
+}
 
 // Store persists a stored object to the store table and returns the assigned UUID
 func (c Client) Store(o interfaces.StoredObject) (string, error) {
@@ -36,7 +40,9 @@ func (c Client) Store(o interfaces.StoredObject) (string, error) {
 
 	var exists bool
 	ctx := context.Background()
-	err = c.connPool.QueryRow(ctx, sqlCheckExistsById(storeTableName), o.ID).Scan(&exists)
+
+	fullTableName := c.getFullStoreTableName()
+	err = c.connPool.QueryRow(ctx, sqlCheckExistsById(fullTableName), o.ID).Scan(&exists)
 	if err != nil {
 		return "", wrapDBError("failed to query app svc store record job by id", err)
 	}
@@ -44,16 +50,16 @@ func (c Client) Store(o interfaces.StoredObject) (string, error) {
 	var model models.StoredObject
 	model.FromContract(o)
 
-	json, err := model.MarshalJSON()
+	jsonBytes, err := model.MarshalJSON()
 	if err != nil {
 		return "", err
 	}
 
 	_, err = c.connPool.Exec(
 		ctx,
-		sqlInsertContent(storeTableName),
+		sqlInsertContent(fullTableName),
 		model.ID,
-		json,
+		jsonBytes,
 	)
 	if err != nil {
 		return "", wrapDBError("failed to insert app svc store record", err)
@@ -78,7 +84,7 @@ func (c Client) RetrieveFromStore(appServiceKey string) ([]interfaces.StoredObje
 	}
 
 	// query from the store table with content contains {"appServiceKey": appServiceKey}
-	rows, err := c.connPool.Query(ctx, sqlQueryContentByJSONField(storeTableName), queryBytes)
+	rows, err := c.connPool.Query(ctx, sqlQueryContentByJSONField(c.getFullStoreTableName()), queryBytes)
 	if err != nil {
 		return nil, wrapDBError(fmt.Sprintf("failed to query app svc store record with key '%s'", appServiceKey), err)
 	}
@@ -117,7 +123,7 @@ func (c Client) Update(o interfaces.StoredObject) error {
 
 	_, err = c.connPool.Exec(
 		context.Background(),
-		sqlUpdateContentById(storeTableName),
+		sqlUpdateContentById(c.getFullStoreTableName()),
 		json,
 		o.ID,
 	)
@@ -137,7 +143,7 @@ func (c Client) RemoveFromStore(o interfaces.StoredObject) error {
 
 	_, err = c.connPool.Exec(
 		context.Background(),
-		sqlDeleteById(storeTableName),
+		sqlDeleteById(c.getFullStoreTableName()),
 		o.ID,
 	)
 	if err != nil {

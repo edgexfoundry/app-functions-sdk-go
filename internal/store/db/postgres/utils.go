@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v3/errors"
 
@@ -21,6 +22,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+const serviceKeyPlaceholder = "<serviceKey>"
 
 var sqlFileNameRegexp = regexp.MustCompile(`([[:digit:]]+)-[[:word:]]+.sql`)
 
@@ -52,7 +55,7 @@ func (sf sqlFileNames) getSortedNames() []string {
 	return result
 }
 
-func executeDBScripts(ctx context.Context, connPool *pgxpool.Pool, scriptsPath string) errors.EdgeX {
+func executeDBScripts(ctx context.Context, connPool *pgxpool.Pool, scriptsPath string, serviceKey string) errors.EdgeX {
 	if len(scriptsPath) == 0 {
 		// skip script execution when the path is empty
 		return nil
@@ -79,7 +82,11 @@ func executeDBScripts(ctx context.Context, connPool *pgxpool.Pool, scriptsPath s
 		if err != nil {
 			return errors.NewCommonEdgeX(errors.KindServerError, fmt.Sprintf("failed to read sql file %s", sqlFile), err)
 		}
-		_, err = tx.Exec(ctx, string(sqlContent))
+
+		// replace the <serviceKey> placeholder text with the actual service key name
+		updatedSqlContent := strings.Replace(string(sqlContent), serviceKeyPlaceholder, serviceKey, -1)
+
+		_, err = tx.Exec(ctx, updatedSqlContent)
 		if err != nil {
 			return wrapDBError(fmt.Sprintf("failed to execute sql file %s", sqlFile), err)
 		}

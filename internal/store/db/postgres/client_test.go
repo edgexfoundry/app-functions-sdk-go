@@ -68,7 +68,7 @@ func TestClient_NewClient(t *testing.T) {
 	lc := logger.NewMockClient()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := NewClient(context.Background(), test.config, TestCredential, "", "", lc)
+			_, err := NewClient(context.Background(), test.config, TestCredential, "", "", lc, "svcKey")
 
 			if test.expectedError {
 				require.Error(t, err)

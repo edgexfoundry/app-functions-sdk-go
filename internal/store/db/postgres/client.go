@@ -28,10 +28,12 @@ var dc *Client
 type Client struct {
 	connPool      *pgxpool.Pool
 	loggingClient logger.LoggingClient
+	appServiceKey string
 }
 
 // NewClient returns a pointer to the Postgres client
-func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials bootstrapConfig.Credentials, baseScriptPath, extScriptPath string, lc logger.LoggingClient) (*Client, errors.EdgeX) {
+func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials bootstrapConfig.Credentials,
+	baseScriptPath, extScriptPath string, lc logger.LoggingClient, serviceKey string) (*Client, errors.EdgeX) {
 	// Get the database name from the environment variable
 	databaseName := os.Getenv("EDGEX_DBNAME")
 	if databaseName == "" {
@@ -50,6 +52,7 @@ func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials
 		dc = &Client{
 			connPool:      dbPool,
 			loggingClient: lc,
+			appServiceKey: serviceKey,
 		}
 	})
 	if edgeXerr != nil {
@@ -64,7 +67,7 @@ func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials
 	lc.Info("Successfully connect to Postgres database")
 
 	// execute base DB scripts
-	if edgeXerr = executeDBScripts(ctx, dc.connPool, baseScriptPath); edgeXerr != nil {
+	if edgeXerr = executeDBScripts(ctx, dc.connPool, baseScriptPath, serviceKey); edgeXerr != nil {
 		return nil, errors.NewCommonEdgeX(errors.Kind(edgeXerr), "failed to execute Postgres base DB scripts", edgeXerr)
 	}
 	if baseScriptPath != "" {
@@ -72,7 +75,7 @@ func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials
 	}
 
 	// execute extension DB scripts
-	if edgeXerr = executeDBScripts(ctx, dc.connPool, extScriptPath); edgeXerr != nil {
+	if edgeXerr = executeDBScripts(ctx, dc.connPool, extScriptPath, serviceKey); edgeXerr != nil {
 		return nil, errors.NewCommonEdgeX(errors.Kind(edgeXerr), "failed to execute Postgres extension DB scripts", edgeXerr)
 	}
 
