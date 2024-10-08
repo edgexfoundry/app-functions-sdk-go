@@ -766,7 +766,7 @@ func (svc *Service) Publish(data any, contentType string) error {
 func (svc *Service) PublishWithTopic(topic string, data any, contentType string) error {
 	messageClient := bootstrapContainer.MessagingClientFrom(svc.dic.Get)
 	if messageClient == nil {
-		return fmt.Errorf(messageBusDisabledErr)
+		return errors.New(messageBusDisabledErr)
 	}
 
 	payload, err := json.Marshal(data)

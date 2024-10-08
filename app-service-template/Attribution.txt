@@ -432,3 +432,32 @@ https://github.com/googleapis/go-genproto/blob/main/LICENSE
 nhooyr.io/websocket (ISC License) - https://github.com/nhooyr/websocket
 https://github.com/nhooyr/websocket/blob/master/LICENSE.txt
 
+github.com/barkimedes/go-deepcopy (MIT) https://github.com/barkimedes/go-deepcopy
+https://github.com/barkimedes/go-deepcopy/blob/master/LICENSE
+
+github.com/go-jose/go-jose/v4 (Apache-2.0) https://github.com/go-jose/go-jose
+https://github.com/go-jose/go-jose/blob/main/LICENSE
+
+github.com/jackc/pgerrcode (MIT) https://github.com/jackc/pgerrcode
+https://github.com/jackc/pgerrcode/blob/master/LICENSE
+
+github.com/jackc/pgpassfile (MIT) https://github.com/jackc/pgpassfile
+https://github.com/jackc/pgpassfile/blob/master/LICENSE
+
+github.com/jackc/pgservicefile (MIT) https://github.com/jackc/pgservicefile
+https://github.com/jackc/pgservicefile/blob/master/LICENSE
+
+github.com/jackc/pgx/v5 (MIT) https://github.com/jackc/pgx
+https://github.com/jackc/pgx/blob/master/LICENSE
+
+github.com/jackc/puddle/v2 (MIT) https://github.com/jackc/puddle
+https://github.com/jackc/puddle/blob/master/LICENSE
+
+github.com/openziti/channel/v3 (Apache 2.0) - github.com/openziti/channel/v3
+https://github.com/openziti/channel/blob/main/LICENSE
+
+spf13/cast (MIT) https://github.com/spf13/cast
+https://github.com/spf13/cast/blob/master/LICENSE
+
+gopkg.in/go-jose/go-jose.v2 (Apache 2.0) - https://github.com/go-jose/go-jose
+https://github.com/go-jose/go-jose/blob/v2.6.3/LICENSE

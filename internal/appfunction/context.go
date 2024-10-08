@@ -319,7 +319,7 @@ func (appContext *Context) Publish(data any, contentType string) error {
 func (appContext *Context) PublishWithTopic(topic string, data any, contentType string) error {
 	messageClient := bootstrapContainer.MessagingClientFrom(appContext.Dic.Get)
 	if messageClient == nil {
-		return fmt.Errorf(messageBusDisabledErr)
+		return errors.New(messageBusDisabledErr)
 	}
 
 	config := bootstrapContainer.ConfigurationFrom(appContext.Dic.Get)
