@@ -1,12 +1,12 @@
 module github.com/edgexfoundry/app-functions-sdk-go/v3
 
-go 1.21
+go 1.23
 
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.5.3
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/edgexfoundry/go-mod-bootstrap/v3 v3.2.0-dev.60
-	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.46
+	github.com/edgexfoundry/go-mod-core-contracts/v3 v3.2.0-dev.49
 	github.com/edgexfoundry/go-mod-messaging/v3 v3.2.0-dev.35
 	github.com/edgexfoundry/go-mod-registry/v3 v3.2.0-dev.16
 	github.com/fxamacker/cbor/v2 v2.7.0
@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/pkg/errors v0.9.1
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/stretchr/testify v1.9.0
 )
@@ -107,7 +108,6 @@ require (
 	github.com/openziti/transport/v2 v2.0.146 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.1 // indirect
 	github.com/parallaxsecond/parsec-client-go v0.0.0-20221025095442-f0a77d263cf9 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/shirou/gopsutil/v3 v3.24.5 // indirect

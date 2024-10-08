@@ -21,6 +21,7 @@ package http
 import (
 	"bytes"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 	"testing"
 
@@ -89,7 +90,7 @@ func TestTriggerRequestHandler_BodyReadError(t *testing.T) {
 	defer writer.AssertExpectations(t)
 
 	reqReader := &mocks.TriggerRequestReader{}
-	reqReader.On("Read", mock.Anything).Return(0, fmt.Errorf(errorMsg))
+	reqReader.On("Read", mock.Anything).Return(0, errors.New(errorMsg))
 
 	req, err := http.NewRequest("", "", reqReader)
 	req.Header = http.Header{}

@@ -59,6 +59,8 @@ kX0EMnYch0e7urs9o1M6JWJGlWZQxgVnxekbFDPfRelR1m0zFnbfXG2rnfuRpVEL
 uXOR
 -----END CERTIFICATE-----
 `
+
+// nolint:gosec
 const testClientKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEA4TlobJoFgNoCc5Znb0OzVoMypoay1RSTAhnU0arpHVugUMZM
 O6oxSt371MN+e4cUxoes4uhNqeVG7AxUkdMCNJbzjAmJeDQtLKYHcY4YI30HHWCW
