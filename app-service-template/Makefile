@@ -16,6 +16,11 @@
 
 .PHONY: build test clean docker
 
+# change the following boolean flag to enable or disable the Full RELRO (RELocation Read Only) for linux ELF (Executable and Linkable Format) binaries
+ENABLE_FULL_RELRO:="true"
+# change the following boolean flag to enable or disable PIE for linux binaries which is needed for ASLR (Address Space Layout Randomization) on Linux, the ASLR support on Windows is enabled by default
+ENABLE_PIE:="true"
+
 GOTESTFLAGS?=-race
 
 # VERSION file is not needed for local development, In the CI/CD pipeline, a temporary VERSION file is written
@@ -35,6 +40,14 @@ GOFLAGS=-ldflags "-s -w -X github.com/edgexfoundry/app-functions-sdk-go/v3/inter
 #       remove totally including usage below
 #GIT_SHA=$(shell git rev-parse HEAD)
 GIT_SHA=no-sha
+
+ifeq ($(ENABLE_FULL_RELRO), "true")
+	GOFLAGS += -ldflags "-bindnow"
+endif
+
+ifeq ($(ENABLE_PIE), "true")
+	GOFLAGS += -buildmode=pie
+endif
 
 # CGO is enabled by default and causes docker builds to fail due to no gcc,
 # but is required for test with -race, so must disable it for the builds only
