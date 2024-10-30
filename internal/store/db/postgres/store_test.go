@@ -25,8 +25,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"

@@ -24,21 +24,21 @@ import (
 	"sync"
 	"testing"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"github.com/edgexfoundry/go-mod-messaging/v3/messaging/mocks"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
+	"github.com/edgexfoundry/go-mod-messaging/v4/messaging/mocks"
 
-	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces/mocks"
+	interfaceMocks "github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces/mocks"
 
 	"github.com/stretchr/testify/mock"
 
-	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mocks"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	sdkCommon "github.com/edgexfoundry/app-functions-sdk-go/v4/internal/common"
+	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v4/internal/trigger/mocks"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
-	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/common"
+	"github.com/edgexfoundry/go-mod-messaging/v4/pkg/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

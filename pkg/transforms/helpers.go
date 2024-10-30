@@ -17,7 +17,7 @@
 package transforms
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 )
 
 func registerMetric(ctx interfaces.AppFunctionContext, fullNameFunc func() string, getMetric func() any, tags map[string]string) {

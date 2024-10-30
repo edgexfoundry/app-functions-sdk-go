@@ -53,4 +53,4 @@ COPY --from=builder /app/app-new-service /app-new-service
 EXPOSE 59740
 
 ENTRYPOINT ["/app-new-service"]
-CMD ["-cp=consul.http://edgex-core-consul:8500", "--registry"]
+CMD ["-cp=keeper.http://edgex-core-keeper:59890", "--registry"]

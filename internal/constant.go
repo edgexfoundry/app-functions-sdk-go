@@ -16,7 +16,7 @@
 
 package internal
 
-import "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+import "github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 
 // SDKVersion indicates the version of the SDK - will be overwritten by build
 var SDKVersion = "0.0.0"

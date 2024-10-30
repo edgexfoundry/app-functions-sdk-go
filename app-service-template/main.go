@@ -27,10 +27,10 @@ import (
 	"app-new-service/config"
 	"app-new-service/functions"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/transforms"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 )
 
 const (
@@ -92,7 +92,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	}
 
 	// Custom configuration can be 'writable' or a section of the configuration can be 'writable' when using
-	// the Configuration Provider, aka Consul.
+	// the Configuration Provider, aka keeper.
 	// For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#writable-custom-configuration
 	// TODO: Remove if not using writable custom configuration
 	if err := app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", app.ProcessConfigUpdates); err != nil {
@@ -149,7 +149,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	app.appCtx = app.service.AppContext()
 
 	// TODO: Add any custom routes your service may have for its REST API
-	if err := app.service.AddCustomRoute("/api/v3/hello", true, app.helloHandler, http.MethodGet); err != nil {
+	if err := app.service.AddCustomRoute("/api/v4/hello", true, app.helloHandler, http.MethodGet); err != nil {
 		app.lc.Errorf("AddCustomRoute returned error: %s", err.Error())
 		return -1
 	}

@@ -18,7 +18,7 @@
 package config
 
 // This file contains example of custom configuration that can be loaded from the service's configuration.yaml
-// and/or the Configuration Provider, aka Consul (if enabled).
+// and/or the Configuration Provider, aka keeper (if enabled).
 // For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#custom-configuration
 // TODO: Update this configuration as needed for you service's needs and remove this comment
 //       or remove this file if not using custom configuration.
@@ -38,7 +38,7 @@ type ServiceConfig struct {
 }
 
 // AppCustomConfig is example of service's custom structured configuration that is specified in the service's
-// configuration.yaml file and Configuration Provider (aka Consul), if enabled.
+// configuration.yaml file and Configuration Provider (aka keeper), if enabled.
 type AppCustomConfig struct {
 	ResourceNames string
 	SomeValue     int
