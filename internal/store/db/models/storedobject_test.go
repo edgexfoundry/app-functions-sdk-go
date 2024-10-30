@@ -16,7 +16,7 @@ package models
 
 import (
 	"bytes"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 	"reflect"
 	"testing"
 )

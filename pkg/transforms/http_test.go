@@ -26,9 +26,9 @@ import (
 	"strings"
 	"testing"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	mocks2 "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/container"
+	mocks2 "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

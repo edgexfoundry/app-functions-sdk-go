@@ -22,11 +22,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/dtos"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/util"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/util"
 )
 
 // BatchMode Enum for choosing behavior of Batch. Default is CountAndTime.

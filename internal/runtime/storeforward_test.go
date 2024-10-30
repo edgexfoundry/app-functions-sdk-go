@@ -21,26 +21,26 @@ import (
 	"os"
 	"testing"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
-	mocks2 "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
-	loggerMocks "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger/mocks"
-	common2 "github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/appfunction"
+	mocks2 "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces/mocks"
+	loggerMocks "github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger/mocks"
+	common2 "github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces/mocks"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces/mocks"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 	"github.com/stretchr/testify/require"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/transforms"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/bootstrap/container"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/transforms"
 )
 
 var dic *di.Container

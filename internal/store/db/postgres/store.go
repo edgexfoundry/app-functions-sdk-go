@@ -10,10 +10,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db/models"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/store/db/models"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/errors"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/errors"
 
 	"github.com/jackc/pgx/v5"
 )

@@ -3,10 +3,10 @@
 package mocks
 
 import (
-	bootstrapinterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
-	clientsinterfaces "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
+	bootstrapinterfaces "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces"
+	clientsinterfaces "github.com/edgexfoundry/go-mod-core-contracts/v4/clients/interfaces"
 
-	config "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
+	config "github.com/edgexfoundry/go-mod-bootstrap/v4/config"
 
 	context "context"
 
@@ -14,13 +14,13 @@ import (
 
 	http "net/http"
 
-	interfaces "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	interfaces "github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 
-	logger "github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	logger "github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 
 	mock "github.com/stretchr/testify/mock"
 
-	registry "github.com/edgexfoundry/go-mod-registry/v3/registry"
+	registry "github.com/edgexfoundry/go-mod-registry/v4/registry"
 
 	time "time"
 )

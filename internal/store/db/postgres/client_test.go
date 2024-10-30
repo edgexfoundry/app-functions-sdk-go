@@ -25,10 +25,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/store/db"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/store/db"
 
-	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v3/config"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v4/config"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 
 	"github.com/stretchr/testify/require"
 )

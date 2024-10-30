@@ -22,12 +22,12 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/base64"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 	"io"
 	"sync"
 	"testing"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

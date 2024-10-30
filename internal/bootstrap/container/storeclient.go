@@ -16,9 +16,9 @@
 package container
 
 import (
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
 )
 
 // StoreClientName contains the name of interfaces.StoreClient implementation in the DIC.

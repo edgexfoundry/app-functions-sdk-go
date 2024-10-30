@@ -22,8 +22,8 @@ import (
 	"errors"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/messaging"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/messaging"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 )
 
 type MqttFactory struct {

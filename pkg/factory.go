@@ -19,15 +19,15 @@ package pkg
 import (
 	"fmt"
 
-	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/container"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/container"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/app"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/bootstrap/container"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/common"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/app"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/bootstrap/container"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/common"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 )
 
 // NewAppService creates and returns a new ApplicationService with the default TargetType

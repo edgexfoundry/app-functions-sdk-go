@@ -22,13 +22,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/config"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/config"
 	gometrics "github.com/rcrowley/go-metrics"
 
-	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
-	"github.com/edgexfoundry/go-mod-registry/v3/registry"
+	bootstrapInterfaces "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
+	"github.com/edgexfoundry/go-mod-registry/v4/registry"
 )
 
 const (
@@ -67,7 +67,7 @@ type FunctionPipeline struct {
 }
 
 // UpdatableConfig interface allows services to have custom configuration populated from configuration stored
-// in the Configuration Provider (aka Consul). Services using custom configuration must implement this interface
+// in the Configuration Provider (aka keeper). Services using custom configuration must implement this interface
 // on their custom configuration, even if they do not use Configuration Provider. If they do not use the
 // Configuration Provider they can have dummy implementation of this interface.
 // This wraps the actual interface from go-mod-bootstrap so app service code doesn't have to have the additional

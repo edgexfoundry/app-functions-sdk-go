@@ -5,9 +5,9 @@ package mocks
 import (
 	context "context"
 
-	bootstrap "github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap"
+	bootstrap "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap"
 
-	interfaces "github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	interfaces "github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 
 	mock "github.com/stretchr/testify/mock"
 

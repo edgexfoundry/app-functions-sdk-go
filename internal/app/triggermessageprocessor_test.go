@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v3/di"
-	"github.com/edgexfoundry/go-mod-messaging/v3/pkg/types"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
+	"github.com/edgexfoundry/go-mod-messaging/v4/pkg/types"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
 	gometrics "github.com/rcrowley/go-metrics"
@@ -31,10 +31,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/appfunction"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/internal/runtime"
-	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v3/internal/trigger/mocks"
-	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/appfunction"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/runtime"
+	triggerMocks "github.com/edgexfoundry/app-functions-sdk-go/v4/internal/trigger/mocks"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 )
 
 func Test_simpleTriggerServiceBinding_BuildContext(t *testing.T) {
