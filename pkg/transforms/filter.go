@@ -121,6 +121,7 @@ func (f *Filter) FilterByResourceName(ctx interfaces.AppFunctionContext, data in
 	auxEvent.Id = existingEvent.Id
 	auxEvent.Origin = existingEvent.Origin
 	auxEvent.Readings = []dtos.BaseReading{}
+	auxEvent.Tags = existingEvent.Tags
 
 	if f.FilterOut {
 		for _, reading := range existingEvent.Readings {

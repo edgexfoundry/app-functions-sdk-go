@@ -208,6 +208,8 @@ func TestFilter_FilterByResourceName(t *testing.T) {
 	// event with a reading for resource 1
 	resource1Event := dtos.NewEvent(profileName1, deviceName1, sourceName1)
 	err := resource1Event.AddSimpleReading(resource1, common.ValueTypeInt32, int32(123))
+	// add tags to the event for testing
+	resource1Event.Tags = map[string]any{"tag1": "value1"}
 	require.NoError(t, err)
 
 	// event with a reading for resource 2
@@ -296,6 +298,11 @@ func TestFilter_FilterByResourceName(t *testing.T) {
 					request := requests.NewAddEventRequest(actualEvent)
 					err = request.Validate()
 					require.NoError(t, err)
+
+					// Make sure the tags are still there
+					if test.EventIn.Tags != nil {
+						assert.Equal(t, test.EventIn.Tags, actualEvent.Tags)
+					}
 				}
 			}
 		})
