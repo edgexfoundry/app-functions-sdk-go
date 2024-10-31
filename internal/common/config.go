@@ -17,6 +17,12 @@
 package common
 
 import (
+	"fmt"
+	"reflect"
+	"strings"
+	"sync"
+
+	bootstrapUtils "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/utils"
 	bootstrapConfig "github.com/edgexfoundry/go-mod-bootstrap/v4/config"
 )
 
@@ -55,6 +61,8 @@ type ConfigurationStruct struct {
 	Clients bootstrapConfig.ClientsCollection
 	// Database contains the configuration for connection to the Database
 	Database bootstrapConfig.Database
+	// locker protects the 'Writable' from race conditions.
+	locker sync.RWMutex
 }
 
 // TriggerInfo contains Metadata associated with each Trigger
@@ -176,7 +184,15 @@ type Credentials struct {
 func (c *ConfigurationStruct) UpdateFromRaw(rawConfig interface{}) bool {
 	configuration, ok := rawConfig.(*ConfigurationStruct)
 	if ok {
-		*c = *configuration
+		c.Writable = configuration.Writable
+		c.Registry = configuration.Registry
+		c.Service = configuration.Service
+		c.HttpServer = configuration.HttpServer
+		c.MessageBus = configuration.MessageBus
+		c.Trigger = configuration.Trigger
+		c.ApplicationSettings = configuration.ApplicationSettings
+		c.Clients = configuration.Clients
+		c.Database = configuration.Database
 	}
 	return ok
 }
@@ -230,4 +246,67 @@ func (c *ConfigurationStruct) GetInsecureSecrets() bootstrapConfig.InsecureSecre
 // GetTelemetryInfo returns the service's Telemetry settings.
 func (c *ConfigurationStruct) GetTelemetryInfo() *bootstrapConfig.TelemetryInfo {
 	return &c.Writable.Telemetry
+}
+
+// GetWritableInfo is thread-safe and returns a read-locked copy of the WritableInfo to prevent race conditions.
+func (c *ConfigurationStruct) GetWritableInfo() WritableInfo {
+	c.locker.RLock()
+	defer c.locker.RUnlock()
+	return c.Writable
+}
+
+// CopyWritableInfo is thread-safe and returns a copy of the WritableInfo struct.
+// This copy is then returned by the function.
+func (c *ConfigurationStruct) CopyWritableInfo() WritableInfo {
+	c.locker.Lock()
+	defer c.locker.Unlock()
+
+	var previousWriteable WritableInfo
+	_ = bootstrapUtils.DeepCopy(&c.Writable, &previousWriteable)
+
+	return previousWriteable
+}
+
+// SetPipelineFunctionParameterNamesLowercase converts the keys in the WritableInfo's Pipeline's Functions to lowercase.
+func (c *ConfigurationStruct) SetPipelineFunctionParameterNamesLowercase() {
+	c.locker.Lock()
+	defer c.locker.Unlock()
+
+	for _, function := range c.Writable.Pipeline.Functions {
+		for key := range function.Parameters {
+			value := function.Parameters[key]
+			delete(function.Parameters, key) // Make sure the old key has been removed so don't have multiples
+			function.Parameters[strings.ToLower(key)] = value
+		}
+	}
+}
+
+// SetWritableInfo is a thread-safe function that sets a new value for a specific field in the WritableInfo struct.
+func (c *ConfigurationStruct) SetWritableInfo(fieldPath string, newValue any) error {
+	c.locker.Lock()
+	defer c.locker.Unlock()
+
+	fieldPath = "Writable." + fieldPath
+	currentValue := reflect.ValueOf(c).Elem()
+	fields := strings.Split(fieldPath, ".")
+	for _, fieldName := range fields {
+		value := currentValue.FieldByName(fieldName)
+		if !value.IsValid() {
+			return fmt.Errorf("no such field: %s in struct", fieldName)
+		}
+		if !value.CanSet() {
+			return fmt.Errorf("cannot set field: %s", fieldName)
+		}
+		currentValue = value
+	}
+
+	// Check if the new value type matches the final field type
+	newValueVal := reflect.ValueOf(newValue)
+	if currentValue.Type() != reflect.TypeOf(newValue) {
+		return fmt.Errorf("provided value type didn't match struct field type for field: %s", fieldPath)
+	}
+
+	// Set the new value
+	currentValue.Set(newValueVal)
+	return nil
 }

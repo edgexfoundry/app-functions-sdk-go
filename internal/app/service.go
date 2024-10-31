@@ -235,7 +235,7 @@ func (svc *Service) Run() error {
 	// deferred is a function that needs to be called when services exits.
 	svc.addDeferred(deferred)
 
-	if svc.config.Writable.StoreAndForward.Enabled {
+	if svc.config.GetWritableInfo().StoreAndForward.Enabled {
 		svc.startStoreForward()
 	} else {
 		svc.lc.Info("StoreAndForward disabled. Not running retry loop.")
@@ -260,7 +260,7 @@ func (svc *Service) Run() error {
 
 	svc.ctx.stop = nil
 
-	if svc.config.Writable.StoreAndForward.Enabled {
+	if svc.config.GetWritableInfo().StoreAndForward.Enabled {
 		svc.ctx.storeForwardCancelCtx()
 		svc.ctx.storeForwardWg.Wait()
 	}
@@ -284,7 +284,7 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 
 	svc.targetType = nil
 
-	switch strings.ToLower(strings.TrimSpace(svc.config.Writable.Pipeline.TargetType)) {
+	switch strings.ToLower(strings.TrimSpace(svc.config.GetWritableInfo().Pipeline.TargetType)) {
 	case rawTargetType:
 		svc.targetType = &[]byte{}
 	case metricTargetType:
@@ -292,11 +292,11 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 	case emptyTargetType, eventTargetType:
 		svc.targetType = &dtos.Event{}
 	default:
-		return nil, fmt.Errorf("pipline TargetType of '%s' is not supported", svc.config.Writable.Pipeline.TargetType)
+		return nil, fmt.Errorf("pipline TargetType of '%s' is not supported", svc.config.GetWritableInfo().Pipeline.TargetType)
 	}
 
 	configurable := reflect.ValueOf(NewConfigurable(svc.lc, svc.SecretProvider()))
-	pipelineConfig := svc.config.Writable.Pipeline
+	pipelineConfig := svc.config.GetWritableInfo().Pipeline
 
 	defaultExecutionOrder := strings.TrimSpace(pipelineConfig.ExecutionOrder)
 
@@ -352,7 +352,7 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 	var transforms []interfaces.AppFunction
 
 	// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
-	setPipelineFunctionParameterNamesLowercase(svc.config.Writable.Pipeline.Functions)
+	svc.config.SetPipelineFunctionParameterNamesLowercase()
 
 	for _, functionName := range executionOrder {
 		functionName = strings.TrimSpace(functionName)

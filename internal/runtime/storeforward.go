@@ -101,7 +101,7 @@ func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
 		defer appWg.Done()
 		defer enabledWg.Done()
 
-		retryInterval, err := time.ParseDuration(config.Writable.StoreAndForward.RetryInterval)
+		retryInterval, err := time.ParseDuration(config.GetWritableInfo().StoreAndForward.RetryInterval)
 		if err != nil {
 			sf.lc.Warn(
 				fmt.Sprintf("StoreAndForward RetryInterval failed to parse, defaulting to %s",
@@ -114,15 +114,17 @@ func (sf *storeForwardInfo) startStoreAndForwardRetryLoop(
 			retryInterval = defaultMinRetryInterval
 		}
 
-		if config.Writable.StoreAndForward.MaxRetryCount < 0 {
+		if config.GetWritableInfo().StoreAndForward.MaxRetryCount < 0 {
 			sf.lc.Warn("StoreAndForward MaxRetryCount can not be less than 0, defaulting to 1")
-			config.Writable.StoreAndForward.MaxRetryCount = 1
+			if err := config.SetWritableInfo("StoreAndForward.MaxRetryCount", 1); err != nil {
+				sf.lc.Errorf("Failed to set StoreAndForward MaxRetryCount to default 1: %v", err)
+			}
 		}
 
 		sf.lc.Info(
 			fmt.Sprintf("Starting StoreAndForward Retry Loop with %s RetryInterval and %d max retries. %d stored items waiting for retry.",
 				retryInterval.String(),
-				config.Writable.StoreAndForward.MaxRetryCount,
+				config.GetWritableInfo().StoreAndForward.MaxRetryCount,
 				len(items)))
 
 	exit:
@@ -161,7 +163,7 @@ func (sf *storeForwardInfo) storeForLaterRetry(
 		appContext.CorrelationID())
 
 	config := container.ConfigurationFrom(sf.dic.Get)
-	if !config.Writable.StoreAndForward.Enabled {
+	if !config.GetWritableInfo().StoreAndForward.Enabled {
 		sf.lc.Errorf("Failed to store item for later retry for pipeline '%s': StoreAndForward not enabled", pipeline.Id)
 		return
 	}
@@ -250,8 +252,8 @@ func (sf *storeForwardInfo) processRetryItems(items []interfaces.StoredObject) (
 
 		if !sf.retryExportFunction(item, pipeline) {
 			item.RetryCount++
-			if config.Writable.StoreAndForward.MaxRetryCount == 0 ||
-				item.RetryCount < config.Writable.StoreAndForward.MaxRetryCount {
+			if config.GetWritableInfo().StoreAndForward.MaxRetryCount == 0 ||
+				item.RetryCount < config.GetWritableInfo().StoreAndForward.MaxRetryCount {
 				sf.lc.Tracef("Export retry failed for pipeline '%s'. retries=%d, Incrementing retry count (%s=%s)",
 					item.PipelineId,
 					item.RetryCount,
@@ -304,7 +306,7 @@ func (sf *storeForwardInfo) retryExportFunction(item interfaces.StoredObject, pi
 func (sf *storeForwardInfo) triggerRetry() {
 	if sf.dataCount.Count() > 0 {
 		config := container.ConfigurationFrom(sf.dic.Get)
-		if !config.Writable.StoreAndForward.Enabled {
+		if !config.GetWritableInfo().StoreAndForward.Enabled {
 			sf.lc.Debug("Store and Forward not enabled, skipping triggering retry of failed data")
 			return
 		}
