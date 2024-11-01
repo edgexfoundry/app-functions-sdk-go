@@ -552,9 +552,10 @@ func TestLoadConfigurableFunctionPipelinesDefaultNotFound(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			service.config.Writable.Pipeline.ExecutionOrder = test.defaultExecutionOrder
+			err := service.config.SetWritableInfo("Pipeline.ExecutionOrder", test.defaultExecutionOrder)
+			assert.NoError(t, err)
 			if len(test.perTopicExecutionOrder) > 0 {
-				service.config.Writable.Pipeline.PerTopicPipelines["bogus"] = common.TopicPipeline{
+				service.config.GetWritableInfo().Pipeline.PerTopicPipelines["bogus"] = common.TopicPipeline{
 					Id:             "bogus",
 					Topics:         "#",
 					ExecutionOrder: test.perTopicExecutionOrder,

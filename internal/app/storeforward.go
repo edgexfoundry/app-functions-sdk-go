@@ -85,7 +85,7 @@ func (svc *Service) stopStoreForward() {
 
 func initializeStoreClient(config *common.ConfigurationStruct, svc *Service) error {
 	// Only need the database client if Store and Forward is enabled
-	if !config.Writable.StoreAndForward.Enabled {
+	if !config.GetWritableInfo().StoreAndForward.Enabled {
 		svc.dic.Update(di.ServiceConstructorMap{
 			container.StoreClientName: func(get di.Get) interface{} {
 				return nil

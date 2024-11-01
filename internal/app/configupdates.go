@@ -24,7 +24,7 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/bootstrap/container"
 	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/common"
 	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/config"
-	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/utils"
+	coreCommon "github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 )
 
 // ConfigUpdateProcessor contains the data need to process configuration updates
@@ -50,10 +50,10 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 		lc.Info("Waiting for App Service configuration updates...")
 
 		// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
-		setPipelineFunctionParameterNamesLowercase(svc.config.Writable.Pipeline.Functions)
+		svc.config.SetPipelineFunctionParameterNamesLowercase()
 
-		var previousWriteable common.WritableInfo
-		_ = utils.DeepCopy(&svc.config.Writable, &previousWriteable)
+		var previousWritable common.WritableInfo
+		previousWritable = svc.config.CopyWritableInfo()
 
 		for {
 			select {
@@ -63,34 +63,34 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 
 			case <-configUpdated:
 				// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
-				setPipelineFunctionParameterNamesLowercase(svc.config.Writable.Pipeline.Functions)
-				currentWritable := svc.config.Writable
+				svc.config.SetPipelineFunctionParameterNamesLowercase()
+				currentWritable := svc.config.GetWritableInfo()
 				lc.Info("Processing App Service configuration updates")
 
 				// Note: Updates occur one setting at a time so only have to look for single changes
 				switch {
-				case previousWriteable.StoreAndForward.MaxRetryCount != currentWritable.StoreAndForward.MaxRetryCount:
+				case previousWritable.StoreAndForward.MaxRetryCount != currentWritable.StoreAndForward.MaxRetryCount:
 					if currentWritable.StoreAndForward.MaxRetryCount < 0 {
 						lc.Warn("StoreAndForward MaxRetryCount can not be less than 0, defaulting to 1")
 						currentWritable.StoreAndForward.MaxRetryCount = 1
 					}
 					lc.Infof("StoreAndForward MaxRetryCount changed to %d", currentWritable.StoreAndForward.MaxRetryCount)
 
-				case previousWriteable.StoreAndForward.RetryInterval != currentWritable.StoreAndForward.RetryInterval:
+				case previousWritable.StoreAndForward.RetryInterval != currentWritable.StoreAndForward.RetryInterval:
 					if _, err := time.ParseDuration(currentWritable.StoreAndForward.RetryInterval); err != nil {
 						lc.Errorf("StoreAndForward RetryInterval not change: %s", err.Error())
-						currentWritable.StoreAndForward.RetryInterval = previousWriteable.StoreAndForward.RetryInterval
+						currentWritable.StoreAndForward.RetryInterval = previousWritable.StoreAndForward.RetryInterval
 						continue
 					}
 
 					processor.processConfigChangedStoreForwardRetryInterval()
 					lc.Infof("StoreAndForward RetryInterval changed to %s", currentWritable.StoreAndForward.RetryInterval)
 
-				case previousWriteable.StoreAndForward.Enabled != currentWritable.StoreAndForward.Enabled:
+				case previousWritable.StoreAndForward.Enabled != currentWritable.StoreAndForward.Enabled:
 					processor.processConfigChangedStoreForwardEnabled()
 					lc.Infof("StoreAndForward Enabled changed to %v", currentWritable.StoreAndForward.Enabled)
 
-				case !reflect.DeepEqual(previousWriteable.Pipeline, currentWritable.Pipeline):
+				case !reflect.DeepEqual(previousWritable.Pipeline, currentWritable.Pipeline):
 					processor.processConfigChangedPipeline()
 
 				default:
@@ -98,7 +98,7 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 				}
 
 				// grab new copy of the writeable configuration for comparing against when next update occurs
-				_ = utils.DeepCopy(&svc.config.Writable, &previousWriteable)
+				previousWritable = svc.config.CopyWritableInfo()
 			}
 		}
 	}()
@@ -107,7 +107,7 @@ func (processor *ConfigUpdateProcessor) WaitForConfigUpdates(configUpdated confi
 func (processor *ConfigUpdateProcessor) processConfigChangedStoreForwardRetryInterval() {
 	sdk := processor.svc
 
-	if sdk.config.Writable.StoreAndForward.Enabled {
+	if sdk.config.GetWritableInfo().StoreAndForward.Enabled {
 		sdk.stopStoreForward()
 		sdk.startStoreForward()
 	}
@@ -116,14 +116,16 @@ func (processor *ConfigUpdateProcessor) processConfigChangedStoreForwardRetryInt
 func (processor *ConfigUpdateProcessor) processConfigChangedStoreForwardEnabled() {
 	sdk := processor.svc
 
-	if sdk.config.Writable.StoreAndForward.Enabled {
+	if sdk.config.GetWritableInfo().StoreAndForward.Enabled {
 		storeClient := container.StoreClientFrom(sdk.dic.Get)
 		// StoreClient must be set up for StoreAndForward
 		if storeClient == nil {
 			err := initializeStoreClient(sdk.config, sdk)
 			if err != nil {
 				sdk.lc.Errorf("Initializing Database for Store and Forward failed: %v", err)
-				sdk.config.Writable.StoreAndForward.Enabled = false
+				if err := sdk.config.SetWritableInfo("StoreAndForward.Enabled", coreCommon.ValueFalse); err != nil {
+					sdk.lc.Errorf("Failed to set Store and Forward to %s: %v", coreCommon.ValueFalse, err)
+				}
 				return
 			}
 		}
@@ -186,14 +188,4 @@ func (svc *Service) findMatchingFunction(configurable reflect.Value, functionNam
 
 	functionType := functionValue.Type()
 	return functionValue, functionType, nil
-}
-
-func setPipelineFunctionParameterNamesLowercase(functions map[string]common.PipelineFunction) {
-	for _, function := range functions {
-		for key := range function.Parameters {
-			value := function.Parameters[key]
-			delete(function.Parameters, key) // Make sure the old key has been removed so don't have multiples
-			function.Parameters[strings.ToLower(key)] = value
-		}
-	}
 }
