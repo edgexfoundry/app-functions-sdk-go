@@ -19,9 +19,7 @@ package webserver
 import (
 	"crypto/tls"
 	"fmt"
-	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal"
@@ -30,8 +28,6 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
 	bootstrapContainer "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/container"
 	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/controller"
-
-	bscfg "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/config"
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/utils"
 	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/zerotrust"
@@ -127,45 +123,7 @@ func (webserver *WebServer) listenAndServe(serviceTimeout time.Duration, errChan
 	}
 	addr := fmt.Sprintf("%s:%d", bindAddress, config.Service.Port)
 
-	var ln net.Listener
-	var err error
-	listenMode := strings.ToLower(config.Service.SecurityOptions[bscfg.SecurityModeKey])
-	switch listenMode {
-	case zerotrust.ZeroTrustMode:
-		ozUrl := config.Service.SecurityOptions["OpenZitiController"]
-
-		secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
-		ozToken, jwtErr := secretProvider.GetSelfJWT()
-		if jwtErr != nil {
-			lc.Errorf("zero trust mode enabled, but could not load jwt: %v", jwtErr)
-			errChannel <- jwtErr
-			return
-		}
-
-		ctx, authErr := zerotrust.AuthToOpenZiti(ozUrl, ozToken)
-		if authErr != nil {
-			lc.Errorf("could not authenticate to OpenZiti: %v", authErr)
-			errChannel <- authErr
-			return
-		}
-
-		ozServiceName := zerotrust.OpenZitiServicePrefix + webserver.serviceName
-		lc.Infof("Using OpenZiti service name: %s", ozServiceName)
-		lc.Infof("listening on overlay network. ListenMode '%s' at %s", listenMode, addr)
-		ln, err = ctx.Listen(ozServiceName)
-
-		if err != nil {
-			lc.Errorf("could not bind service %s: %v", ozServiceName, err)
-			errChannel <- err
-			return
-		}
-
-	case "http":
-		fallthrough
-	default:
-		lc.Infof("listening on underlay network. ListenMode '%s' at %s", listenMode, addr)
-		ln, err = net.Listen("tcp", addr)
-	}
+	ln, err := zerotrust.SetupWebListener(config.Service, webserver.serviceName, addr, webserver.dic)
 	if err != nil {
 		lc.Errorf("could not start web listener: %v", err)
 		errChannel <- err
