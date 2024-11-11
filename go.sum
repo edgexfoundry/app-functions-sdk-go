@@ -72,10 +72,10 @@ github.com/diegoholiveira/jsonlogic/v3 v3.5.3 h1:CPyZQ3fOgiIDZ1yWzPGUpyht5tYTOnR
 github.com/diegoholiveira/jsonlogic/v3 v3.5.3/go.mod h1:3nnfWovrlZq2rTpucrJ2KMIS8TMf6IoFneofmeqk/qk=
 github.com/eclipse/paho.mqtt.golang v1.5.0 h1:EH+bUVJNgttidWFkLLVKaQPGmkTUfQQqjOsyvMGvD6o=
 github.com/eclipse/paho.mqtt.golang v1.5.0/go.mod h1:du/2qNQVqJf/Sqs4MEL77kR8QTqANF7XU7Fk0aOTAgk=
-github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.2 h1:T5iCk8PqEdrzgnz6G9xt20GCKxPukZONj2C4ernS7ro=
-github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.2/go.mod h1:54WyXiygNbIfITqLVGXU8nOatZh7pMAyO3NQXOuPr5s=
-github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.3 h1:3SdjghkEqos8AySKmz+ehjmI1HP/EmnRaFwNTf0rbyc=
-github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.3/go.mod h1:s/pjxzTfqbsH1s4KyvefhOYmVNc9RvK6sI4x4SGI8Tk=
+github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.4 h1:fV9S3eC2igUgtcDEV1m8lWMkFMkO2rXv9pb1N4Aws6c=
+github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.4/go.mod h1:iG/DCiSoJLx8TtRxDa/6egRLjFw8P0/QmsHkGOBb05A=
+github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.4 h1:Bw8Bxoc2LjAfkgWvAQtbeqnAaGPmKiCoAHlHGalhnv4=
+github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.4/go.mod h1:Jc8kjQTAUYzuHbQzRuVzfPZy3QfJGMQ0rGHOhRit7to=
 github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.3 h1:BYdXlS/dLNegB+kT+qKbDgsXv/NhSrigMpomLNl9N5Q=
 github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.3/go.mod h1:I3EG+Tg/gcVSUJ+IJDuvVKFISnRu8oQtMXqltE1rzT8=
 github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.5 h1:DSk5kr4NZx+0Tbdb6vrnD2YNRX70nllgKceYCOTeSDo=
