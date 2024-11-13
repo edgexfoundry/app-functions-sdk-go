@@ -5,8 +5,8 @@ go 1.23
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.5.3
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.5
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.4
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.8
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.5
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.5
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.0-dev.2
 	github.com/fxamacker/cbor/v2 v2.7.0
@@ -28,7 +28,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.4 // indirect
-	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.3 // indirect
+	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
@@ -86,11 +86,11 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/openziti/channel/v3 v3.0.4 // indirect
-	github.com/openziti/edge-api v0.26.32 // indirect
+	github.com/openziti/edge-api v0.26.34 // indirect
 	github.com/openziti/foundation/v2 v2.0.49 // indirect
 	github.com/openziti/identity v1.0.85 // indirect
 	github.com/openziti/metrics v1.2.58 // indirect
-	github.com/openziti/sdk-golang v0.23.43 // indirect
+	github.com/openziti/sdk-golang v0.23.44 // indirect
 	github.com/openziti/secretstream v0.1.25 // indirect
 	github.com/openziti/transport/v2 v2.0.146 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.1 // indirect
