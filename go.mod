@@ -5,9 +5,9 @@ go 1.23
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.5.3
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.9
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.5
-	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.5
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.11
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.14
+	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.8
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.0-dev.2
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/gomodule/redigo v1.9.2
@@ -15,10 +15,10 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/labstack/echo/v4 v4.12.0
+	github.com/labstack/echo/v4 v4.13.0
 	github.com/pkg/errors v0.9.1
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.4 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.7 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa // indirect
@@ -50,9 +50,8 @@ require (
 	github.com/go-openapi/validate v0.24.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.22.1 // indirect
+	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/go-resty/resty/v2 v2.15.3 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
