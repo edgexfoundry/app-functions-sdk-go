@@ -674,7 +674,7 @@ func TestContext_Clone(t *testing.T) {
 
 	require.True(t, ok)
 	require.NotNil(t, clone)
-	require.NotSame(t, sut, clone)
+	require.NotSame(t, &sut, clone)
 
 	assert.Equal(t, sut.correlationID, clone.correlationID)
 	assert.Equal(t, sut.inputContentType, clone.inputContentType)
@@ -683,7 +683,7 @@ func TestContext_Clone(t *testing.T) {
 	assert.Equal(t, sut.responseContentType, clone.responseContentType)
 	assert.Equal(t, sut.valuePlaceholderSpec, clone.valuePlaceholderSpec)
 
-	require.NotSame(t, sut.contextData, clone.contextData)
+	require.NotSame(t, &sut.contextData, &clone.contextData)
 
 	assert.Equal(t, len(sut.contextData), len(clone.contextData))
 
