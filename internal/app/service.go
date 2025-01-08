@@ -148,9 +148,7 @@ func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authe
 		return errors.New("route is reserved")
 	}
 	if authentication == interfaces.Authenticated {
-		lc := bootstrapContainer.LoggingClientFrom(svc.dic.Get)
-		secretProvider := bootstrapContainer.SecretProviderExtFrom(svc.dic.Get)
-		authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
+		authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(svc.dic)
 
 		svc.webserver.AddRoute(route, svc.addContext(handler), methods, authenticationHook)
 		return nil
