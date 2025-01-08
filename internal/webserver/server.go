@@ -92,9 +92,7 @@ func (webserver *WebServer) AddRoute(routePath string, handler func(e echo.Conte
 
 // SetupTriggerRoute adds a route to handle trigger pipeline from REST request
 func (webserver *WebServer) SetupTriggerRoute(path string, handlerForTrigger func(http.ResponseWriter, *http.Request)) {
-	lc := bootstrapContainer.LoggingClientFrom(webserver.dic.Get)
-	secretProvider := bootstrapContainer.SecretProviderExtFrom(webserver.dic.Get)
-	authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(secretProvider, lc)
+	authenticationHook := bootstrapHandlers.AutoConfigAuthenticationFunc(webserver.dic)
 	webserver.router.Match([]string{http.MethodPost}, path, authenticationHook(utils.WrapHandler(handlerForTrigger)))
 }
 
