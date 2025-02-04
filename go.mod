@@ -5,9 +5,9 @@ go 1.23
 require (
 	github.com/diegoholiveira/jsonlogic/v3 v3.7.1
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.19
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.24
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.22
-	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.10
+	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.11
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.0-dev.3
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/gomodule/redigo v1.9.2
@@ -27,7 +27,7 @@ require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.10 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.12 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.5 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa // indirect
@@ -51,7 +51,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
-	github.com/go-resty/resty/v2 v2.15.3 // indirect
+	github.com/go-resty/resty/v2 v2.16.4 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
@@ -84,14 +84,14 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/openziti/channel/v3 v3.0.4 // indirect
-	github.com/openziti/edge-api v0.26.34 // indirect
-	github.com/openziti/foundation/v2 v2.0.49 // indirect
-	github.com/openziti/identity v1.0.85 // indirect
-	github.com/openziti/metrics v1.2.58 // indirect
-	github.com/openziti/sdk-golang v0.23.44 // indirect
-	github.com/openziti/secretstream v0.1.25 // indirect
-	github.com/openziti/transport/v2 v2.0.146 // indirect
+	github.com/openziti/channel/v3 v3.0.27 // indirect
+	github.com/openziti/edge-api v0.26.38 // indirect
+	github.com/openziti/foundation/v2 v2.0.56 // indirect
+	github.com/openziti/identity v1.0.94 // indirect
+	github.com/openziti/metrics v1.2.65 // indirect
+	github.com/openziti/sdk-golang v0.24.0 // indirect
+	github.com/openziti/secretstream v0.1.28 // indirect
+	github.com/openziti/transport/v2 v2.0.160 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.1 // indirect
 	github.com/parallaxsecond/parsec-client-go v0.0.0-20221025095442-f0a77d263cf9 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -119,7 +119,7 @@ require (
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/oauth2 v0.23.0 // indirect
+	golang.org/x/oauth2 v0.25.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
@@ -127,7 +127,7 @@ require (
 	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	google.golang.org/protobuf v1.36.3 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.17 // indirect
