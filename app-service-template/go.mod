@@ -10,7 +10,7 @@ replace github.com/edgexfoundry/app-functions-sdk-go/v4 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v4 v4.0.0
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.25
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.26
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
@@ -21,9 +21,10 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
+	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/diegoholiveira/jsonlogic/v3 v3.7.1 // indirect
+	github.com/diegoholiveira/jsonlogic/v3 v3.7.3 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.5.0 // indirect
 	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.26 // indirect
 	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.12 // indirect

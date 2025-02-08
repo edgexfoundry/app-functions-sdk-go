@@ -51,6 +51,8 @@ github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df h1:GSoSVRLo
 github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df/go.mod h1:hiVxq5OP2bUGBRNS3Z/bt/reCLFNbdcST6gISi1fiOM=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bketelsen/crypt v0.0.4/go.mod h1:aI6NrJ0pMGgvZKL1iVgXLnfIFJtfV+bKCoqOes/6LfM=
+github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
+github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -76,8 +78,8 @@ github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.26 h1:59f5u/cEj/P2Dd0BDqD
 github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.26/go.mod h1:o6qcqfq0ihA8RYs7FZldrslEeMIXK6XiHJg0fxF7GRA=
 github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.12 h1:2P7kCcGMd5BX9NFubHxfZ+Q19Q0ctMwh11rgSyPT5uc=
 github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.12/go.mod h1:sx5Zx+zAhmlFRNK2EblvOnCuUc099F2mHLWtZGfoWB8=
-github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.25 h1:wYILjDUnfwUOy7n/wrtWUcib64DAtNnzh/gQ1yN4xDI=
-github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.25/go.mod h1:D35HIMZkFFy82shKtPYaEL3Nn+ZNEjUjZI1RLn1j23E=
+github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.26 h1:sLzjJnQDukzo6+tRn0coHH+vIMK+L8NL53TWiy5MGbs=
+github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.26/go.mod h1:D35HIMZkFFy82shKtPYaEL3Nn+ZNEjUjZI1RLn1j23E=
 github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.17 h1:oov5bnY/KE+EY1Bj6OtYHFBcxi7dcuAquhgB2bM5gEY=
 github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.17/go.mod h1:m+qXuNmDEOpIwjYcXd2dlI36wgSyB/bTEfx+/o9hc+8=
 github.com/edgexfoundry/go-mod-registry/v4 v4.0.0-dev.3 h1:6tw6JqEJDOqo2lEgxjZ+scvsub5R20WGpInCuoxS6zE=

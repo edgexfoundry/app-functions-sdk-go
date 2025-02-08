@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2024 IOTech Ltd
+// Copyright (C) 2024-2025 IOTech Ltd
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,6 +17,9 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/errors"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal"
+	"github.com/edgexfoundry/app-functions-sdk-go/v4/internal/store/db/postgres/embed"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -33,7 +36,7 @@ type Client struct {
 
 // NewClient returns a pointer to the Postgres client
 func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials bootstrapConfig.Credentials,
-	baseScriptPath, extScriptPath string, lc logger.LoggingClient, serviceKey string) (*Client, errors.EdgeX) {
+	lc logger.LoggingClient, serviceKey string) (*Client, errors.EdgeX) {
 	// Get the database name from the environment variable
 	databaseName := os.Getenv("EDGEX_DBNAME")
 	if databaseName == "" {
@@ -64,20 +67,18 @@ func NewClient(ctx context.Context, config bootstrapConfig.Database, credentials
 		return nil, wrapDBError("failed to acquire a connection from database connection pool", err)
 	}
 
-	lc.Info("Successfully connect to Postgres database")
-
-	// execute base DB scripts
-	if edgeXerr = executeDBScripts(ctx, dc.connPool, baseScriptPath, serviceKey); edgeXerr != nil {
-		return nil, errors.NewCommonEdgeX(errors.Kind(edgeXerr), "failed to execute Postgres base DB scripts", edgeXerr)
-	}
-	if baseScriptPath != "" {
-		lc.Info("Successfully execute Postgres base DB scripts")
+	// create a new TableManager instance
+	tableManager, err := NewTableManager(dc.connPool, lc, serviceKey, serviceKey, internal.SDKVersion, embed.SQLFiles)
+	if err != nil {
+		return nil, errors.NewCommonEdgeX(errors.KindDatabaseError, "failed to create a new TableManager instance", err)
 	}
 
-	// execute extension DB scripts
-	if edgeXerr = executeDBScripts(ctx, dc.connPool, extScriptPath, serviceKey); edgeXerr != nil {
-		return nil, errors.NewCommonEdgeX(errors.Kind(edgeXerr), "failed to execute Postgres extension DB scripts", edgeXerr)
+	err = tableManager.RunScripts(ctx)
+	if err != nil {
+		return nil, errors.NewCommonEdgeX(errors.KindDatabaseError, "TableManager failed to run SQL scripts", err)
 	}
+
+	lc.Info("Successfully connected to Postgres database")
 
 	return dc, nil
 }

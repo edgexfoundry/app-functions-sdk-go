@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2021 One Track Consulting
-// Copyright (C) 2024 IOTech Ltd
+// Copyright (C) 2024-2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
 )
 
-const baseScriptPath = "./res/db/sql"
-
 // RegisterCustomStoreFactory allows registration of alternative storage implementation to back the Store&Forward loop
 func (svc *Service) RegisterCustomStoreFactory(name string, factory func(cfg bootstrapConfig.Database, cred bootstrapConfig.Credentials) (interfaces.StoreClient, error)) error {
 	if name == db.RedisDB {
@@ -59,7 +57,7 @@ func (svc *Service) createStoreClient(database bootstrapConfig.Database, credent
 	case db.RedisDB:
 		return redis.NewClient(database, credentials)
 	case db.Postgres:
-		return postgres.NewClient(svc.ctx.appCtx, database, credentials, baseScriptPath, "", svc.lc, svc.serviceKey)
+		return postgres.NewClient(svc.ctx.appCtx, database, credentials, svc.lc, svc.serviceKey)
 	default:
 		if factory, found := svc.customStoreClientFactories[strings.ToUpper(database.Type)]; found {
 			return factory(database, credentials)
