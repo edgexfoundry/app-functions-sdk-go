@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2021 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
+// Copyright (C) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -192,7 +193,7 @@ func (trigger *Trigger) messageHandler(_ pahoMqtt.Client, mqttMessage pahoMqtt.M
 	}
 
 	lc.Debugf("MQTT Trigger: Received message with %d bytes on topic '%s'. Content-Type=%s",
-		len(message.Payload),
+		len(data),
 		message.ReceivedTopic,
 		message.ContentType)
 	lc.Tracef("%s=%s", commonContracts.CorrelationHeader, correlationID)

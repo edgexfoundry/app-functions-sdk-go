@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2023 Intel Corporation
+// Copyright (C) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +19,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	nethttp "net/http"
@@ -767,16 +767,11 @@ func (svc *Service) PublishWithTopic(topic string, data any, contentType string)
 		return errors.New(messageBusDisabledErr)
 	}
 
-	payload, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("%v: %v", publishMarshalErr, err)
-	}
+	ctx := context.WithValue(context.Background(), coreCommon.CorrelationHeader, uuid.NewString()) // nolint: staticcheck
+	ctx = context.WithValue(ctx, coreCommon.ContentType, contentType)                              // nolint: staticcheck
+	message := types.NewMessageEnvelope(data, ctx)
 
-	message := types.NewMessageEnvelope(payload, context.Background())
-	message.CorrelationID = uuid.NewString()
-	message.ContentType = contentType
-
-	err = messageClient.Publish(message, coreCommon.BuildTopic(svc.config.MessageBus.BaseTopicPrefix, topic))
+	err := messageClient.Publish(message, coreCommon.BuildTopic(svc.config.MessageBus.BaseTopicPrefix, topic))
 	if err != nil {
 		return fmt.Errorf("%v: %v", publishDataErr, err)
 	}

@@ -1,7 +1,7 @@
 //
 // Copyright (c) 2022 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
-// Copyright (C) 2023 IOTech Ltd
+// Copyright (C) 2023-2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -365,11 +365,10 @@ func (fpr *FunctionsPipelineRuntime) StartStoreAndForward(
 func (fpr *FunctionsPipelineRuntime) processEventPayload(envelope types.MessageEnvelope) (*dtos.Event, error) {
 
 	fpr.lc.Debug("Attempting to process Payload as an AddEventRequest DTO")
-	requestDto := requests.AddEventRequest{}
 
 	// Note that DTO validation is called during the unmarshaling
 	// which results in a KindContractInvalid error
-	requestDtoErr := fpr.unmarshalPayload(envelope, &requestDto)
+	requestDto, requestDtoErr := types.GetMsgPayload[requests.AddEventRequest](payloadWithCorrectContentType(envelope))
 	if requestDtoErr == nil {
 		fpr.lc.Debug("Using Event DTO from AddEventRequest DTO")
 
@@ -385,13 +384,12 @@ func (fpr *FunctionsPipelineRuntime) processEventPayload(envelope types.MessageE
 	// KindContractInvalid indicates that we likely don't have an AddEventRequest
 	// so try to process as Event
 	fpr.lc.Debug("Attempting to process Payload as an Event DTO")
-	event := &dtos.Event{}
-	err := fpr.unmarshalPayload(envelope, event)
+	event, err := types.GetMsgPayload[dtos.Event](payloadWithCorrectContentType(envelope))
 	if err == nil {
 		err = common.Validate(event)
 		if err == nil {
 			fpr.lc.Debug("Using Event DTO received")
-			return event, nil
+			return &event, nil
 		}
 	}
 
@@ -409,12 +407,17 @@ func (fpr *FunctionsPipelineRuntime) unmarshalPayload(envelope types.MessageEnve
 
 	contentType := strings.Split(envelope.ContentType, ";")[0]
 
+	bytes, err := types.ConvertMsgPayloadToByteArray(contentType, envelope.Payload)
+	if err != nil {
+		return fmt.Errorf("failed to convert payload into []byte to unmarshal: %v", err)
+	}
+
 	switch contentType {
 	case common.ContentTypeJSON:
-		err = json.Unmarshal(envelope.Payload, target)
+		err = json.Unmarshal(bytes, target)
 
 	case common.ContentTypeCBOR:
-		err = cbor.Unmarshal(envelope.Payload, target)
+		err = cbor.Unmarshal(bytes, target)
 
 	default:
 		err = fmt.Errorf("unsupported content-type '%s' recieved", envelope.ContentType)
@@ -530,4 +533,11 @@ func calculatePipelineHash(transforms []interfaces.AppFunction) string {
 	}
 
 	return hash
+}
+
+func payloadWithCorrectContentType(envelope types.MessageEnvelope) types.MessageEnvelope {
+	contentType := strings.Split(envelope.ContentType, ";")[0]
+	copyEnvelope := envelope
+	copyEnvelope.ContentType = contentType
+	return copyEnvelope
 }
