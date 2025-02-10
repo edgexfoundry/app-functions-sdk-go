@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2023 Intel Corporation
 // Copyright (c) 2021 One Track Consulting
+// Copyright (c) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -162,8 +163,7 @@ func (trigger *Trigger) Initialize(appWg *sync.WaitGroup, appCtx context.Context
 }
 
 func (trigger *Trigger) messageHandler(logger logger.LoggingClient, _ types.TopicChannel, message types.MessageEnvelope) {
-	logger.Debugf("MessageBus Trigger: Received message with %d bytes on topic '%s'. Content-Type=%s",
-		len(message.Payload),
+	logger.Debugf("MessageBus Trigger: Received message on topic '%s'. Content-Type=%s",
 		message.ReceivedTopic,
 		message.ContentType)
 	logger.Tracef("MessageBus Trigger: Received message with %s=%s", common.CorrelationHeader, message.CorrelationID)

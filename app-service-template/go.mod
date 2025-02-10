@@ -10,7 +10,7 @@ replace github.com/edgexfoundry/app-functions-sdk-go/v4 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v4 v4.0.0
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.19
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.25
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
@@ -23,17 +23,17 @@ require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/diegoholiveira/jsonlogic/v3 v3.7.0 // indirect
+	github.com/diegoholiveira/jsonlogic/v3 v3.7.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.5.0 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.16 // indirect
-	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.10 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.10 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.26 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.12 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.17 // indirect
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.0-dev.3 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.5 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.4 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
@@ -52,10 +52,9 @@ require (
 	github.com/go-openapi/validate v0.24.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.23.0 // indirect
-	github.com/go-resty/resty/v2 v2.15.3 // indirect
+	github.com/go-playground/validator/v10 v10.24.0 // indirect
+	github.com/go-resty/resty/v2 v2.16.4 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
@@ -85,19 +84,19 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
-	github.com/nats-io/nats.go v1.38.0 // indirect
+	github.com/nats-io/nats.go v1.39.0 // indirect
 	github.com/nats-io/nkeys v0.4.9 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/openziti/channel/v3 v3.0.4 // indirect
-	github.com/openziti/edge-api v0.26.34 // indirect
-	github.com/openziti/foundation/v2 v2.0.49 // indirect
-	github.com/openziti/identity v1.0.85 // indirect
-	github.com/openziti/metrics v1.2.58 // indirect
-	github.com/openziti/sdk-golang v0.23.44 // indirect
-	github.com/openziti/secretstream v0.1.25 // indirect
-	github.com/openziti/transport/v2 v2.0.146 // indirect
+	github.com/openziti/channel/v3 v3.0.27 // indirect
+	github.com/openziti/edge-api v0.26.38 // indirect
+	github.com/openziti/foundation/v2 v2.0.56 // indirect
+	github.com/openziti/identity v1.0.94 // indirect
+	github.com/openziti/metrics v1.2.65 // indirect
+	github.com/openziti/sdk-golang v0.24.1 // indirect
+	github.com/openziti/secretstream v0.1.28 // indirect
+	github.com/openziti/transport/v2 v2.0.160 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.1 // indirect
 	github.com/parallaxsecond/parsec-client-go v0.0.0-20221025095442-f0a77d263cf9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -123,18 +122,18 @@ require (
 	go.opentelemetry.io/otel v1.29.0 // indirect
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.23.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
+	golang.org/x/oauth2 v0.25.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	google.golang.org/protobuf v1.36.3 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.17 // indirect

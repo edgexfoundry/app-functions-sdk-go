@@ -398,37 +398,46 @@ func (custom CustomType) MarshalJSON() ([]byte, error) {
 }
 
 func TestDecode_Process_MessageTargetType(t *testing.T) {
-	jsonPayload, err := json.Marshal(testAddEventRequest)
+	jsonPayload := testAddEventRequest
+	jsonPayloadBytes, err := json.Marshal(jsonPayload)
 	require.NoError(t, err)
 
-	eventJsonPayload, err := json.Marshal(testEvent)
+	eventJsonPayload := testEvent
+	eventJsonPayloadBytes, err := json.Marshal(eventJsonPayload)
 	require.NoError(t, err)
 
-	cborPayload, err := cbor.Marshal(testAddEventRequest)
+	cborPayload := testAddEventRequest
+	cborPayloadBytes, err := cbor.Marshal(cborPayload)
 	assert.NoError(t, err)
 
-	eventCborPayload, err := cbor.Marshal(testEvent)
+	eventCborPayload := testEvent
+	eventCborPayloadBytes, err := cbor.Marshal(testEvent)
 	require.NoError(t, err)
 
-	expected := CustomType{
+	expectedCustomJson := CustomType{
 		ID: "Id1",
 	}
-	customJsonPayload, _ := expected.MarshalJSON()
+	customJsonPayloadBytes, _ := expectedCustomJson.MarshalJSON()
 	byteData := []byte("This is my bytes")
 
 	targetTypeTests := []struct {
 		Name               string
 		TargetType         interface{}
-		Payload            []byte
+		Payload            any
 		ContentType        string
 		ExpectedOutputData []byte
 		ErrorExpected      bool
 	}{
-		{"JSON default Target Type", nil, jsonPayload, common.ContentTypeJSON, eventJsonPayload, false},
-		{"CBOR default Target Type", nil, cborPayload, common.ContentTypeCBOR, eventJsonPayload, false},
-		{"JSON Event Event DTO", &dtos.Event{}, eventJsonPayload, common.ContentTypeJSON, eventJsonPayload, false},
-		{"CBOR Event Event DTO", &dtos.Event{}, eventCborPayload, common.ContentTypeCBOR, eventJsonPayload, false}, // Not re-encoding as CBOR
-		{"Custom Type Json", &CustomType{}, customJsonPayload, common.ContentTypeJSON, customJsonPayload, false},
+		{"JSON default Target Type", nil, jsonPayload, common.ContentTypeJSON, eventJsonPayloadBytes, false},
+		{"CBOR default Target Type", nil, cborPayload, common.ContentTypeCBOR, eventJsonPayloadBytes, false},
+		{"JSON default Target Type in bytes", nil, jsonPayloadBytes, common.ContentTypeJSON, eventJsonPayloadBytes, false},
+		{"CBOR default Target Type in bytes", nil, cborPayloadBytes, common.ContentTypeCBOR, eventJsonPayloadBytes, false},
+		{"JSON Event Event DTO", &dtos.Event{}, eventJsonPayload, common.ContentTypeJSON, eventJsonPayloadBytes, false},
+		{"CBOR Event Event DTO", &dtos.Event{}, eventCborPayload, common.ContentTypeCBOR, eventJsonPayloadBytes, false}, // Not re-encoding as CBOR
+		{"JSON Event Event DTO in bytes", &dtos.Event{}, eventJsonPayloadBytes, common.ContentTypeJSON, eventJsonPayloadBytes, false},
+		{"CBOR Event Event DTO in bytes", &dtos.Event{}, eventCborPayloadBytes, common.ContentTypeCBOR, eventJsonPayloadBytes, false}, // Not re-encoding as CBOR
+		{"Custom Type Json", &CustomType{}, expectedCustomJson, common.ContentTypeJSON, customJsonPayloadBytes, false},
+		{"Custom Type Json in bytes", &CustomType{}, customJsonPayloadBytes, common.ContentTypeJSON, customJsonPayloadBytes, false},
 		{"Byte Slice", &[]byte{}, byteData, "application/binary", byteData, false},
 		{"Target Type Not a pointer", dtos.Event{}, nil, "", nil, true},
 	}
