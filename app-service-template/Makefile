@@ -31,7 +31,8 @@ APPVERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
 
 # This pulls the version of the SDK from the go.mod file. If the SDK is the only required module,
 # it must first remove the word 'required' so the offset of $2 is the same if there are multiple required modules
-SDKVERSION=$(shell cat ./go.mod | grep 'github.com/edgexfoundry/app-functions-sdk-go/v3 v' | sed 's/require//g' | awk '{print $$2}')
+# the last awk command removes the leading 'v' from the version
+SDKVERSION=$(shell cat ./go.mod | grep 'github.com/edgexfoundry/app-functions-sdk-go/v4 v' | sed 's/require//g' | awk '{print $$2}' | awk '!x{x=sub("v","")}1')
 
 ifeq ($(ENABLE_FULL_RELRO), true)
 	ENABLE_FULL_RELRO_GOFLAGS = -bindnow
