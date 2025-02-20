@@ -6,8 +6,8 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.7.4
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.27
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.26
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.0-dev.28
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.0-dev.28
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.0-dev.18
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.0-dev.4
 	github.com/fxamacker/cbor/v2 v2.7.0
@@ -29,7 +29,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.0-dev.14 // indirect
-	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.9 // indirect
+	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.0-dev.10 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
