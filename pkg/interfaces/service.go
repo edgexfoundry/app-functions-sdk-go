@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2023 Intel Corporation
+// Copyright (C) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +18,6 @@ package interfaces
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -89,16 +89,9 @@ type ApplicationService interface {
 	// AppContext returns the application service context used to detect cancelled context when the service is terminating.
 	// Used by custom app service to appropriately exit any long-running functions.
 	AppContext() context.Context
-	// AddRoute adds a custom REST route to the application service's internal webserver
-	// A reference to this ApplicationService is add the the context that is passed to the handler, which
-	// can be retrieved using the `AppService` key
-	// Deprecated: It is recommended to use AddCustomRoute() instead and enable authentication for custom routes
-	// TODO: Remove in 4.0
-	AddRoute(route string, handler func(http.ResponseWriter, *http.Request), methods ...string) error
 	// AddCustomRoute adds a custom REST route to the application service's internal webserver
 	// A reference to this ApplicationService is add the the context that is passed to the handler, which
 	// can be retrieved using the `AppService` key
-	// TODO: Change signature in 4.0 to use "handler echo.HandlerFunc"
 	AddCustomRoute(route string, authentication Authentication, handler echo.HandlerFunc, methods ...string) error
 	// RequestTimeout returns the configured request timeout value from [Service] section.
 	RequestTimeout() time.Duration

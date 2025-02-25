@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2023 Intel Corporation
+// Copyright (C) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,14 +93,6 @@ func TestMain(m *testing.M) {
 
 func IsInstanceOf(objectPtr, typePtr interface{}) bool {
 	return reflect.TypeOf(objectPtr) == reflect.TypeOf(typePtr)
-}
-
-func TestAddRoute(t *testing.T) {
-	sdk, router := createSdkAndRouter()
-	expectedPath := "/test"
-
-	_ = sdk.AddRoute(expectedPath, func(http.ResponseWriter, *http.Request) {}, http.MethodGet)
-	verifyPath(t, expectedPath, router)
 }
 
 func TestAddCustomRouteUnauthenticated(t *testing.T) {
