@@ -21,7 +21,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	nethttp "net/http"
 	"os"
 	"os/signal"
 	"reflect"
@@ -29,8 +28,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/utils"
 
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/dtos"
@@ -129,16 +126,7 @@ func (svc *Service) AppContext() context.Context {
 	return svc.ctx.appCtx
 }
 
-// AddRoute allows you to leverage the existing webserver to add routes.
-// DEPRECATED - Use AddCustomRoute
-// TODO: Remove in 4.0
-func (svc *Service) AddRoute(route string, handler func(nethttp.ResponseWriter, *nethttp.Request), methods ...string) error {
-	// Legacy behavior is to add unauthenticated route
-	return svc.AddCustomRoute(route, interfaces.Unauthenticated, utils.WrapHandler(handler), methods...)
-}
-
 // AddCustomRoute allows you to leverage the existing webserver to add routes.
-// TODO: Change signature in 4.0 to use "handler echo.HandlerFunc" once addContext is removed
 func (svc *Service) AddCustomRoute(route string, authentication interfaces.Authentication, handler echo.HandlerFunc, methods ...string) error {
 	if route == coreCommon.ApiPingRoute ||
 		route == coreCommon.ApiConfigRoute ||
