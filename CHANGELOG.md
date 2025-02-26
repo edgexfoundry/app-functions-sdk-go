@@ -10,6 +10,59 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+## [4.0.0] Odessa - 2025-03-12 (Only compatible with the 4.x releases)
+
+### ✨  Features
+
+- Update to use go-mod-messaging new message envelope ([19899e6…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/19899e6b7bc5055613b3b79dd7c536ac26c5d2ea))
+```text
+
+BREAKING CHANGE: Change MessageEnvelope payload from a byte array to a generic type
+
+```
+- Support new go build tag no_openziti to reduce build size ([8e9d93e…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/8e9d93eec8d9a6c92f70227a8b44a264d42ef932))
+- Enable PIE support for ASLR and full RELRO ([a719ca8…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/a719ca8b4d4ea3003fa6f0e702abedbeb919cd84))
+- Support postgres db for store and forward ([#1605](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1605)) ([ac7762b…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/ac7762b985b83b53f8ad9d8207dad1c0054354fb))
+```text
+
+BREAKING CHANGE: Switched default database to PostgreSQL across all services
+
+```
+- Add openziti support([#1566](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1566)) ([4e2b535…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/4e2b535bea3b56d2985446fa311b3de50f9bf96a))
+- Set MQTT client OnConnect before connect to broker ([#1556](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1556)) ([0cd0c2f…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/0cd0c2fa0b4b55c0d13edd7f4d705cf21848b30c))
+- Enhance Store and Forward by adding a queue size metric and a retry-on-success capability([#1538](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1538)) ([763fccf…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/763fccfb0ea9bc76ab9ff896f8c6810003f22abb))([#1536](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1536)) ([15d59e2…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/15d59e21dd262a211cf966e2962d46b685e52a83))
+- Add capability to pre-connect to MQTT Broker for MQTT Export ([#1527](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1527)) ([437ed90…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/437ed905ed20239bbccc69a42ff52cb07cbf211e))
+
+### ♻ Code Refactoring
+
+- Update module to v4 ([29cfcd2…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/29cfcd21b073993d777ed4b409c3fe4b3a9d4427))
+```text
+
+BREAKING CHANGE: import paths will need to change to v4, also replace consul with core keeper
+
+```
+
+### 🐛 Bug Fixes
+
+- Only one ldflags flag is allowed ([71dee87…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/71dee87d8f774479cf4578492262f9cc9957a07a))
+- Add lock for Writable to avoid race conditions ([f49982d…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/f49982d864701a95c7c154ea6752b834f4f20819))
+- Fix missing tags issue in `FilterByResourceName` function ([3164572…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/31645722dbc6cfc0c99fd7a86d2284db698c97b8))
+- Use service key as table schema name in Postgres ([868da77…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/868da77cc05575f23689752dc252ac3b6de3503a))
+- Return correct errors ([#1572](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1572)) ([addcf2b…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/addcf2b6cc401684863641bfc26a8c5ef11a6def))
+- Make sure function pipeline parameter names are always lower case ([#1546](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1546)) ([b1784c6…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/b1784c6279e01531b0e7025ba4e7a3234f498312))
+- Properly detect config changes so pipeline is rebuilt only when it changes ([#1542](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1542)) ([a0b6f7c…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/a0b6f7cc859f92bfe738ebe0191319190d0d3ebd))
+- Handle race condition when lazy registering export metrics ([#1539](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1539)) ([7f23418…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/7f23418137fb978dede6c0b02018ec8a42794a57))
+- Address CVE in Alpine base image ([#1515](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1515)) ([aac849c…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/aac849cf1ed069bf4c992e4fe978dbf194ba5c2d))
+
+### 📖 Documentation
+
+- Add missing package to Attribution.txt ([#1551](https://github.com/edgexfoundry/app-functions-sdk-go/issues/1551)) ([6092efa…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/6092efab373b3e071a0fa4642cf6932b49afa20d))
+- Move API document files from openapi/v3 to openapi ([6566f8c…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/6566f8c86ad5defab9d76fcbdb269ee093e8529f))
+
+### 👷 Build
+
+- Upgrade to go-1.23, Linter1.61.0 and Alpine 3.20 ([5b9efd6…](https://github.com/edgexfoundry/app-functions-sdk-go/commit/5b9efd619ccc29131d56e0ca9754dd5f7988fe23))
+
 ## [v3.1.0] - 2023-11-15
 
 ### ✨  Features
