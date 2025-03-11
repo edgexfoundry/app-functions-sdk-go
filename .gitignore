@@ -1,7 +1,7 @@
 .idea/
 .vscode
-**/debug
-**/debug.test
+/debug/
+/debug.test/
 *.log
 *.html
 *.out

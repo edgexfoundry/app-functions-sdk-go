@@ -380,3 +380,6 @@ https://github.com/go-yaml/yaml/blob/v4/LICENSE
 
 nhooyr.io/websocket (ISC License) - https://github.com/nhooyr/websocket
 https://github.com/nhooyr/websocket/blob/master/LICENSE.txt
+
+github.com/blang/semver/v4 (MIT) https://github.com/blang/semver
+https://github.com/blang/semver/blob/master/LICENSE
