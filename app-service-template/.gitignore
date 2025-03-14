@@ -1,9 +1,9 @@
 test.txt
-debug
+/debug/
 *.exe
 app-new-service
 .vscode
 coverage.out
-logs/
+/logs/
 .idea
 VERSION
