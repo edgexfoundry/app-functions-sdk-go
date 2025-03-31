@@ -2,6 +2,8 @@ module github.com/edgexfoundry/app-functions-sdk-go/v4
 
 go 1.23.0
 
+toolchain go1.24.1
+
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.8.1
@@ -10,7 +12,7 @@ require (
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.1
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.3
 	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.1
-	github.com/fxamacker/cbor/v2 v2.7.0
+	github.com/fxamacker/cbor/v2 v2.8.0
 	github.com/gomodule/redigo v1.9.2
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
