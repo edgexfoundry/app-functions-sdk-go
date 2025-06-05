@@ -6,9 +6,9 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.8.3
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.10
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.11
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.6
-	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.8
+	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.9
 	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.3
 	github.com/fxamacker/cbor/v2 v2.8.0
 	github.com/gomodule/redigo v1.9.2
@@ -28,7 +28,7 @@ require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/edgexfoundry/go-mod-configuration/v4 v4.1.0-dev.4 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v4 v4.1.0-dev.7 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v4 v4.1.0-dev.3 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
@@ -80,7 +80,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
-	github.com/nats-io/nats.go v1.41.2 // indirect
+	github.com/nats-io/nats.go v1.42.0 // indirect
 	github.com/nats-io/nkeys v0.4.11 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
@@ -101,7 +101,7 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/speps/go-hashids v2.0.0+incompatible // indirect
-	github.com/spf13/cast v1.8.0 // indirect
+	github.com/spf13/cast v1.9.2 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
