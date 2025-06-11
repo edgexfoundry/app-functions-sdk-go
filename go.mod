@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/blang/semver/v4 v4.0.0
-	github.com/diegoholiveira/jsonlogic/v3 v3.8.3
+	github.com/diegoholiveira/jsonlogic/v3 v3.8.4
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.11
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.6
