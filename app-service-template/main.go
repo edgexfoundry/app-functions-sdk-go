@@ -95,7 +95,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 	// the Configuration Provider, aka keeper.
 	// For more details see https://docs.edgexfoundry.org/latest/microservices/application/GeneralAppServiceConfig/#writable-custom-configuration
 	// TODO: Remove if not using writable custom configuration
-	if err := app.service.ListenForCustomConfigChanges(&app.serviceConfig.AppCustom, "AppCustom", app.ProcessConfigUpdates); err != nil {
+	if err := app.service.ListenForCustomConfigChanges(&config.AppCustomConfig{}, "AppCustom", app.ProcessConfigUpdates); err != nil {
 		app.lc.Errorf("unable to watch custom writable configuration: %s", err.Error())
 		return -1
 	}
