@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.8.4
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.19
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.20
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.6
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.10
 	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.3
@@ -84,14 +84,14 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/openziti/channel/v4 v4.2.0 // indirect
-	github.com/openziti/edge-api v0.26.45 // indirect
-	github.com/openziti/foundation/v2 v2.0.63 // indirect
-	github.com/openziti/identity v1.0.101 // indirect
-	github.com/openziti/metrics v1.4.1 // indirect
-	github.com/openziti/sdk-golang v1.1.2 // indirect
-	github.com/openziti/secretstream v0.1.34 // indirect
-	github.com/openziti/transport/v2 v2.0.171 // indirect
+	github.com/openziti/channel/v4 v4.2.16 // indirect
+	github.com/openziti/edge-api v0.26.46 // indirect
+	github.com/openziti/foundation/v2 v2.0.70 // indirect
+	github.com/openziti/identity v1.0.109 // indirect
+	github.com/openziti/metrics v1.4.2 // indirect
+	github.com/openziti/sdk-golang v1.2.0 // indirect
+	github.com/openziti/secretstream v0.1.37 // indirect
+	github.com/openziti/transport/v2 v2.0.182 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.1 // indirect
 	github.com/parallaxsecond/parsec-client-go v0.0.0-20221025095442-f0a77d263cf9 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -111,20 +111,20 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	github.com/zeebo/errs v1.4.0 // indirect
 	github.com/zitadel/logging v0.6.2 // indirect
-	github.com/zitadel/oidc/v3 v3.39.0 // indirect
+	github.com/zitadel/oidc/v3 v3.41.0 // indirect
 	github.com/zitadel/schema v1.3.1 // indirect
 	go.mongodb.org/mongo-driver v1.17.0 // indirect
 	go.mozilla.org/pkcs7 v0.9.0 // indirect
 	go.opentelemetry.io/otel v1.32.0 // indirect
 	go.opentelemetry.io/otel/metric v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.14.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/term v0.33.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
 	google.golang.org/grpc v1.70.0 // indirect
