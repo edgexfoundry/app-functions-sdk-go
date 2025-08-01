@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.8.4
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.22
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.23
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.9
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.11
 	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.3
@@ -54,7 +54,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/go-resty/resty/v2 v2.16.5 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.3 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
