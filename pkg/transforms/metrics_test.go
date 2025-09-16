@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,11 +38,13 @@ func TestNewMetricsProcessor(t *testing.T) {
 		"Tag1": "str1",
 		"Tag2": 123,
 		"Tag3": 12.34,
+		"Tag4": 1234567.1,
 	}
 	expectedTags := []dtos.MetricTag{
 		{Name: "Tag1", Value: "str1"},
 		{Name: "Tag2", Value: "123"},
 		{Name: "Tag3", Value: "12.34"},
+		{Name: "Tag4", Value: "1234567.1"},
 	}
 
 	actual, err = NewMetricsProcessor(inputTags)
