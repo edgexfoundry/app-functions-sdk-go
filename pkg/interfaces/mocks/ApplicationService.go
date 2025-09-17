@@ -704,6 +704,13 @@ func (_m *ApplicationService) SubscriptionClient() clientsinterfaces.Subscriptio
 	return r0
 }
 
+func (_m *ApplicationService) RegisterExternalConfigurable(name string, f interfaces.ConfigurableFactory) {
+	_m.Called()
+}
+func (_m *ApplicationService) UnregisterExternalConfigurable(name string) {
+	_m.Called()
+}
+
 // NewApplicationService creates a new instance of ApplicationService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewApplicationService(t interface {
