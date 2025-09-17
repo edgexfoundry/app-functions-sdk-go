@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 IOTech Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +23,8 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/dtos"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v4/pkg/interfaces"
+
+	"github.com/spf13/cast"
 )
 
 // MetricsProcessor contains functions to process the Metric DTO
@@ -38,7 +41,7 @@ func NewMetricsProcessor(additionalTags map[string]interface{}) (*MetricsProcess
 			return nil, err
 		}
 
-		mp.additionalTags = append(mp.additionalTags, dtos.MetricTag{Name: name, Value: fmt.Sprintf("%v", value)})
+		mp.additionalTags = append(mp.additionalTags, dtos.MetricTag{Name: name, Value: cast.ToString(value)})
 	}
 
 	return mp, nil
