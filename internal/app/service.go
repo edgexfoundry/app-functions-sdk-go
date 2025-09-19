@@ -80,6 +80,7 @@ func NewService(serviceKey string, targetType interface{}, profileSuffixPlacehol
 		serviceKey:               serviceKey,
 		targetType:               targetType,
 		profileSuffixPlaceholder: profileSuffixPlaceholder,
+		configurableFactorMap:    make(map[string]interfaces.ConfigurableFactory),
 	}
 }
 
@@ -104,6 +105,7 @@ type Service struct {
 	flags                      *flags.Default
 	configProcessor            *config.Processor
 	requestTimeout             time.Duration
+	configurableFactorMap      map[string]interfaces.ConfigurableFactory
 }
 
 type commandLineFlags struct {
@@ -281,7 +283,11 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 		return nil, fmt.Errorf("pipline TargetType of '%s' is not supported", svc.config.GetWritableInfo().Pipeline.TargetType)
 	}
 
-	configurable := reflect.ValueOf(NewConfigurable(svc.lc, svc.SecretProvider()))
+	configurables := []reflect.Value{reflect.ValueOf(NewConfigurable(svc.lc, svc.SecretProvider()))}
+	for _, factory := range svc.configurableFactorMap {
+		instance := factory(svc.lc, svc.SecretProvider())
+		configurables = append(configurables, reflect.ValueOf(instance))
+	}
 	pipelineConfig := svc.config.GetWritableInfo().Pipeline
 
 	defaultExecutionOrder := strings.TrimSpace(pipelineConfig.ExecutionOrder)
@@ -294,7 +300,7 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 		svc.lc.Debugf("Default Function Pipeline Execution Order: [%s]", pipelineConfig.ExecutionOrder)
 		functionNames := util.DeleteEmptyAndTrim(strings.FieldsFunc(defaultExecutionOrder, util.SplitComma))
 
-		transforms, err := svc.loadConfigurablePipelineTransforms(interfaces.DefaultPipelineId, functionNames, pipelineConfig.Functions, configurable)
+		transforms, err := svc.loadConfigurablePipelineTransforms(interfaces.DefaultPipelineId, functionNames, pipelineConfig.Functions, configurables)
 		if err != nil {
 			return nil, err
 		}
@@ -312,7 +318,7 @@ func (svc *Service) LoadConfigurableFunctionPipelines() (map[string]interfaces.F
 
 			functionNames := util.DeleteEmptyAndTrim(strings.FieldsFunc(perTopicPipeline.ExecutionOrder, util.SplitComma))
 
-			transforms, err := svc.loadConfigurablePipelineTransforms(perTopicPipeline.Id, functionNames, pipelineConfig.Functions, configurable)
+			transforms, err := svc.loadConfigurablePipelineTransforms(perTopicPipeline.Id, functionNames, pipelineConfig.Functions, configurables)
 			if err != nil {
 				return nil, err
 			}
@@ -334,7 +340,7 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 	pipelineId string,
 	executionOrder []string,
 	functions map[string]common.PipelineFunction,
-	configurable reflect.Value) ([]interfaces.AppFunction, error) {
+	configurables []reflect.Value) ([]interfaces.AppFunction, error) {
 	var transforms []interfaces.AppFunction
 
 	// set pipeline function parameter names to lowercase to avoid casing issues from what is in source configuration
@@ -347,7 +353,7 @@ func (svc *Service) loadConfigurablePipelineTransforms(
 			return nil, fmt.Errorf("function '%s' configuration not found in Pipeline.Functions section for pipeline '%s'", functionName, pipelineId)
 		}
 
-		functionValue, functionType, err := svc.findMatchingFunction(configurable, functionName)
+		functionValue, functionType, err := svc.findMatchingFunctionWrapper(configurables, functionName)
 		if err != nil {
 			return nil, fmt.Errorf("%s for pipeline '%s'", err.Error(), pipelineId)
 		}
@@ -765,4 +771,12 @@ func (svc *Service) PublishWithTopic(topic string, data any, contentType string)
 	}
 
 	return nil
+}
+
+func (svc *Service) RegisterExternalConfigurable(name string, f interfaces.ConfigurableFactory) {
+	svc.configurableFactorMap[name] = f
+}
+
+func (svc *Service) UnregisterExternalConfigurable(name string) {
+	delete(svc.configurableFactorMap, name)
 }
