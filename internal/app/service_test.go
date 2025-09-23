@@ -393,6 +393,44 @@ func TestService_AddFunctionsPipelineForTopics(t *testing.T) {
 	}
 }
 
+func TestService_SetFunctionsPipelineTopics(t *testing.T) {
+	service := Service{
+		lc:      lc,
+		dic:     dic,
+		runtime: runtime.NewFunctionPipelineRuntime("", nil, dic),
+		config: &common.ConfigurationStruct{
+			Trigger: common.TriggerInfo{
+				Type: TriggerTypeMessageBus,
+			},
+			MessageBus: config.MessageBusInfo{
+				BaseTopicPrefix: "base/two",
+			},
+		},
+	}
+
+	tags := builtin.NewTags(nil)
+
+	transforms := []interfaces.AppFunction{tags.AddTags}
+	topics := []string{"a/b", "a/c"}
+	bustopics := []string{"base/two/a/b", "base/two/a/c"}
+	err := service.AddFunctionsPipelineForTopics("pl", topics, transforms...)
+	require.NoError(t, err)
+	assert.Equal(t, bustopics, service.runtime.GetPipelineById("pl").Topics)
+
+	topics = append(topics, "c/d/e")
+	bustopics = append(bustopics, "base/two/c/d/e")
+	err = service.SetFunctionsPipelineTopics("pl", topics)
+	require.NoError(t, err)
+	assert.Equal(t, bustopics, service.runtime.GetPipelineById("pl").Topics)
+	err = service.SetFunctionsPipelineTopics("pl", nil)
+	require.Error(t, err)
+	assert.Equal(t, bustopics, service.runtime.GetPipelineById("pl").Topics)
+	topics = append(topics, "")
+	err = service.SetFunctionsPipelineTopics("pl", topics)
+	require.Error(t, err)
+	assert.Equal(t, bustopics, service.runtime.GetPipelineById("pl").Topics)
+}
+
 func TestService_RemoveAllFunctionPipelines(t *testing.T) {
 	service := Service{
 		lc:      lc,

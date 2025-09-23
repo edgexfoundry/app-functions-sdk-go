@@ -404,33 +404,36 @@ func (svc *Service) SetDefaultFunctionsPipeline(transforms ...interfaces.AppFunc
 	return nil
 }
 
+// getFullTopics adds the base topic prefix to all the topics in a list
+func getFullTopics(topics []string, baseTopicPrefix string) ([]string, error) {
+	var fullTopics []string
+
+	if len(topics) == 0 {
+		return nil, errors.New("topics for pipeline can not be empty")
+	}
+
+	for _, topic := range topics {
+		if strings.TrimSpace(topic) == "" {
+			return nil, errors.New("blank topic not allowed")
+		}
+		fullTopics = append(fullTopics, coreCommon.BuildTopic(baseTopicPrefix, topic))
+	}
+	return fullTopics, nil
+}
+
 // AddFunctionsPipelineForTopics adds a functions pipeline for the specified for the specified id and topics
 func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, transforms ...interfaces.AppFunction) error {
 	if len(transforms) == 0 {
 		return errors.New("no transforms provided to pipeline")
 	}
-
-	if len(topics) == 0 {
-		return errors.New("topics for pipeline can not be empty")
-	}
-
-	for _, t := range topics {
-		if strings.TrimSpace(t) == "" {
-			return errors.New("blank topic not allowed")
-		}
-	}
-
-	// Must add the base topic to all the input topics
-	var fullTopics []string
-	for _, topic := range topics {
-		fullTopics = append(fullTopics, coreCommon.BuildTopic(svc.config.MessageBus.GetBaseTopicPrefix(), topic))
-	}
-
-	err := svc.runtime.AddFunctionsPipeline(id, fullTopics, transforms)
+	fullTopics, err := getFullTopics(topics, svc.config.MessageBus.GetBaseTopicPrefix())
 	if err != nil {
 		return err
 	}
-
+	err = svc.runtime.AddFunctionsPipeline(id, fullTopics, transforms)
+	if err != nil {
+		return err
+	}
 	svc.lc.Debugf("Pipeline '%s' added for topics '%v' with %d transform(s)", id, fullTopics, len(transforms))
 	return nil
 }
@@ -438,6 +441,16 @@ func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, tr
 // RemoveAllFunctionPipelines removes all existing function pipelines
 func (svc *Service) RemoveAllFunctionPipelines() {
 	svc.runtime.RemoveAllFunctionPipelines()
+}
+
+// SetFunctionsPipelineTopics updates the list of topics for the specified functions pipeline
+func (svc *Service) SetFunctionsPipelineTopics(id string, topics []string) error {
+	fullTopics, err := getFullTopics(topics, svc.config.MessageBus.GetBaseTopicPrefix())
+	if err != nil {
+		return err
+	}
+	svc.runtime.SetFunctionsPipelineTopics(id, fullTopics)
+	return nil
 }
 
 // RequestTimeout returns the Request Timeout duration that was parsed from the Service.RequestTimeout configuration

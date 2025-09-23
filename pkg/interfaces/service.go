@@ -117,6 +117,8 @@ type ApplicationService interface {
 	AddFunctionsPipelineForTopics(id string, topic []string, transforms ...AppFunction) error
 	// RemoveAllFunctionPipelines removes all existing function pipelines
 	RemoveAllFunctionPipelines()
+	// SetFunctionsPipelineTopics updates the list of topics for the specified functions pipeline
+	SetFunctionsPipelineTopics(id string, topics []string) error
 	// Run starts the configured trigger to allow the functions pipeline to execute when the trigger
 	// receives data and starts the internal webserver. This is a long-running function which does not return until
 	// the service is stopped or Stop() is called.
