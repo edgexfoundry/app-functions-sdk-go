@@ -45,6 +45,7 @@ type simpleTriggerServiceBinding struct {
 }
 
 func (b *simpleTriggerServiceBinding) SecretProvider() messaging.SecretDataProvider {
+	//nolint:staticcheck // ignoring QF1008 for as both Service and FunctionsPipelineRuntime contain dic
 	return container.SecretProviderFrom(b.Service.dic.Get)
 }
 
@@ -56,14 +57,17 @@ func NewTriggerServiceBinding(svc *Service) trigger.ServiceBinding {
 }
 
 func (b *simpleTriggerServiceBinding) DIC() *di.Container {
+	//nolint:staticcheck // ignoring QF1008 for as both Service and FunctionsPipelineRuntime contain dic
 	return b.Service.dic
 }
 
 func (b *simpleTriggerServiceBinding) BuildContext(env types.MessageEnvelope) interfaces.AppFunctionContext {
+	//nolint:staticcheck // ignoring QF1008 for as both Service and FunctionsPipelineRuntime contain dic
 	return appfunction.NewContext(env.CorrelationID, b.Service.dic, env.ContentType)
 }
 
 func (b *simpleTriggerServiceBinding) Config() *common.ConfigurationStruct {
+	//nolint:staticcheck // ignoring QF1008 for as both Service and FunctionsPipelineRuntime contain dic
 	return b.Service.config
 }
 

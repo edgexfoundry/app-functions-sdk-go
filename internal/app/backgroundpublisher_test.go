@@ -104,5 +104,5 @@ func TestPublish_Topic_Formatting_Error(t *testing.T) {
 
 	require.Error(t, err)
 
-	require.Equal(t, fmt.Sprintf("Failed to prepare topic for publishing: failed to replace all context placeholders in input ('%s' after replacements)", topic), err.Error())
+	require.Equal(t, fmt.Sprintf("failed to prepare topic for publishing: failed to replace all context placeholders in input ('%s' after replacements)", topic), err.Error())
 }

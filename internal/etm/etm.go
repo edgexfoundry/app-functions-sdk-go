@@ -181,7 +181,7 @@ var aesCBC = cipherParams{
 
 func tag(h hash.Hash, data, s []byte, l int) []byte {
 	al := make([]byte, dataLenSize)
-	binary.BigEndian.PutUint64(al, uint64(len(data)*8)) // in bits
+	binary.BigEndian.PutUint64(al, uint64(len(data))*8) // in bits
 	h.Write(data)
 	h.Write(s)
 	h.Write(al)

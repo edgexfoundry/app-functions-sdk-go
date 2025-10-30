@@ -509,9 +509,10 @@ func topicMatches(incomingTopic string, pipelineTopics []string) bool {
 			}
 
 			for index, level := range pipelineLevels {
-				if level == TopicWildCard {
+				switch level {
+				case TopicWildCard:
 					incomingLevels[index] = TopicWildCard
-				} else if level == TopicSingleLevelWildcard {
+				case TopicSingleLevelWildcard:
 					incomingLevels[index] = TopicSingleLevelWildcard
 				}
 			}

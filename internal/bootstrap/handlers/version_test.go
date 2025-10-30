@@ -106,11 +106,12 @@ func TestValidateVersionMatch(t *testing.T) {
 
 			handler := func(w http.ResponseWriter, r *http.Request) {
 				var versionJson string
-				if test.CoreVersion == "{}" {
+				switch test.CoreVersion {
+				case "{}":
 					versionJson = "{}"
-				} else if test.CoreVersion == "" {
+				case "":
 					versionJson = ""
-				} else {
+				default:
 					versionJson = fmt.Sprintf(`{"version" : "%s"}`, test.CoreVersion)
 				}
 

@@ -76,13 +76,13 @@ func TestEventWrapper_Wrap(t *testing.T) {
 			require.Equal(t, test.ResourceName, eventRequest.Event.Readings[0].ResourceName)
 			switch test.ValueType {
 			case common.ValueTypeBinary:
-				value, err := strconv.ParseBool(string(eventRequest.Event.Readings[0].BinaryReading.BinaryValue))
+				value, err := strconv.ParseBool(string(eventRequest.Event.Readings[0].BinaryValue))
 				require.NoError(t, err)
 				require.Equal(t, test.Data, value)
 			case common.ValueTypeObject:
-				require.Equal(t, test.Data, eventRequest.Event.Readings[0].ObjectReading.ObjectValue)
+				require.Equal(t, test.Data, eventRequest.Event.Readings[0].ObjectValue)
 			default:
-				require.Equal(t, test.Data, eventRequest.Event.Readings[0].SimpleReading.Value)
+				require.Equal(t, test.Data, eventRequest.Event.Readings[0].Value)
 			}
 			return
 		}
