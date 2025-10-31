@@ -40,7 +40,7 @@ func (pub *backgroundPublisher) Publish(payload []byte, context interfaces.AppFu
 	topic, err := context.ApplyValues(pub.topic)
 
 	if err != nil {
-		return fmt.Errorf("Failed to prepare topic for publishing: %s", err.Error())
+		return fmt.Errorf("failed to prepare topic for publishing: %s", err.Error())
 	}
 
 	pub.output <- BackgroundMessage{

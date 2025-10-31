@@ -33,15 +33,13 @@ import (
 
 	appCommon "github.com/edgexfoundry/app-functions-sdk-go/v4/internal/common"
 	bootstrapMocks "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces/mocks"
+	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
 	clients "github.com/edgexfoundry/go-mod-core-contracts/v4/clients/http"
 	clientMocks "github.com/edgexfoundry/go-mod-core-contracts/v4/clients/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/dtos/responses"
 	messageMocks "github.com/edgexfoundry/go-mod-messaging/v4/messaging/mocks"
-
-	"github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/interfaces/mocks"
-	"github.com/edgexfoundry/go-mod-bootstrap/v4/di"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -55,7 +53,7 @@ var baseUrl = "http://localhost:"
 var mockSecretProvider interfaces.SecretProvider
 
 func TestMain(m *testing.M) {
-	mockSecretProvider = &mocks.SecretProvider{}
+	mockSecretProvider = &bootstrapMocks.SecretProvider{}
 
 	dic = di.NewContainer(di.ServiceConstructorMap{
 		bootstrapContainer.LoggingClientInterfaceName: func(get di.Get) interface{} {
@@ -191,7 +189,7 @@ func TestContext_MetricsManager(t *testing.T) {
 
 	dic.Update(di.ServiceConstructorMap{
 		bootstrapContainer.MetricsManagerInterfaceName: func(get di.Get) interface{} {
-			return &mocks.MetricsManager{}
+			return &bootstrapMocks.MetricsManager{}
 		},
 	})
 
@@ -302,7 +300,7 @@ func TestContext_RetryData(t *testing.T) {
 
 func TestContext_SecretsLastUpdated(t *testing.T) {
 	expected := time.Now()
-	mockSecretProvider := &mocks.SecretProvider{}
+	mockSecretProvider := &bootstrapMocks.SecretProvider{}
 	mockSecretProvider.On("SecretsLastUpdated").Return(expected, nil)
 
 	dic.Update(di.ServiceConstructorMap{

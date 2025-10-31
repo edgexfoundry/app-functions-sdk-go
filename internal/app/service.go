@@ -421,7 +421,7 @@ func getFullTopics(topics []string, baseTopicPrefix string) ([]string, error) {
 	return fullTopics, nil
 }
 
-// AddFunctionsPipelineForTopics adds a functions pipeline for the specified for the specified id and topics
+// AddFunctionsPipelineForTopics adds a functions pipeline for the specified id and topics
 func (svc *Service) AddFunctionsPipelineForTopics(id string, topics []string, transforms ...interfaces.AppFunction) error {
 	if len(transforms) == 0 {
 		return errors.New("no transforms provided to pipeline")

@@ -105,7 +105,7 @@ func (factory MqttFactory) configureMQTTClientForAuth(secretData *messaging.Secr
 	if len(secretData.CaPemBlock) > 0 {
 		ok := caCertPool.AppendCertsFromPEM(secretData.CaPemBlock)
 		if !ok {
-			return errors.New("Error parsing CA PEM block")
+			return errors.New("error parsing CA PEM block")
 		}
 		tlsConfig.RootCAs = caCertPool
 	}

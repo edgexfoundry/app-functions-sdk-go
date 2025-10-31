@@ -95,7 +95,7 @@ func (trigger *Trigger) requestHandler(writer http.ResponseWriter, r *http.Reque
 	if err != nil {
 		lc.Error("Error reading HTTP Body", "error", err)
 		writer.WriteHeader(http.StatusBadRequest)
-		_, _ = writer.Write([]byte(fmt.Sprintf("Error reading HTTP Body: %s", err.Error())))
+		_, _ = fmt.Fprintf(writer, "Error reading HTTP Body: %v", err)
 		return
 	}
 

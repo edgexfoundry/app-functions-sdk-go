@@ -279,7 +279,7 @@ func (tm *pgTableManager) executeSqlFile(ctx context.Context, tx pgx.Tx, sqlFile
 	}
 
 	// replace the <serviceKey> placeholder text with the actual service key name
-	updatedSqlContent := strings.Replace(string(sqlContent), serviceKeyPlaceholder, tm.serviceKey, -1)
+	updatedSqlContent := strings.ReplaceAll(string(sqlContent), serviceKeyPlaceholder, tm.serviceKey)
 
 	_, err = tx.Exec(ctx, updatedSqlContent)
 	if err != nil {

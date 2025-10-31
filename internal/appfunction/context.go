@@ -285,7 +285,7 @@ func (appContext *Context) ApplyValues(format string) (string, error) {
 		attempts[placeholder] = found
 
 		if found {
-			result = strings.Replace(result, placeholder, value, -1)
+			result = strings.ReplaceAll(result, placeholder, value)
 		}
 	}
 
