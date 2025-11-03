@@ -221,7 +221,7 @@ func NewClient(config bootstrapConfig.Database, credentials bootstrapConfig.Cred
 				"tcp", connectionString, opts...,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Could not dial Redis: %s", err)
+				return nil, fmt.Errorf("could not dial Redis: %s", err)
 			}
 			return conn, nil
 		}
