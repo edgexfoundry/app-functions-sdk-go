@@ -10,6 +10,17 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+
+## [4.0.1] Odessa 
+
+### 🐛 Bug Fixes 
+- Prevent `AppCustom` configuration from being updated directly by `ConfigProvider` ([#1a8ba778](https://github.com/edgexfoundry/app-functions-sdk-go/commits/1a8ba778))
+
+### 👷 Build 
+- Set Go version to 1.23 ([#c6b025c2](https://github.com/edgexfoundry/app-functions-sdk-go/commits/c6b025c2))
+- update gitignore to avoid ignore debug pkg ([#33489ef2](https://github.com/edgexfoundry/app-functions-sdk-go/commits/33489ef2))
+
+
 ## [4.0.0] Odessa - 2025-03-12 (Only compatible with the 4.x releases)
 
 ### ✨  Features
