@@ -10,7 +10,7 @@ replace github.com/edgexfoundry/app-functions-sdk-go/v4 => ../
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v4 v4.0.0
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.1
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.2
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
@@ -26,9 +26,9 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/diegoholiveira/jsonlogic/v3 v3.7.4 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.5.0 // indirect
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.3 // indirect
-	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.1 // indirect
-	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.1 // indirect
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.4 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.2 // indirect
+	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.2 // indirect
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.1 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

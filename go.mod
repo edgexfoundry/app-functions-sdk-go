@@ -6,9 +6,9 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.7.4
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.3
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.1
-	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.1
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.4
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.2
+	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.2
 	github.com/edgexfoundry/go-mod-registry/v4 v4.0.1
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/gomodule/redigo v1.9.2
@@ -28,7 +28,7 @@ require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.1 // indirect
+	github.com/edgexfoundry/go-mod-configuration/v4 v4.0.2 // indirect
 	github.com/edgexfoundry/go-mod-secrets/v4 v4.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa // indirect
