@@ -16,7 +16,7 @@
 #
 
 #build stage
-ARG BASE=golang:1.23-alpine3.20
+ARG BASE=golang:1.23-alpine3.22
 FROM ${BASE} AS builder
 
 ARG ALPINE_PKG_BASE="make git"
@@ -33,7 +33,7 @@ ARG MAKE="make build"
 RUN $MAKE
 
 #final stage
-FROM alpine:3.20
+FROM alpine:3.22
 # TODO: Change Copyright to your company if open sourcing or remove label
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
   copyright='Copyright (c) 2022: Intel'
