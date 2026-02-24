@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.9.0
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.53
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.54
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.25
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.18
 	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.8
@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/labstack/echo/v4 v4.15.0
+	github.com/labstack/echo/v4 v4.15.1
 	github.com/pkg/errors v0.9.1
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9
 	github.com/spf13/cast v1.10.0
