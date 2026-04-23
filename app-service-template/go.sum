@@ -76,8 +76,8 @@ github.com/diegoholiveira/jsonlogic/v3 v3.9.0 h1:ZYx6tM8+1NRo0RwFpBmVxtmJnXs/f3r
 github.com/diegoholiveira/jsonlogic/v3 v3.9.0/go.mod h1:OYRb6FSTVmMM+MNQ7ElmMsczyNSepw+OU4Z8emDSi4w=
 github.com/eclipse/paho.mqtt.golang v1.5.1 h1:/VSOv3oDLlpqR2Epjn1Q7b2bSTplJIeV2ISgCl2W7nE=
 github.com/eclipse/paho.mqtt.golang v1.5.1/go.mod h1:1/yJCneuyOoCOzKSsOTUc0AJfpsItBGWvYpBLimhArU=
-github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.63 h1:+5+DwF2x2xRFzwY/MDjJyZgQBgRbo368Yqt3E1ib2fg=
-github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.63/go.mod h1:oPU+xbV24dSP3dWmKBfjA9VxUNjYCnEp1iJZRhpt+KY=
+github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.64 h1:nyNS6HCu0xbvbCtIHX3wDy5QL80q+OZDKfCQxmPuCGY=
+github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.64/go.mod h1:oPU+xbV24dSP3dWmKBfjA9VxUNjYCnEp1iJZRhpt+KY=
 github.com/edgexfoundry/go-mod-configuration/v4 v4.1.0-dev.18 h1:6CxVazEOThmXhmWXtCacBvCMC/DRZ6Wjtwk7MGxwSMY=
 github.com/edgexfoundry/go-mod-configuration/v4 v4.1.0-dev.18/go.mod h1:eNUza21ZndsglOM5xTh3wI8Iodkuw02axQTjJApC58Y=
 github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.32 h1:hzcr+Fr1c/b8zHLT003zZh3+TGzvXa+wCj7YLbv30FE=
@@ -307,8 +307,8 @@ github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsI
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
-github.com/jackc/pgx/v5 v5.9.1 h1:uwrxJXBnx76nyISkhr33kQLlUqjv7et7b9FjCen/tdc=
-github.com/jackc/pgx/v5 v5.9.1/go.mod h1:mal1tBGAFfLHvZzaYh77YS/eC6IX9OWbRV1QIIM0Jn4=
+github.com/jackc/pgx/v5 v5.9.2 h1:3ZhOzMWnR4yJ+RW1XImIPsD1aNSz4T4fyP7zlQb56hw=
+github.com/jackc/pgx/v5 v5.9.2/go.mod h1:mal1tBGAFfLHvZzaYh77YS/eC6IX9OWbRV1QIIM0Jn4=
 github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/jeremija/gosubmit v0.2.8 h1:mmSITBz9JxVtu8eqbN+zmmwX7Ij2RidQxhcwRVI4wqA=
