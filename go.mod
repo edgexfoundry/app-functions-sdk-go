@@ -6,10 +6,10 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/diegoholiveira/jsonlogic/v3 v3.9.1
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.64
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.32
+	github.com/edgexfoundry/go-mod-bootstrap/v4 v4.1.0-dev.65
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.1.0-dev.33
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.1.0-dev.23
-	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.9
+	github.com/edgexfoundry/go-mod-registry/v4 v4.1.0-dev.10
 	github.com/fxamacker/cbor/v2 v2.9.1
 	github.com/gomodule/redigo v1.9.3
 	github.com/google/uuid v1.6.0
