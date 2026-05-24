@@ -16,7 +16,6 @@
 - Add the ability to update pipeline topic list at runtime. ([#f2c84159](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f2c84159))
 
 ### 🐛 Bug Fixes 
-- Update `ApplicationService` mock to support the new function ([#08c43a33](https://github.com/edgexfoundry/app-functions-sdk-go/commits/08c43a33))
 - Replace `fmt.Sprintf("%v",v)` with `cast.ToString(v)` ([#f66955f5](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f66955f5))
 - Prevent `AppCustom` configuration from being updated directly by `ConfigProvider` ([#7d48a555](https://github.com/edgexfoundry/app-functions-sdk-go/commits/7d48a555))
 
