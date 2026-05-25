@@ -10,6 +10,21 @@
 - [go-mod-configuration](https://github.com/edgexfoundry/go-mod-configuration/blob/main/CHANGELOG.md) (indirect dependency)
 - [go-mod-secrets](https://github.com/edgexfoundry/go-mod-secrets/blob/main/CHANGELOG.md) (indirect dependency)
 
+## [4.0.2] - 2026-05-31 
+
+### ✨ Features 
+- Add the ability to update pipeline topic list at runtime. ([#f2c84159](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f2c84159))
+
+### 🐛 Bug Fixes 
+- Replace `fmt.Sprintf("%v",v)` with `cast.ToString(v)` ([#f66955f5](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f66955f5))
+- Prevent `AppCustom` configuration from being updated directly by `ConfigProvider` ([#7d48a555](https://github.com/edgexfoundry/app-functions-sdk-go/commits/7d48a555))
+
+### 👷 Build 
+- Update goVersion to 1.25 and golangci-lint to 2.5.0([#46236024](https://github.com/edgexfoundry/app-functions-sdk-go/commits/46236024))
+- Update .gitignore to avoid ignore debug pakages ([#f9ebf22a](https://github.com/edgexfoundry/app-functions-sdk-go/commits/f9ebf22a))
+
+
+
 ## [4.0.0] Odessa - 2025-03-12 (Only compatible with the 4.x releases)
 
 ### ✨  Features
