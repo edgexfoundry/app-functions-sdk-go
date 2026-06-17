@@ -70,8 +70,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/diegoholiveira/jsonlogic/v3 v3.10.0 h1:PI4KkUFlUpmuxIOhgno0mSrTHq5S7+eOIvoiF31p3b8=
-github.com/diegoholiveira/jsonlogic/v3 v3.10.0/go.mod h1:807lvTWhwOX6yHwkr42unn3VpC2eMLkvT/WsGGqWDfE=
+github.com/diegoholiveira/jsonlogic/v3 v3.10.1 h1:LfEloCfkty+LOkYbLRTw7FrrQGqX+BYuKtPqizmoQ7k=
+github.com/diegoholiveira/jsonlogic/v3 v3.10.1/go.mod h1:mJcE63oWAS86KovXNXxyiBvJk8bvOaeGG7psnkzn9ms=
 github.com/eclipse/paho.mqtt.golang v1.5.1 h1:/VSOv3oDLlpqR2Epjn1Q7b2bSTplJIeV2ISgCl2W7nE=
 github.com/eclipse/paho.mqtt.golang v1.5.1/go.mod h1:1/yJCneuyOoCOzKSsOTUc0AJfpsItBGWvYpBLimhArU=
 github.com/edgexfoundry/go-mod-bootstrap/v4 v4.0.5 h1:WX7nv49V7TKPh274FgSGcyv/RZ0lZejlOmWx/XcnliA=
