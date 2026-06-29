@@ -151,11 +151,16 @@ func (processor *ConfigUpdateProcessor) processConfigChangedPipeline() {
 		sdk.runtime.TargetType = sdk.targetType
 
 		// Update the pipelines with their new transforms
-		for _, pipeline := range pipelines {
-			// TODO: Look at better way to apply pipeline updates
-			sdk.runtime.SetFunctionsPipelineTransforms(pipeline.Id, pipeline.Transforms)
-			sdk.runtime.SetFunctionsPipelineTopics(pipeline.Id, pipeline.Topics)
+		for i, pipeline := range pipelines {
+			fullTopics, err := getFullTopics(pipeline.Topics, sdk.config.MessageBus.GetBaseTopicPrefix())
+			if err != nil {
+				sdk.LoggingClient().Errorf("failed to get full topics for pipeline %s: %v", pipeline.Id, err)
+				return
+			}
+			pipeline.Topics = fullTopics
+			pipelines[i] = pipeline
 		}
+		sdk.runtime.UpdateFunctionsPipelines(pipelines)
 
 		sdk.LoggingClient().Info("Configurable Pipeline successfully reloaded from new configuration")
 	}
