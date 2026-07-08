@@ -50,6 +50,8 @@ type MQTTSecretSender struct {
 	preConnected         bool
 }
 
+const defaultMQTTPublishTimeout = 30 * time.Second
+
 // MQTTSecretConfig ...
 type MQTTSecretConfig struct {
 	// BrokerAddress should be set to the complete broker address i.e. mqtts://mosquitto:8883/mybroker
@@ -64,6 +66,8 @@ type MQTTSecretConfig struct {
 	KeepAlive string
 	// ConnectTimeout is the duration for timing out on connecting to the broker
 	ConnectTimeout string
+	// PublishTimeout is the duration for timing out when waiting for a publish token to complete
+	PublishTimeout string
 	// MaxReconnectInterval is the max duration for attempting to reconnect to the broker
 	MaxReconnectInterval string
 	// Topic that you wish to publish to
@@ -77,6 +81,8 @@ type MQTTSecretConfig struct {
 	// AuthMode indicates what to use when connecting to the broker. Options are "none", "cacert" , "usernamepassword", "clientcert".
 	// If a CA Cert exists in the SecretName then it will be used for all modes except "none".
 	AuthMode string
+	// CredentialsProvider dynamically provides username and password values when connecting to the broker.
+	CredentialsProvider MQTT.CredentialsProvider
 	// Will contains the Last Will configuration for the MQTT Client
 	Will common.WillConfig
 }
@@ -129,7 +135,7 @@ func (sender *MQTTSecretSender) initializeMQTTClient(lc logger.LoggingClient, se
 	lc.Info("Initializing MQTT Client")
 
 	config := sender.mqttConfig
-	mqttFactory := secure.NewMqttFactory(secretProvider, lc, config.AuthMode, config.SecretName, config.SkipCertVerify)
+	mqttFactory := secure.NewMqttFactoryWithCredentialsProvider(secretProvider, lc, config.AuthMode, config.SecretName, config.SkipCertVerify, config.CredentialsProvider)
 
 	if len(sender.mqttConfig.KeepAlive) > 0 {
 		keepAlive, err := time.ParseDuration(sender.mqttConfig.KeepAlive)
@@ -278,11 +284,10 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	}
 
 	token := sender.client.Publish(publishTopic, sender.mqttConfig.QoS, sender.mqttConfig.Retain, exportData)
-	token.Wait()
-	if token.Error() != nil {
+	if err := sender.waitForPublish(token); err != nil {
 		sender.mqttErrorMetric.Inc(1)
 		sender.setRetryData(ctx, exportData)
-		return false, token.Error()
+		return false, err
 	}
 
 	// Data successfully sent, so retry any failed data, if Store and Forward enabled and data has been saved
@@ -298,6 +303,23 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	sender.lc.Tracef("Data exported to MQTT Broker in pipeline '%s': %s=%s", ctx.PipelineId(), coreCommon.CorrelationHeader, ctx.CorrelationID())
 
 	return true, nil
+}
+
+func (sender *MQTTSecretSender) waitForPublish(token MQTT.Token) error {
+	timeout := defaultMQTTPublishTimeout
+	if sender.mqttConfig.PublishTimeout != "" {
+		configuredTimeout, err := time.ParseDuration(sender.mqttConfig.PublishTimeout)
+		if err != nil {
+			return fmt.Errorf("invalid MQTT publish timeout %q: %w", sender.mqttConfig.PublishTimeout, err)
+		}
+		timeout = configuredTimeout
+	}
+
+	if !token.WaitTimeout(timeout) {
+		return fmt.Errorf("MQTT publish timed out after %s", timeout)
+	}
+
+	return token.Error()
 }
 
 // ConnectToBroker attempts to connect to the MQTT broker for export prior to processing the first data to be exported.

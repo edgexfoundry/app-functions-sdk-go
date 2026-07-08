@@ -69,6 +69,41 @@ func TestNewMqttFactory(t *testing.T) {
 
 }
 
+func TestNewMqttFactoryWithCredentialsProvider(t *testing.T) {
+	expectedMode := "none"
+	expectedSecretName := "mySecretName"
+	expectedSkipVerify := true
+	expectedCredentials := func() (string, string) {
+		return "username", "password"
+	}
+
+	target := NewMqttFactoryWithCredentialsProvider(secretDataProvider, lc, expectedMode, expectedSecretName, expectedSkipVerify, expectedCredentials)
+
+	assert.NotNil(t, target.logger)
+	assert.Equal(t, expectedMode, target.authMode)
+	assert.Equal(t, expectedSecretName, target.secretName)
+	assert.Equal(t, expectedSkipVerify, target.skipCertVerify)
+	require.NotNil(t, target.credentials)
+
+	username, password := target.credentials()
+	assert.Equal(t, "username", username)
+	assert.Equal(t, "password", password)
+}
+
+func TestConfigureCredentialsProvider(t *testing.T) {
+	target := NewMqttFactoryWithCredentialsProvider(secretDataProvider, lc, "", "", false, func() (string, string) {
+		return "jwt-token", ""
+	})
+	target.opts = mqtt.NewClientOptions()
+
+	target.configureCredentialsProvider()
+
+	require.NotNil(t, target.opts.CredentialsProvider)
+	username, password := target.opts.CredentialsProvider()
+	assert.Equal(t, "jwt-token", username)
+	assert.Empty(t, password)
+}
+
 func TestConfigureMQTTClientForAuth(t *testing.T) {
 	target := NewMqttFactory(secretDataProvider, lc, "", "", false)
 	target.opts = mqtt.NewClientOptions()
@@ -116,6 +151,7 @@ func TestConfigureMQTTClientForAuthWithUsernamePassword(t *testing.T) {
 	assert.Nil(t, target.opts.TLSConfig.Certificates)
 
 }
+
 func TestConfigureMQTTClientForAuthWithUsernamePasswordAndCA(t *testing.T) {
 	target := NewMqttFactory(secretDataProvider, lc, "", "", false)
 	target.opts = mqtt.NewClientOptions()

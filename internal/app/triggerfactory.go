@@ -53,7 +53,7 @@ func (svc *Service) setupTrigger(configuration *common.ConfigurationStruct) inte
 
 	case TriggerTypeMQTT:
 		svc.LoggingClient().Info("External MQTT trigger selected")
-		t = mqtt.NewTrigger(serviceBinding, messageProcessor)
+		t = mqtt.NewTriggerWithCredentialsProvider(serviceBinding, messageProcessor, svc.externalMqttCredentials)
 
 	default:
 		if factory, found := svc.customTriggerFactories[triggerType]; found {

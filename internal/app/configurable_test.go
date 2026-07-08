@@ -355,6 +355,7 @@ func TestMQTTExport(t *testing.T) {
 	params[PersistOnError] = "false"
 	params[AuthMode] = "none"
 	params[ConnectTimeout] = "5s"
+	params[PublishTimeout] = "7s"
 	params[KeepAlive] = "6s"
 	params[WillEnabled] = "true"
 	params[WillTopic] = "will"

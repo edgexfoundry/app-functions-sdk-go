@@ -57,12 +57,18 @@ type Trigger struct {
 	qos              byte
 	retain           bool
 	publishTopic     string
+	credentials      pahoMqtt.CredentialsProvider
 }
 
 func NewTrigger(bnd trigger.ServiceBinding, mp trigger.MessageProcessor) *Trigger {
+	return NewTriggerWithCredentialsProvider(bnd, mp, nil)
+}
+
+func NewTriggerWithCredentialsProvider(bnd trigger.ServiceBinding, mp trigger.MessageProcessor, credentials pahoMqtt.CredentialsProvider) *Trigger {
 	t := &Trigger{
 		messageProcessor: mp,
 		serviceBinding:   bnd,
+		credentials:      credentials,
 	}
 
 	return t
@@ -128,7 +134,7 @@ func (trigger *Trigger) Initialize(_ *sync.WaitGroup, ctx context.Context, backg
 	timer := startup.NewTimer(brokerConfig.RetryDuration, brokerConfig.RetryInterval)
 
 	for timer.HasNotElapsed() {
-		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts); err == nil {
+		if mqttClient, err = createMqttClient(sp, lc, brokerConfig, opts, trigger.credentials); err == nil {
 			break
 		}
 		select {
@@ -240,13 +246,14 @@ func (trigger *Trigger) responseHandler(appContext interfaces.AppFunctionContext
 }
 
 func createMqttClient(sp messaging.SecretDataProvider, lc logger.LoggingClient, config common.ExternalMqttConfig,
-	opts *pahoMqtt.ClientOptions) (pahoMqtt.Client, error) {
-	mqttFactory := secure.NewMqttFactory(
+	opts *pahoMqtt.ClientOptions, credentials pahoMqtt.CredentialsProvider) (pahoMqtt.Client, error) {
+	mqttFactory := secure.NewMqttFactoryWithCredentialsProvider(
 		sp,
 		lc,
 		config.AuthMode,
 		config.SecretName,
 		config.SkipCertVerify,
+		credentials,
 	)
 	mqttClient, err := mqttFactory.Create(opts)
 	if err != nil {

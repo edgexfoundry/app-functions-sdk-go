@@ -20,6 +20,7 @@ import (
 	"context"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/labstack/echo/v4"
 
 	"github.com/edgexfoundry/go-mod-bootstrap/v4/config"
@@ -195,4 +196,13 @@ type ApplicationService interface {
 	Publish(data any, contentType string) error
 	// PublishWithTopic pushes data to the MessageBus using given topic
 	PublishWithTopic(topic string, data any, contentType string) error
+}
+
+type ExternalMqttCredentialsProviderSetter interface {
+	SetExternalMqttCredentialsProvider(credentials mqtt.CredentialsProvider)
+}
+
+// StartupHookSetter can be implemented by ApplicationService instances that support callbacks once Run has started the service.
+type StartupHookSetter interface {
+	AddStartupHook(hook func() error)
 }

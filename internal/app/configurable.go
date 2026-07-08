@@ -53,6 +53,7 @@ const (
 	Retain                  = "retain"
 	AutoReconnect           = "autoreconnect"
 	ConnectTimeout          = "connecttimeout"
+	PublishTimeout          = "publishtimeout"
 	ProfileName             = "profilename"
 	DeviceName              = "devicename"
 	ResourceName            = "resourcename"
@@ -554,12 +555,14 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 	// These are optional and blank values result in MQTT defaults being used.
 	keepAlive := parameters[KeepAlive]
 	connectTimeout := parameters[ConnectTimeout]
+	publishTimeout := parameters[PublishTimeout]
 
 	mqttConfig := transforms.MQTTSecretConfig{
 		Retain:               retain,
 		SkipCertVerify:       skipCertVerify,
 		AutoReconnect:        autoReconnect,
 		ConnectTimeout:       connectTimeout,
+		PublishTimeout:       publishTimeout,
 		KeepAlive:            keepAlive,
 		QoS:                  byte(qos),
 		BrokerAddress:        brokerAddress,

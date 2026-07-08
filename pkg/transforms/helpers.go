@@ -44,6 +44,6 @@ func registerMetric(ctx interfaces.AppFunctionContext, fullNameFunc func() strin
 			return
 		}
 
-		lc.Infof("%s metric has been registered and will be reported (if enabled)", fullName)
+		lc.Debugf("%s metric has been registered and will be reported (if enabled)", fullName)
 	}
 }

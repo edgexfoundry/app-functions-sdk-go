@@ -29,6 +29,7 @@ import (
 	"syscall"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	bootstrapHandlers "github.com/edgexfoundry/go-mod-bootstrap/v4/bootstrap/handlers"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/dtos"
 	"github.com/edgexfoundry/go-mod-messaging/v4/pkg/types"
@@ -104,6 +105,8 @@ type Service struct {
 	flags                      *flags.Default
 	configProcessor            *config.Processor
 	requestTimeout             time.Duration
+	externalMqttCredentials    mqtt.CredentialsProvider
+	startupHooks               []func() error
 }
 
 type commandLineFlags struct {
@@ -124,6 +127,10 @@ type contextGroup struct {
 // Used by custom app service to appropriately exit any long-running functions.
 func (svc *Service) AppContext() context.Context {
 	return svc.ctx.appCtx
+}
+
+func (svc *Service) SetExternalMqttCredentialsProvider(credentials mqtt.CredentialsProvider) {
+	svc.externalMqttCredentials = credentials
 }
 
 // AddCustomRoute allows you to leverage the existing webserver to add routes.
@@ -228,6 +235,9 @@ func (svc *Service) Run() error {
 	}
 
 	svc.lc.Info(svc.config.Service.StartupMsg)
+	if err := svc.runStartupHooks(); err != nil {
+		return err
+	}
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
@@ -703,6 +713,21 @@ func (svc *Service) addContext(next echo.HandlerFunc) echo.HandlerFunc {
 		c.SetRequest(c.Request().WithContext(ctx))
 		return next(c)
 	}
+}
+
+func (svc *Service) AddStartupHook(hook func() error) {
+	if hook != nil {
+		svc.startupHooks = append(svc.startupHooks, hook)
+	}
+}
+
+func (svc *Service) runStartupHooks() error {
+	for _, hook := range svc.startupHooks {
+		if err := hook(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (svc *Service) addDeferred(deferred bootstrap.Deferred) {

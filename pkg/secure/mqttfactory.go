@@ -33,6 +33,7 @@ type MqttFactory struct {
 	secretName     string
 	opts           *mqtt.ClientOptions
 	skipCertVerify bool
+	credentials    mqtt.CredentialsProvider
 }
 
 func NewMqttFactory(sp messaging.SecretDataProvider, log logger.LoggingClient, mode string, secretName string, skipVerify bool) MqttFactory {
@@ -43,6 +44,12 @@ func NewMqttFactory(sp messaging.SecretDataProvider, log logger.LoggingClient, m
 		secretName:     secretName,
 		skipCertVerify: skipVerify,
 	}
+}
+
+func NewMqttFactoryWithCredentialsProvider(sp messaging.SecretDataProvider, log logger.LoggingClient, mode string, secretName string, skipVerify bool, credentials mqtt.CredentialsProvider) MqttFactory {
+	factory := NewMqttFactory(sp, log, mode, secretName, skipVerify)
+	factory.credentials = credentials
+	return factory
 }
 
 func (factory MqttFactory) Create(opts *mqtt.ClientOptions) (mqtt.Client, error) {
@@ -71,7 +78,16 @@ func (factory MqttFactory) Create(opts *mqtt.ClientOptions) (mqtt.Client, error)
 		}
 	}
 
+	factory.configureCredentialsProvider()
+
 	return mqtt.NewClient(factory.opts), nil
+}
+
+func (factory MqttFactory) configureCredentialsProvider() {
+	if factory.credentials == nil {
+		return
+	}
+	factory.opts.SetCredentialsProvider(factory.credentials)
 }
 
 func (factory MqttFactory) configureMQTTClientForAuth(secretData *messaging.SecretData) error {

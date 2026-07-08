@@ -47,6 +47,22 @@ func TestNewTrigger(t *testing.T) {
 	assert.Equal(t, mp, got.messageProcessor)
 }
 
+func TestNewTriggerWithCredentialsProvider(t *testing.T) {
+	bnd := &triggerMocks.ServiceBinding{}
+	mp := &triggerMocks.MessageProcessor{}
+	credentials := func() (string, string) {
+		return "token", ""
+	}
+
+	got := NewTriggerWithCredentialsProvider(bnd, mp, credentials)
+
+	require.NotNil(t, got)
+	require.NotNil(t, got.credentials)
+	username, password := got.credentials()
+	assert.Equal(t, "token", username)
+	assert.Empty(t, password)
+}
+
 func TestTrigger_responseHandler(t *testing.T) {
 	const topicWithPlaceholder = "/topic/with/{ph}/placeholder"
 	const formattedTopic = "topic/with/ph-value/placeholder"
