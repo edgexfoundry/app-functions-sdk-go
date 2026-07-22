@@ -115,39 +115,65 @@ func TestBatchInTimeAndCountMode_CountMet(t *testing.T) {
 	var wgAll sync.WaitGroup
 	var wgFirst sync.WaitGroup
 	var wgSecond sync.WaitGroup
+	results := make(chan struct {
+		continuePipeline bool
+		result           interface{}
+	}, 3)
 	wgAll.Add(3)
 	wgFirst.Add(1)
 	wgSecond.Add(1)
 
 	go func() {
 		go func() {
-			time.Sleep(time.Second * 10)
+			time.Sleep(100 * time.Millisecond)
 			wgFirst.Done()
 		}()
-		continuePipeline1, _ := bs.Batch(ctx, []byte(dataToBatch[0]))
-		assert.False(t, continuePipeline1)
+		continuePipeline, result := bs.Batch(ctx, []byte(dataToBatch[0]))
+		results <- struct {
+			continuePipeline bool
+			result           interface{}
+		}{continuePipeline, result}
 		wgAll.Done()
 	}()
 	go func() {
 		wgFirst.Wait()
 		go func() {
-			time.Sleep(time.Second * 10)
+			time.Sleep(100 * time.Millisecond)
 			wgSecond.Done()
 		}()
-		continuePipeline2, _ := bs.Batch(ctx, []byte(dataToBatch[0]))
-		assert.False(t, continuePipeline2)
+		continuePipeline, result := bs.Batch(ctx, []byte(dataToBatch[0]))
+		results <- struct {
+			continuePipeline bool
+			result           interface{}
+		}{continuePipeline, result}
 		wgAll.Done()
 	}()
 	go func() {
 		wgFirst.Wait()
 		wgSecond.Wait()
-		continuePipeline3, result := bs.Batch(ctx, []byte(dataToBatch[0]))
-		assert.True(t, continuePipeline3)
-		assert.Equal(t, 3, len(result.([][]byte)))
-		assert.Nil(t, bs.batchData.all(), "Should have 0 records")
+		continuePipeline, result := bs.Batch(ctx, []byte(dataToBatch[0]))
+		results <- struct {
+			continuePipeline bool
+			result           interface{}
+		}{continuePipeline, result}
 		wgAll.Done()
 	}()
 	wgAll.Wait()
+	close(results)
+
+	continuePipelineCount := 0
+	for result := range results {
+		if !result.continuePipeline {
+			assert.Nil(t, result.result)
+			continue
+		}
+
+		continuePipelineCount++
+		assert.Equal(t, 3, len(result.result.([][]byte)))
+	}
+
+	assert.Equal(t, 1, continuePipelineCount)
+	assert.Nil(t, bs.batchData.all(), "Should have 0 records")
 }
 func TestBatchInTimeMode(t *testing.T) {
 
