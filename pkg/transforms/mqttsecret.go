@@ -48,7 +48,10 @@ type MQTTSecretSender struct {
 	mqttSizeMetrics      gometrics.Histogram
 	mqttErrorMetric      gometrics.Counter
 	preConnected         bool
+	publishTimeout       time.Duration
 }
+
+const defaultMQTTPublishTimeout = 30 * time.Second
 
 // MQTTSecretConfig ...
 type MQTTSecretConfig struct {
@@ -64,6 +67,8 @@ type MQTTSecretConfig struct {
 	KeepAlive string
 	// ConnectTimeout is the duration for timing out on connecting to the broker
 	ConnectTimeout string
+	// PublishTimeout is the duration for timing out when waiting for a publish token to complete
+	PublishTimeout string
 	// MaxReconnectInterval is the max duration for attempting to reconnect to the broker
 	MaxReconnectInterval string
 	// Topic that you wish to publish to
@@ -84,6 +89,10 @@ type MQTTSecretConfig struct {
 // NewMQTTSecretSender ...
 func NewMQTTSecretSender(mqttConfig MQTTSecretConfig, persistOnError bool) *MQTTSecretSender {
 	opts := MQTT.NewClientOptions()
+	publishTimeout, err := ParseMQTTPublishTimeout(mqttConfig.PublishTimeout)
+	if err != nil {
+		publishTimeout = defaultMQTTPublishTimeout
+	}
 
 	opts.AddBroker(mqttConfig.BrokerAddress)
 	opts.SetClientID(mqttConfig.ClientId)
@@ -95,6 +104,7 @@ func NewMQTTSecretSender(mqttConfig MQTTSecretConfig, persistOnError bool) *MQTT
 		client:         nil,
 		mqttConfig:     mqttConfig,
 		persistOnError: persistOnError,
+		publishTimeout: publishTimeout,
 	}
 
 	opts.OnConnect = sender.onConnected
@@ -106,6 +116,24 @@ func NewMQTTSecretSender(mqttConfig MQTTSecretConfig, persistOnError bool) *MQTT
 	sender.mqttSizeMetrics = gometrics.NewHistogram(gometrics.NewUniformSample(internal.MetricsReservoirSize))
 
 	return sender
+}
+
+// ParseMQTTPublishTimeout validates and parses the configured MQTT publish timeout.
+func ParseMQTTPublishTimeout(publishTimeout string) (time.Duration, error) {
+	if publishTimeout == "" {
+		return defaultMQTTPublishTimeout, nil
+	}
+
+	timeout, err := time.ParseDuration(publishTimeout)
+	if err != nil {
+		return 0, fmt.Errorf("invalid MQTT publish timeout %q: %w", publishTimeout, err)
+	}
+
+	if timeout <= 0 {
+		return 0, fmt.Errorf("invalid MQTT publish timeout %q: must be greater than 0", publishTimeout)
+	}
+
+	return timeout, nil
 }
 
 // NewMQTTSecretSenderWithTopicFormatter allows passing a function to build a final publish topic
@@ -278,11 +306,10 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	}
 
 	token := sender.client.Publish(publishTopic, sender.mqttConfig.QoS, sender.mqttConfig.Retain, exportData)
-	token.Wait()
-	if token.Error() != nil {
+	if err := sender.waitForPublish(token, publishTopic); err != nil {
 		sender.mqttErrorMetric.Inc(1)
 		sender.setRetryData(ctx, exportData)
-		return false, token.Error()
+		return false, err
 	}
 
 	// Data successfully sent, so retry any failed data, if Store and Forward enabled and data has been saved
@@ -298,6 +325,18 @@ func (sender *MQTTSecretSender) MQTTSend(ctx interfaces.AppFunctionContext, data
 	sender.lc.Tracef("Data exported to MQTT Broker in pipeline '%s': %s=%s", ctx.PipelineId(), coreCommon.CorrelationHeader, ctx.CorrelationID())
 
 	return true, nil
+}
+
+func (sender *MQTTSecretSender) waitForPublish(token MQTT.Token, publishTopic string) error {
+	if !token.WaitTimeout(sender.publishTimeout) {
+		return fmt.Errorf(
+			"MQTT publish to broker %q on topic %q timed out after %s",
+			sender.mqttConfig.BrokerAddress,
+			publishTopic,
+			sender.publishTimeout)
+	}
+
+	return token.Error()
 }
 
 // ConnectToBroker attempts to connect to the MQTT broker for export prior to processing the first data to be exported.

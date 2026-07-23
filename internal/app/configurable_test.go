@@ -355,6 +355,7 @@ func TestMQTTExport(t *testing.T) {
 	params[PersistOnError] = "false"
 	params[AuthMode] = "none"
 	params[ConnectTimeout] = "5s"
+	params[PublishTimeout] = "7s"
 	params[KeepAlive] = "6s"
 	params[WillEnabled] = "true"
 	params[WillTopic] = "will"
@@ -365,6 +366,36 @@ func TestMQTTExport(t *testing.T) {
 
 	trx := configurable.MQTTExport(params)
 	assert.NotNil(t, trx, "return result from MQTTSecretSend should not be nil")
+}
+
+func TestMQTTExportInvalidPublishTimeout(t *testing.T) {
+	configurable := Configurable{lc: lc}
+
+	tests := []struct {
+		name  string
+		value string
+	}{
+		{name: "invalid duration", value: "7ss"},
+		{name: "zero duration", value: "0s"},
+		{name: "negative duration", value: "-1s"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			params := map[string]string{
+				BrokerAddress:  "mqtt://broker:8883",
+				Topic:          "topic",
+				SecretName:     "my-secret",
+				ClientID:       "clientid",
+				Qos:            "0",
+				AuthMode:       "none",
+				PublishTimeout: test.value,
+			}
+
+			trx := configurable.MQTTExport(params)
+			assert.Nil(t, trx, "return result from MQTTSecretSend should be nil")
+		})
+	}
 }
 
 func TestMQTTExportWillOptions(t *testing.T) {
