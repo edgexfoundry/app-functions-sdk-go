@@ -189,3 +189,13 @@ func (svc *Service) findMatchingFunction(configurable reflect.Value, functionNam
 	functionType := functionValue.Type()
 	return functionValue, functionType, nil
 }
+
+func (svc *Service) findMatchingFunctionWrapper(configurables []reflect.Value, functionName string) (functionValue reflect.Value, functionType reflect.Type, err error) {
+	for _, conconfigurable := range configurables {
+		functionValue, functionType, err = svc.findMatchingFunction(conconfigurable, functionName)
+		if err == nil {
+			return
+		}
+	}
+	return
+}
