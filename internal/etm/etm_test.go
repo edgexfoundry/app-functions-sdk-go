@@ -63,7 +63,7 @@ func TestBadMessage(t *testing.T) {
 	}
 
 	input := make([]byte, 100)
-	output := aead.Seal(nil, make([]byte, aead.NonceSize()), input, nil)
+	output := aead.Seal(nil, make([]byte, aead.NonceSize()), input, nil) // nolint:gosec // fixed nonce is fine for this test
 	output[91] ^= 3
 
 	b, err := aead.Open(nil, make([]byte, aead.NonceSize()), output, nil)

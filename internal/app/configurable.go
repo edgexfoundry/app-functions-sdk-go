@@ -495,6 +495,10 @@ func (app *Configurable) MQTTExport(parameters map[string]string) interfaces.App
 				app.lc.Errorf("Could not parse '%s' to a int for '%s' parameter: %s", qosVal, WillQos, err.Error())
 				return nil
 			}
+			if qos < 0 || qos > 2 {
+				app.lc.Errorf("Invalid value '%d' for '%s' parameter, must be 0, 1 or 2", qos, WillQos)
+				return nil
+			}
 
 			will.Qos = byte(qos)
 		}

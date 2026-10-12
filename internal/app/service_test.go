@@ -717,7 +717,7 @@ func TestTargetType(t *testing.T) {
 				return
 			}
 			if sdk.targetType != nil {
-				assert.Equal(t, reflect.Ptr, reflect.TypeOf(sdk.targetType).Kind())
+				assert.Equal(t, reflect.Pointer, reflect.TypeOf(sdk.targetType).Kind())
 				assert.Equal(t, test.expectedTargetType, sdk.targetType)
 			}
 
