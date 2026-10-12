@@ -195,7 +195,7 @@ func split(key []byte, encKeyLen, macKeyLen int) ([]byte, []byte) {
 func pkcs7pad(b []byte, blockSize int) []byte {
 	ps := make([]byte, blockSize-(len(b)%blockSize))
 	for i := range ps {
-		ps[i] = byte(len(ps))
+		ps[i] = byte(len(ps)) // nolint:gosec // padding length never exceeds the AES block size
 	}
 	return append(b, ps...)
 }

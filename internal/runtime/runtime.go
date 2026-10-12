@@ -240,7 +240,7 @@ func (fpr *FunctionsPipelineRuntime) DecodeMessage(appContext *appfunction.Conte
 		fpr.TargetType = &dtos.Event{}
 	}
 
-	if reflect.TypeOf(fpr.TargetType).Kind() != reflect.Ptr {
+	if reflect.TypeOf(fpr.TargetType).Kind() != reflect.Pointer {
 		err := errors.New("TargetType must be a pointer, not a value of the target type")
 		fpr.logError(err, envelope.CorrelationID)
 		return nil, &MessageError{Err: err, ErrorCode: http.StatusInternalServerError}, false

@@ -430,6 +430,10 @@ func TestMQTTExportWillOptions(t *testing.T) {
 
 	badQos := copyMap(goodWillOptions)
 	badQos[WillQos] = "junk"
+	outOfRangeQos := copyMap(goodWillOptions)
+	outOfRangeQos[WillQos] = "3"
+	negativeQos := copyMap(goodWillOptions)
+	negativeQos[WillQos] = "-1"
 
 	tests := []struct {
 		Name        string
@@ -442,6 +446,8 @@ func TestMQTTExportWillOptions(t *testing.T) {
 		{"Bad WillEnabled", badEnabled, true},
 		{"Bad WillRetained", badRetained, true},
 		{"Bad WillQos", badQos, true},
+		{"Out of range WillQos", outOfRangeQos, true},
+		{"Negative WillQos", negativeQos, true},
 		{"Missing Topic", missingTopic, true},
 		{"Empty Topic", emptyTopic, true},
 		{"Missing Payload", missingPayload, true},
