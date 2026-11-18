@@ -195,4 +195,27 @@ type ApplicationService interface {
 	Publish(data any, contentType string) error
 	// PublishWithTopic pushes data to the MessageBus using given topic
 	PublishWithTopic(topic string, data any, contentType string) error
+	// RegisterExternalConfigurable registers a named ConfigurableFactory.
+	//
+	// This allows runtime users to plug in their own "Configurable"-style provider,
+	// i.e. a struct exposing methods such as:
+	//
+	//     func (c *MyConfigurable) FilterByDeviceName(params map[string]string) interfaces.AppFunction
+	//
+	// Registration must happen before LoadConfigurableFunctionPipelines() is called,
+	// typically in init() or early in main(). Once registered, the functions on the
+	// provided configurable can be referenced in Writable.Pipeline configuration.
+	RegisterExternalConfigurable(name string, f ConfigurableFactory)
+	// UnregisterExternalConfigurable removes a previously registered factory by name.
+	//
+	// This can be used in tests or dynamic scenarios to clear or replace an external
+	// configurable provider. Usually registration is done once at startup and does
+	// not need to be removed in normal application flows.
+	UnregisterExternalConfigurable(name string)
 }
+
+// ConfigurableFactory creates a configurable instance given SDK logging/secret provider.
+// Returned value should be a pointer to a struct whose methods have signature
+//
+//	FuncName(parameters map[string]string) interfaces.AppFunction
+type ConfigurableFactory func(lc logger.LoggingClient, sp bootstrapInterfaces.SecretProvider) interface{}
