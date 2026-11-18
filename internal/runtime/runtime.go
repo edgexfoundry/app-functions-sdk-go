@@ -162,6 +162,28 @@ func (fpr *FunctionsPipelineRuntime) RemoveAllFunctionPipelines() {
 	fpr.isBusyCopying.Unlock()
 }
 
+func (fpr *FunctionsPipelineRuntime) UpdateFunctionsPipelines(piplines map[string]interfaces.FunctionPipeline) {
+	fpr.isBusyCopying.Lock()
+	defer fpr.isBusyCopying.Unlock()
+
+	metricManager := bootstrapContainer.MetricsManagerFrom(fpr.dic.Get)
+	for _, curPipline := range fpr.pipelines {
+		if _, ok := piplines[curPipline.Id]; !ok {
+			fpr.unregisterPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, curPipline.Id)
+			fpr.unregisterPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, curPipline.Id)
+			fpr.unregisterPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, curPipline.Id)
+			delete(fpr.pipelines, curPipline.Id)
+		}
+	}
+	for _, toAdd := range piplines {
+		pipeline := NewFunctionPipeline(toAdd.Id, toAdd.Topics, toAdd.Transforms)
+		fpr.pipelines[toAdd.Id] = &pipeline
+		fpr.registerPipelineMetric(metricManager, internal.PipelineMessagesProcessedName, pipeline.Id, pipeline.MessagesProcessed)
+		fpr.registerPipelineMetric(metricManager, internal.PipelineMessageProcessingTimeName, pipeline.Id, pipeline.MessageProcessingTime)
+		fpr.registerPipelineMetric(metricManager, internal.PipelineProcessingErrorsName, pipeline.Id, pipeline.ProcessingErrors)
+	}
+}
+
 // AddFunctionsPipeline is thread safe to set transforms
 func (fpr *FunctionsPipelineRuntime) AddFunctionsPipeline(id string, topics []string, transforms []interfaces.AppFunction) error {
 	_, exists := fpr.pipelines[id]
